@@ -13,10 +13,26 @@ class TeacherGuideDistributionController extends Controller
 {
     public function index(Request $request): View
     {
-        $yearId = $request->integer('academic_year_id') ?: null;
+        $years = AcademicYear::query()
+            ->where('is_active', true)
+            ->orderBy('start_year')
+            ->orderBy('name')
+            ->get();
+
+        $currentYear = AcademicYear::current()->first();
+        $yearId = $request->filled('academic_year_id')
+            ? $request->integer('academic_year_id')
+            : $currentYear?->id;
+
         $gradeId = $request->integer('grade_id') ?: null;
         $guideType = $request->input('guide_type');
         $search = trim((string) $request->input('search', ''));
+
+        $selectedYear = $yearId
+            ? $years->firstWhere('id', (int) $yearId) ?? AcademicYear::find($yearId)
+            : null;
+
+        $canCreate = $selectedYear?->allowsDataEntry() ?? false;
 
         $query = TeacherGuide::query()
             ->with([
@@ -46,47 +62,74 @@ class TeacherGuideDistributionController extends Controller
             });
         }
 
-        $teacherGuides = $query
-            ->orderBy('group_no')
-            ->orderBy('sequence_no')
-            ->get();
+        if ($selectedYear?->isFuture()) {
+            $teacherGuides = collect();
+        } else {
+            $teacherGuides = $query
+                ->orderBy('group_no')
+                ->orderBy('sequence_no')
+                ->get();
+        }
 
-        $years = AcademicYear::query()
-            ->where('is_active', true)
-            ->orderBy('name')
-            ->get();
+        $emptyMessage = 'အချက်အလက်မရှိပါ';
+        if ($selectedYear?->isFuture()) {
+            $emptyMessage = 'မရောက်သေးသောပညာသင်နှစ်ဖြစ်သဖြင့် အချက်အလက်ထည့်သွင်း၍မရနိုင်ပါ';
+        }
 
         $grades = Grade::dropdownOptions();
 
-        $selectedYear = $yearId
-            ? AcademicYear::find($yearId)
-            : null;
-
-        return view('teacher-guide-distributions.index', compact(
-            'teacherGuides',
-            'years',
-            'grades',
-            'yearId',
-            'gradeId',
-            'guideType',
-            'search',
-            'selectedYear'
-        ));
+        return view('teacher-guide-distributions.index', [
+            'teacherGuides' => $teacherGuides,
+            'years' => $years,
+            'grades' => $grades,
+            'yearId' => $yearId,
+            'gradeId' => $gradeId,
+            'guideType' => $guideType,
+            'search' => $search,
+            'selectedYear' => $selectedYear,
+            'currentYear' => $currentYear,
+            'canCreate' => $canCreate,
+            'emptyMessage' => $emptyMessage,
+        ]);
     }
 
-    public function create(): View
+    public function create(Request $request): View|RedirectResponse
     {
-        return view('teacher-guide-distributions.create', [
-            'years' => AcademicYear::where('is_active', true)
-                ->orderBy('name')
-                ->get(),
+        if ($request->filled('academic_year_id')) {
+            $year = AcademicYear::find($request->academic_year_id);
+            if ($year && !$year->allowsDataEntry()) {
+                return redirect()
+                    ->route('teacher-guide-distributions.index', ['academic_year_id' => $year->id])
+                    ->with('error', 'မရောက်သေးသောပညာသင်နှစ်ဖြစ်သဖြင့် အချက်အလက်ထည့်သွင်း၍မရနိုင်ပါ');
+            }
+        }
 
+        $years = AcademicYear::where('is_active', true)
+            ->orderByDesc('start_year')
+            ->orderBy('name')
+            ->get()
+            ->filter(fn (AcademicYear $year) => $year->allowsDataEntry())
+            ->values();
+
+        return view('teacher-guide-distributions.create', [
+            'years' => $years,
+            'currentYearId' => AcademicYear::current()->value('id'),
+            'preselectedYearId' => $request->academic_year_id,
+            'preselectedGradeId' => $request->grade_id,
+            'preselectedGuideType' => $request->guide_type,
             'grades' => Grade::dropdownOptions(),
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
+        $year = AcademicYear::find($request->input('academic_year_id'));
+        if (!$year || !$year->allowsDataEntry()) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'academic_year_id' => 'မရောက်သေးသောပညာသင်နှစ်ဖြစ်သဖြင့် အချက်အလက်ထည့်သွင်း၍မရနိုင်ပါ',
+            ]);
+        }
+
         $data = $request->validate([
             'academic_year_id' => 'required|exists:academic_years,id',
             'grade_id' => 'required|exists:grades,id',
@@ -184,8 +227,19 @@ class TeacherGuideDistributionController extends Controller
             'bookName',
         ]);
 
+        $years = AcademicYear::where('is_active', true)
+            ->orderByDesc('start_year')
+            ->orderBy('name')
+            ->get()
+            ->filter(fn (AcademicYear $year) => $year->allowsDataEntry()
+                || (int) $year->id === (int) $teacherGuideDistribution->academic_year_id)
+            ->values();
+
         return view('teacher-guide-distributions.edit', [
             'teacherGuide' => $teacherGuideDistribution,
+            'years' => $years,
+            'currentYearId' => AcademicYear::current()->value('id'),
+            'grades' => Grade::dropdownOptions(),
         ]);
     }
 
@@ -193,6 +247,13 @@ class TeacherGuideDistributionController extends Controller
         Request $request,
         TeacherGuide $teacherGuideDistribution
     ): RedirectResponse {
+        $year = AcademicYear::find($request->input('academic_year_id'));
+        if (!$year || !$year->allowsDataEntry()) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'academic_year_id' => 'မရောက်သေးသောပညာသင်နှစ်ဖြစ်သဖြင့် အချက်အလက်ထည့်သွင်း၍မရနိုင်ပါ',
+            ]);
+        }
+
         $data = $this->validatedData($request);
 
         $data['total_myanaung_qty'] =

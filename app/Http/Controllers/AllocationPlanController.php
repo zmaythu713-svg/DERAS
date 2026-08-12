@@ -16,6 +16,22 @@ class AllocationPlanController extends Controller
 {
     public function index(Request $request)
     {
+        $years = AcademicYear::where('is_active', true)
+            ->orderBy('start_year')
+            ->orderBy('name')
+            ->get();
+
+        $currentYear = AcademicYear::current()->first();
+        $yearId = $request->filled('academic_year_id')
+            ? $request->academic_year_id
+            : $currentYear?->id;
+
+        $selectedYear = $yearId
+            ? $years->firstWhere('id', (int) $yearId) ?? AcademicYear::find($yearId)
+            : null;
+
+        $canCreate = $selectedYear?->allowsDataEntry() ?? false;
+
         $query = AllocationPlan::with([
             'academicYear',
             'grade',
@@ -23,73 +39,72 @@ class AllocationPlanController extends Controller
             'detail',
         ]);
 
-        if ($request->filled('academic_year_id')) {
-            $query->where(
-                'academic_year_id',
-                $request->academic_year_id
-            );
+        if ($yearId) {
+            $query->where('academic_year_id', $yearId);
         }
 
         if ($request->filled('grade_id')) {
-            $query->where(
-                'grade_id',
-                $request->grade_id
-            );
+            $query->where('grade_id', $request->grade_id);
         }
 
         if ($request->filled('book_name_id')) {
-            $query->where(
-                'book_name_id',
-                $request->book_name_id
-            );
+            $query->where('book_name_id', $request->book_name_id);
         }
 
         if ($request->filled('search')) {
-            $query->whereHas(
-                'bookName',
-                function ($q) use ($request) {
-                    $q->where(
-                        'name',
-                        'like',
-                        '%' . $request->search . '%'
-                    );
-                }
-            );
+            $query->whereHas('bookName', function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%');
+            });
         }
 
-        $plans = $query
-            ->orderBy('sequence_no')
-            ->get();
+        // Future years: never show rows (and create is blocked).
+        if ($selectedYear?->isFuture()) {
+            $plans = collect();
+        } else {
+            $plans = $query->orderBy('sequence_no')->get();
+        }
+
+        $emptyMessage = 'အချက်အလက်မရှိပါ';
+        if ($selectedYear?->isFuture()) {
+            $emptyMessage = 'မရောက်သေးသောပညာသင်နှစ်ဖြစ်သဖြင့် အချက်အလက်ထည့်သွင်း၍မရနိုင်ပါ';
+        }
 
         return view('allocation-plans.index', [
             'plans' => $plans,
-
-            'years' => AcademicYear::where('is_active', true)
-                ->orderBy('name')
-                ->get(),
-
+            'years' => $years,
             'grades' => Grade::dropdownOptions(),
-
-            'bookNames' => BookName::where('is_active', true)
-                ->orderBy('name')
-                ->get(),
-
-            'yearId' => $request->academic_year_id,
+            'bookNames' => BookName::where('is_active', true)->orderBy('name')->get(),
+            'yearId' => $yearId,
             'gradeId' => $request->grade_id,
             'bookNameId' => $request->book_name_id,
+            'selectedYear' => $selectedYear,
+            'currentYear' => $currentYear,
+            'canCreate' => $canCreate,
+            'emptyMessage' => $emptyMessage,
         ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        return view(
-            'allocation-plans.create',
-            $this->formData()
-        );
+        $data = $this->formData();
+
+        if ($request->filled('academic_year_id')) {
+            $year = AcademicYear::find($request->academic_year_id);
+            if ($year && !$year->allowsDataEntry()) {
+                return redirect()
+                    ->route('allocation-plans.index', ['academic_year_id' => $year->id])
+                    ->with('error', 'မရောက်သေးသော ပညာသင်နှစ်အတွက် အချက်အလက် ထည့်သွင်း၍ မရပါ။');
+            }
+            $data['preselectedYearId'] = $request->academic_year_id;
+        }
+
+        return view('allocation-plans.create', $data);
     }
 
     public function store(Request $request)
     {
+        $this->assertYearAllowsDataEntry($request->input('academic_year_id'));
+
         $validated = $request->validate(
             [
                 'academic_year_id' => [
@@ -139,6 +154,7 @@ class AllocationPlanController extends Controller
                 'remark' => [
                     'nullable',
                     'string',
+                    'max:1000',
                 ],
 
                 'myanaung_previous' => [
@@ -252,6 +268,8 @@ class AllocationPlanController extends Controller
         Request $request,
         AllocationPlan $allocationPlan
     ) {
+        $this->assertYearAllowsDataEntry($request->input('academic_year_id'));
+
         $validated = $request->validate(
             [
                 'academic_year_id' => [
@@ -303,6 +321,7 @@ class AllocationPlanController extends Controller
                 'remark' => [
                     'nullable',
                     'string',
+                    'max:1000',
                 ],
 
                 'myanaung_previous' => [
@@ -415,7 +434,10 @@ class AllocationPlanController extends Controller
         $years = AcademicYear::where('is_active', true)
             ->orderByDesc('start_year')
             ->orderBy('name')
-            ->get();
+            ->get()
+            // Future years cannot receive new data — hide from create/edit selects
+            ->filter(fn (AcademicYear $year) => $year->allowsDataEntry())
+            ->values();
 
         $currentYearId = AcademicYear::current()->value('id');
 
@@ -429,5 +451,15 @@ class AllocationPlanController extends Controller
                 ->orderBy('name')
                 ->get(),
         ];
+    }
+
+    private function assertYearAllowsDataEntry(mixed $academicYearId): void
+    {
+        $year = AcademicYear::find($academicYearId);
+        if (!$year || !$year->allowsDataEntry()) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'academic_year_id' => 'မရောက်သေးသော ပညာသင်နှစ်အတွက် အချက်အလက် ထည့်သွင်း၍ မရပါ။',
+            ]);
+        }
     }
 }

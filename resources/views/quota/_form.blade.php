@@ -1,4 +1,5 @@
 @csrf
+@php $quota = $quota ?? new \App\Models\Quota(); @endphp
 
 <style>
     /* ===== Green Focus ===== */
@@ -119,7 +120,7 @@
                     <option value="">-- ရွေးချယ်ပါ --</option>
                     @foreach ($years as $year)
                         <option value="{{ $year->id }}"
-                            {{ old('academic_year_id', $quota->academic_year_id ?? '') == $year->id ? 'selected' : '' }}>
+                            {{ (string) old('academic_year_id', $quota->academic_year_id ?? ($preselectedYearId ?? $currentYearId ?? '')) === (string) $year->id ? 'selected' : '' }}>
                             {{ $year->name }}
                         </option>
                     @endforeach
@@ -165,17 +166,17 @@
             <div class="{{ $colClass }}">
                 <label class="form-label"><i class="fas fa-building me-1"></i>အခြေခံ</label>
                 <input type="number" name="primary_public" class="form-control"
-                    value="{{ old('primary_public', $quota->primary_public ?? '') }}" placeholder="0" min="0">
+                    value="{{ \App\Support\FormValue::number(old('primary_public', $quota->primary_public)) }}" placeholder="0" min="0">
             </div>
             <div class="{{ $colClass }}">
                 <label class="form-label"><i class="fas fa-vihara me-1"></i>ဘက</label>
                 <input type="number" name="primary_monk" class="form-control"
-                    value="{{ old('primary_monk', $quota->primary_monk ?? '') }}" placeholder="0" min="0">
+                    value="{{ \App\Support\FormValue::number(old('primary_monk', $quota->primary_monk)) }}" placeholder="0" min="0">
             </div>
             <div class="{{ $colClass }}">
                 <label class="form-label"><i class="fas fa-user-graduate me-1"></i>ကိုယ်ပိုင်</label>
                 <input type="number" name="primary_private" class="form-control"
-                    value="{{ old('primary_private', $quota->primary_private ?? '') }}" placeholder="0" min="0">
+                    value="{{ \App\Support\FormValue::number(old('primary_private', $quota->primary_private)) }}" placeholder="0" min="0">
             </div>
             @isset($quota)
                 <div class="col-md-3">
@@ -201,17 +202,17 @@
             <div class="{{ $colClass }}">
                 <label class="form-label"><i class="fas fa-building me-1"></i>အခြေခံ</label>
                 <input type="number" name="middle_public" class="form-control"
-                    value="{{ old('middle_public', $quota->middle_public ?? '') }}" placeholder="0" min="0">
+                    value="{{ \App\Support\FormValue::number(old('middle_public', $quota->middle_public)) }}" placeholder="0" min="0">
             </div>
             <div class="{{ $colClass }}">
                 <label class="form-label"><i class="fas fa-vihara me-1"></i>ဘက</label>
                 <input type="number" name="middle_monk" class="form-control"
-                    value="{{ old('middle_monk', $quota->middle_monk ?? '') }}" placeholder="0" min="0">
+                    value="{{ \App\Support\FormValue::number(old('middle_monk', $quota->middle_monk)) }}" placeholder="0" min="0">
             </div>
             <div class="{{ $colClass }}">
                 <label class="form-label"><i class="fas fa-user-graduate me-1"></i>ကိုယ်ပိုင်</label>
                 <input type="number" name="middle_private" class="form-control"
-                    value="{{ old('middle_private', $quota->middle_private ?? '') }}" placeholder="0" min="0">
+                    value="{{ \App\Support\FormValue::number(old('middle_private', $quota->middle_private)) }}" placeholder="0" min="0">
             </div>
             @isset($quota)
                 <div class="col-md-3">
@@ -237,17 +238,17 @@
             <div class="{{ $colClass }}">
                 <label class="form-label"><i class="fas fa-building me-1"></i>အခြေခံ</label>
                 <input type="number" name="high_public" class="form-control"
-                    value="{{ old('high_public', $quota->high_public ?? '') }}" placeholder="0" min="0">
+                    value="{{ \App\Support\FormValue::number(old('high_public', $quota->high_public)) }}" placeholder="0" min="0">
             </div>
             <div class="{{ $colClass }}">
                 <label class="form-label"><i class="fas fa-vihara me-1"></i>ဘက</label>
                 <input type="number" name="high_monk" class="form-control"
-                    value="{{ old('high_monk', $quota->high_monk ?? '') }}" placeholder="0" min="0">
+                    value="{{ \App\Support\FormValue::number(old('high_monk', $quota->high_monk)) }}" placeholder="0" min="0">
             </div>
             <div class="{{ $colClass }}">
                 <label class="form-label"><i class="fas fa-user-graduate me-1"></i>ကိုယ်ပိုင်</label>
                 <input type="number" name="high_private" class="form-control"
-                    value="{{ old('high_private', $quota->high_private ?? '') }}" placeholder="0" min="0">
+                    value="{{ \App\Support\FormValue::number(old('high_private', $quota->high_private)) }}" placeholder="0" min="0">
             </div>
 
             @isset($quota)
@@ -312,7 +313,7 @@
             <div class="col-md-4">
                 <label class="form-label"><i class="fas fa-tractor me-1"></i>စက်၊စိုက်၊မွေး</label>
                 <input type="number" name="agriculture" class="form-control"
-                    value="{{ old('agriculture', $quota->agriculture ?? '') }}" placeholder="0" min="0">
+                    value="{{ \App\Support\FormValue::number(old('agriculture', $quota->agriculture)) }}" placeholder="0" min="0">
             </div>
             @isset($quota)
                 <div class="col-md-4">

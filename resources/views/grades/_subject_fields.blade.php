@@ -1,7 +1,8 @@
-{{-- Shared: 3 category subject checkbox sections (compact for screenshot) --}}
+{{-- Shared: 3 category subject checkbox sections (grade-specific lists) --}}
 @php
     $linkedByCategory = $linkedByCategory ?? [];
     $fieldMap = $fieldMap ?? \App\Models\Category::fieldMap();
+    $bookNamesByCategory = $bookNamesByCategory ?? [];
 @endphp
 
 <style>
@@ -68,20 +69,23 @@
             default => '',
         };
         $selected = old($field, $linkedByCategory[$category->slug] ?? []);
+        $sectionBooks = collect($bookNamesByCategory[$category->slug] ?? $bookNames ?? []);
     @endphp
 
     <div class="subject-section {{ $sectionClass }}" data-section="{{ $category->slug }}">
         <div class="subject-section-title">
             <i class="fas {{ $meta['icon'] }}"></i>
             {{ $meta['label'] }}
-            <button type="button" class="select-all-btn" onclick="toggleSectionAll(this)">အားလုံးရွေး</button>
+            @if ($sectionBooks->isNotEmpty())
+                <button type="button" class="select-all-btn" onclick="toggleSectionAll(this)">အားလုံးရွေး</button>
+            @endif
         </div>
 
-        @if ($bookNames->isEmpty())
-            <p class="text-slate-400 text-sm mb-0">ဘာသာရပ် မရှိသေးပါ။</p>
+        @if ($sectionBooks->isEmpty())
+            <p class="text-slate-400 text-sm mb-0">ဤအတန်းအတွက် ဘာသာရပ် မရှိပါ။</p>
         @else
             <div class="subject-grid">
-                @foreach ($bookNames as $book)
+                @foreach ($sectionBooks as $book)
                     <div class="subject-check-item {{ in_array($book->id, $selected) ? 'checked' : '' }}"
                          onclick="toggleSubjectCheck(this, event)">
                         <input type="checkbox" name="{{ $field }}[]"

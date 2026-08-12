@@ -134,7 +134,7 @@
                     @method('PUT')
                     <div class="mb-4">
                         <label class="form-label"><i class="fas fa-calendar me-1"></i> ပညာသင်နှစ် <span class="text-danger">*</span></label>
-                        <input type="text" name="name" class="form-control" value="{{ $academicYear->name }}" required>
+                        <input type="text" name="name" class="form-control" value="{{ $academicYear->name }}" required data-allow-digits="1">
                     </div>
 
                     <div class="mb-4">

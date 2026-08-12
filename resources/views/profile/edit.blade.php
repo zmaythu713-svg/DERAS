@@ -116,7 +116,7 @@
 
                     <div class="mb-4">
                         <label class="form-label"><i class="fas fa-user me-1"></i> အမည် <span class="text-danger">*</span></label>
-                        <input type="text" name="name" class="form-control" value="{{ old('name', $user->name) }}" required placeholder="အမည် ထည့်သွင်းပါ">
+                        <input type="text" name="name" class="form-control" value="{{ old('name', $user->name) }}" required placeholder="အမည် ထည့်သွင်းပါ" data-validate="name" data-label="အမည်">
                     </div>
 
                     <div class="mb-4">

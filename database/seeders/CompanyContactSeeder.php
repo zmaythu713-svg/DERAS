@@ -56,7 +56,7 @@ class CompanyContactSeeder extends Seeder
                 'company_name' => 'Amara Myanmar',
                 'lot' => "Lot-9, Lot-20",
                 'responsible_name' => 'ဒေါ်သူဇာထွန်း',
-                'phone' => '09-40910030'
+                'phone' => '09-409100300'
             ],
             [
                 'company_name' => 'City Global Mark Garment',
@@ -104,7 +104,7 @@ class CompanyContactSeeder extends Seeder
                 'company_name' => "Student's Guide",
                 'lot' => "Lot-25",
                 'responsible_name' => 'ဦးကျော်ထွေး',
-                'phone' => '09-5506728'
+                'phone' => '09-550672800'
             ],
             [
                 'company_name' => 'ဆုတောင်းပြည့်',

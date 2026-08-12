@@ -68,7 +68,7 @@
                         <div class="col-md-8">
                             <label class="form-label"><i class="fas fa-tag me-1"></i> အတန်းအမည် <span class="text-danger">*</span></label>
                             <input type="text" name="name" class="form-control @error('name') is-invalid @enderror"
-                                value="{{ old('name') }}" placeholder="ဥပမာ - KG, Grade-1 ..." required>
+                                value="{{ old('name') }}" placeholder="ဥပမာ - KG, Grade-1 ..." required data-allow-digits="1">
                             @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-4">
@@ -83,7 +83,7 @@
                     </div>
 
                     <h6 class="subjects-title">
-                        <i class="fas fa-books me-1"></i> ဘာသာရပ်များ (အမျိုးအစားအလိုက် ခွဲခြား)
+                        <i class="fas fa-books me-1"></i> ဘာသာရပ်များ
                     </h6>
 
                     @include('grades._subject_fields')

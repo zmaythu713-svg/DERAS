@@ -104,7 +104,7 @@
             <option value="">ပညာသင်နှစ်ရွေးချယ်ပါ</option>
             @foreach ($years as $year)
                 <option value="{{ $year->id }}"
-                    {{ old('academic_year_id', $stock->academic_year_id ?? '') == $year->id ? 'selected' : '' }}>
+                    {{ (string) old('academic_year_id', $stock->academic_year_id ?? ($preselectedYearId ?? $currentYearId ?? '')) === (string) $year->id ? 'selected' : '' }}>
                     {{ $year->name }}
                 </option>
             @endforeach
@@ -119,7 +119,7 @@
             <option value="">မြို့နယ်ရွေးချယ်ပါ</option>
             @foreach ($townships as $township)
                 <option value="{{ $township->id }}"
-                    {{ old('township_id', $stock->township_id ?? '') == $township->id ? 'selected' : '' }}>
+                    {{ (string) old('township_id', $stock->township_id ?? ($preselectedTownshipId ?? '')) === (string) $township->id ? 'selected' : '' }}>
                     {{ $township->name }}
                 </option>
             @endforeach
@@ -151,12 +151,14 @@
         <select name="book_name_id" id="book_name_id" class="form-select" required
             data-placeholder="ဘာသာရပ်ရွေးချယ်ပါ">
             <option value="">ဘာသာရပ်ရွေးချယ်ပါ</option>
-            @foreach ($bookNames as $bookName)
-                <option value="{{ $bookName->id }}"
-                    {{ old('book_name_id', $stock->book_name_id ?? '') == $bookName->id ? 'selected' : '' }}>
-                    {{ $bookName->name }}
-                </option>
-            @endforeach
+            @php $selectedBookId = old('book_name_id', $stock->book_name_id ?? ''); @endphp
+            @if ($selectedBookId)
+                @foreach ($bookNames as $bookName)
+                    @if ((string) $bookName->id === (string) $selectedBookId)
+                        <option value="{{ $bookName->id }}" selected>{{ $bookName->name }}</option>
+                    @endif
+                @endforeach
+            @endif
         </select>
     </div>
 
@@ -165,7 +167,7 @@
             <i class="fas fa-history me-1"></i>ယခင်နှစ်လက်ကျန်
         </label>
         <input type="number" name="previous_balance" class="form-control"
-            value="{{ old('previous_balance', $stock->previous_balance ?? '') }}"
+            value="{{ \App\Support\FormValue::number(old('previous_balance', $stock->previous_balance ?? null)) }}"
             placeholder="0" min="0">
     </div>
 
@@ -174,7 +176,7 @@
             <i class="fas fa-exchange-alt me-1"></i>လက်ဆင့်ကမ်း
         </label>
         <input type="number" name="transferred" class="form-control"
-            value="{{ old('transferred', $stock->transferred ?? '') }}"
+            value="{{ \App\Support\FormValue::number(old('transferred', $stock->transferred ?? null)) }}"
             placeholder="0" min="0">
     </div>
 </div>
@@ -186,7 +188,7 @@
             <i class="fas fa-check-circle me-1"></i>အပ်နှံပြီးလိုအပ်မှု
         </label>
         <input type="number" name="enrolled_need" class="form-control"
-            value="{{ old('enrolled_need', $stock->enrolled_need ?? '') }}"
+            value="{{ \App\Support\FormValue::number(old('enrolled_need', $stock->enrolled_need ?? null)) }}"
             placeholder="0" min="0">
     </div>
 
@@ -195,7 +197,7 @@
             <i class="fas fa-list-ol me-1"></i>လိုအပ်မှု
         </label>
         <input type="number" name="required_qty" class="form-control"
-            value="{{ old('required_qty', $stock->required_qty ?? '') }}"
+            value="{{ \App\Support\FormValue::number(old('required_qty', $stock->required_qty ?? null)) }}"
             placeholder="0" min="0">
     </div>
 

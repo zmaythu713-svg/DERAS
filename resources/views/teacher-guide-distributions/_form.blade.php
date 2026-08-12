@@ -155,7 +155,8 @@
             <select name="academic_year_id" class="form-select @error('academic_year_id') is-invalid @enderror" required>
                 <option value="">-- ရွေးချယ်ပါ --</option>
                 @foreach ($years as $year)
-                    <option value="{{ $year->id }}" {{ old('academic_year_id') == $year->id ? 'selected' : '' }}>
+                    <option value="{{ $year->id }}"
+                        {{ (string) old('academic_year_id', isset($teacherGuide) ? $teacherGuide->academic_year_id : ($preselectedYearId ?? $currentYearId ?? '')) === (string) $year->id ? 'selected' : '' }}>
                         {{ $year->name }}
                     </option>
                 @endforeach
@@ -172,7 +173,8 @@
             <select name="grade_id" id="grade_id" class="form-select @error('grade_id') is-invalid @enderror" required>
                 <option value="">-- ရွေးချယ်ပါ --</option>
                 @foreach ($grades as $grade)
-                    <option value="{{ $grade->id }}" {{ old('grade_id') == $grade->id ? 'selected' : '' }}>
+                    <option value="{{ $grade->id }}"
+                        {{ (string) old('grade_id', isset($teacherGuide) ? $teacherGuide->grade_id : ($preselectedGradeId ?? '')) === (string) $grade->id ? 'selected' : '' }}>
                         {{ $grade->name }}
                     </option>
                 @endforeach
@@ -187,8 +189,9 @@
                 <i class="fas fa-tags me-1"></i>အမျိုးအစား <span class="text-danger">*</span>
             </label>
             <select name="guide_type" id="guide_type" class="form-select @error('guide_type') is-invalid @enderror" required>
-                <option value="ဆရာလမ်းညွှန်" {{ old('guide_type', 'ဆရာလမ်းညွှန်') === 'ဆရာလမ်းညွှန်' ? 'selected' : '' }}>ဆရာလမ်းညွှန်</option>
-                <option value="ဆရာကိုင်" {{ old('guide_type') === 'ဆရာကိုင်' ? 'selected' : '' }}>ဆရာကိုင်</option>
+                @php $selectedGuideType = old('guide_type', isset($teacherGuide) ? $teacherGuide->guide_type : ($preselectedGuideType ?? 'ဆရာလမ်းညွှန်')); @endphp
+                <option value="ဆရာလမ်းညွှန်" {{ $selectedGuideType === 'ဆရာလမ်းညွှန်' ? 'selected' : '' }}>ဆရာလမ်းညွှန်</option>
+                <option value="ဆရာကိုင်" {{ $selectedGuideType === 'ဆရာကိုင်' ? 'selected' : '' }}>ဆရာကိုင်</option>
             </select>
             @error('guide_type')
                 <div class="invalid-feedback">{{ $message }}</div>
@@ -219,22 +222,22 @@
     <div class="col-md-4">
         <label class="form-label"><i class="fas fa-calculator me-1"></i>KG to G-12 ခရိုင်ရရှိခွဲတမ်း</label>
         <input type="number" id="kg_to_g12_quota" name="kg_to_g12_quota" class="form-control calc-blue-input"
-            value="{{ old('kg_to_g12_quota', $teacherGuide->kg_to_g12_quota ?? '') }}"
-            min="0" readonly>
+            value="{{ \App\Support\FormValue::number(old('kg_to_g12_quota', $teacherGuide->kg_to_g12_quota ?? null)) }}"
+            min="0" readonly placeholder="0">
     </div>
 
     <div class="col-md-4">
         <label class="form-label"><i class="fas fa-calculator me-1"></i>G-1 to G-5 ခရိုင်ရရှိခွဲတမ်း</label>
         <input type="number" id="g1_to_g5_quota" name="g1_to_g5_quota" class="form-control calc-blue-input"
-            value="{{ old('g1_to_g5_quota', $teacherGuide->g1_to_g5_quota ?? '') }}"
-            min="0" readonly>
+            value="{{ \App\Support\FormValue::number(old('g1_to_g5_quota', $teacherGuide->g1_to_g5_quota ?? null)) }}"
+            min="0" readonly placeholder="0">
     </div>
 
     <div class="col-md-4">
         <label class="form-label"><i class="fas fa-plus-circle me-1"></i>၂ မျိုးပေါင်း ခရိုင်ရရှိခွဲတမ်း</label>
         <input type="number" id="total_quota" name="total_quota" class="form-control fw-bold"
             style="background-color: #f0faf4; color: #105c3a; border-color: #aad6bc;"
-            value="{{ old('total_quota', $teacherGuide->total_quota ?? '') }}"
+            value="{{ \App\Support\FormValue::number(old('total_quota', $teacherGuide->total_quota ?? null)) }}"
             placeholder="0" min="0" readonly>
     </div>
 </div>
@@ -248,7 +251,7 @@
     <div class="col-md-4">
         <label class="form-label"><i class="fas fa-building me-1"></i>မြန်အောင်</label>
         <input type="number" id="kg_g12_myanaung_qty" name="kg_g12_myanaung_qty" class="form-control @error('kg_g12_myanaung_qty') is-invalid @enderror"
-            value="{{ old('kg_g12_myanaung_qty', $teacherGuide->kg_g12_myanaung_qty ?? '') }}" placeholder="0" min="0">
+            value="{{ \App\Support\FormValue::number(old('kg_g12_myanaung_qty', $teacherGuide->kg_g12_myanaung_qty ?? null)) }}" placeholder="0" min="0">
         @error('kg_g12_myanaung_qty')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
@@ -257,7 +260,7 @@
     <div class="col-md-4">
         <label class="form-label"><i class="fas fa-building me-1"></i>ကြံခင်း</label>
         <input type="number" id="kg_g12_kyankhin_qty" name="kg_g12_kyankhin_qty" class="form-control @error('kg_g12_kyankhin_qty') is-invalid @enderror"
-            value="{{ old('kg_g12_kyankhin_qty', $teacherGuide->kg_g12_kyankhin_qty ?? '') }}" placeholder="0" min="0">
+            value="{{ \App\Support\FormValue::number(old('kg_g12_kyankhin_qty', $teacherGuide->kg_g12_kyankhin_qty ?? null)) }}" placeholder="0" min="0">
         @error('kg_g12_kyankhin_qty')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
@@ -266,7 +269,7 @@
     <div class="col-md-4">
         <label class="form-label"><i class="fas fa-building me-1"></i>အင်္ဂပူ</label>
         <input type="number" id="kg_g12_ingapu_qty" name="kg_g12_ingapu_qty" class="form-control @error('kg_g12_ingapu_qty') is-invalid @enderror"
-            value="{{ old('kg_g12_ingapu_qty', $teacherGuide->kg_g12_ingapu_qty ?? '') }}" placeholder="0" min="0">
+            value="{{ \App\Support\FormValue::number(old('kg_g12_ingapu_qty', $teacherGuide->kg_g12_ingapu_qty ?? null)) }}" placeholder="0" min="0">
         @error('kg_g12_ingapu_qty')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
@@ -282,7 +285,7 @@
     <div class="col-md-4">
         <label class="form-label"><i class="fas fa-building me-1"></i>မြန်အောင်</label>
         <input type="number" id="g1_g5_myanaung_qty" name="g1_g5_myanaung_qty" class="form-control @error('g1_g5_myanaung_qty') is-invalid @enderror"
-            value="{{ old('g1_g5_myanaung_qty', $teacherGuide->g1_g5_myanaung_qty ?? '') }}" placeholder="0" min="0">
+            value="{{ \App\Support\FormValue::number(old('g1_g5_myanaung_qty', $teacherGuide->g1_g5_myanaung_qty ?? null)) }}" placeholder="0" min="0">
         @error('g1_g5_myanaung_qty')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
@@ -291,7 +294,7 @@
     <div class="col-md-4">
         <label class="form-label"><i class="fas fa-building me-1"></i>ကြံခင်း</label>
         <input type="number" id="g1_g5_kyankhin_qty" name="g1_g5_kyankhin_qty" class="form-control @error('g1_g5_kyankhin_qty') is-invalid @enderror"
-            value="{{ old('g1_g5_kyankhin_qty', $teacherGuide->g1_g5_kyankhin_qty ?? '') }}" placeholder="0" min="0">
+            value="{{ \App\Support\FormValue::number(old('g1_g5_kyankhin_qty', $teacherGuide->g1_g5_kyankhin_qty ?? null)) }}" placeholder="0" min="0">
         @error('g1_g5_kyankhin_qty')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
@@ -300,7 +303,7 @@
     <div class="col-md-4">
         <label class="form-label"><i class="fas fa-building me-1"></i>အင်္ဂပူ</label>
         <input type="number" id="g1_g5_ingapu_qty" name="g1_g5_ingapu_qty" class="form-control @error('g1_g5_ingapu_qty') is-invalid @enderror"
-            value="{{ old('g1_g5_ingapu_qty', $teacherGuide->g1_g5_ingapu_qty ?? '') }}" placeholder="0" min="0">
+            value="{{ \App\Support\FormValue::number(old('g1_g5_ingapu_qty', $teacherGuide->g1_g5_ingapu_qty ?? null)) }}" placeholder="0" min="0">
         @error('g1_g5_ingapu_qty')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
@@ -316,33 +319,33 @@
     <div class="col-md-4">
         <label class="form-label"><i class="fas fa-poll me-1"></i>မြန်အောင် ပေါင်း</label>
         <input type="number" id="total_myanaung_qty" name="total_myanaung_qty" class="form-control"
-            value="{{ old('total_myanaung_qty', $teacherGuide->total_myanaung_qty ?? '') }}" readonly>
+            value="{{ \App\Support\FormValue::number(old('total_myanaung_qty', $teacherGuide->total_myanaung_qty ?? null)) }}" min="0" readonly placeholder="0">
     </div>
 
     <div class="col-md-4">
         <label class="form-label"><i class="fas fa-poll me-1"></i>ကြံခင်း ပေါင်း</label>
         <input type="number" id="total_kyankhin_qty" name="total_kyankhin_qty" class="form-control"
-            value="{{ old('total_kyankhin_qty', $teacherGuide->total_kyankhin_qty ?? '') }}" readonly>
+            value="{{ \App\Support\FormValue::number(old('total_kyankhin_qty', $teacherGuide->total_kyankhin_qty ?? null)) }}" min="0" readonly placeholder="0">
     </div>
 
     <div class="col-md-4">
         <label class="form-label"><i class="fas fa-poll me-1"></i>အင်္ဂပူ ပေါင်း</label>
         <input type="number" id="total_ingapu_qty" name="total_ingapu_qty" class="form-control"
-            value="{{ old('total_ingapu_qty', $teacherGuide->total_ingapu_qty ?? '') }}" readonly>
+            value="{{ \App\Support\FormValue::number(old('total_ingapu_qty', $teacherGuide->total_ingapu_qty ?? null)) }}" min="0" readonly placeholder="0">
     </div>
 
     <div class="col-md-6 mt-3">
         <label class="form-label"><i class="fas fa-truck-loading me-1"></i>ဖြန့်ဝေမှု စုစုပေါင်း</label>
         <input type="number" id="distributed_total" name="distributed_total" class="form-control fw-bold"
             style="background-color: #f0faf4; color: #105c3a;"
-            value="{{ old('distributed_total', $teacherGuide->distributed_total ?? '') }}" readonly>
+            value="{{ \App\Support\FormValue::number(old('distributed_total', $teacherGuide->distributed_total ?? null)) }}" min="0" readonly placeholder="0">
     </div>
 
     <div class="col-md-6 mt-3">
         <label class="form-label"><i class="fas fa-warehouse me-1"></i>ခရိုင်ရုံးလက်ကျန်</label>
         <input type="number" id="remaining_total" name="remaining_total" class="form-control fw-bold"
             style="background-color: #fff9e6; color: #b45309;"
-            value="{{ old('remaining_total', $teacherGuide->remaining_total ?? '') }}" readonly>
+            value="{{ \App\Support\FormValue::number(old('remaining_total', $teacherGuide->remaining_total ?? null)) }}" min="0" readonly placeholder="0">
     </div>
 </div>
 
@@ -422,23 +425,27 @@
             const distributedTotal = myanaung + kyankhin + ingapu;
             const remainingTotal = totalQuota - distributedTotal;
 
+            const blankZero = window.DerasForm?.displayNumber || function (v) {
+                return Number(v) === 0 ? '' : v;
+            };
+
             const totalQuotaEl = document.getElementById('total_quota');
-            if (totalQuotaEl) totalQuotaEl.value = totalQuota;
+            if (totalQuotaEl) totalQuotaEl.value = blankZero(totalQuota);
 
             const totalMyanaungEl = document.getElementById('total_myanaung_qty');
-            if (totalMyanaungEl) totalMyanaungEl.value = myanaung;
+            if (totalMyanaungEl) totalMyanaungEl.value = blankZero(myanaung);
 
             const totalKyankhinEl = document.getElementById('total_kyankhin_qty');
-            if (totalKyankhinEl) totalKyankhinEl.value = kyankhin;
+            if (totalKyankhinEl) totalKyankhinEl.value = blankZero(kyankhin);
 
             const totalIngapuEl = document.getElementById('total_ingapu_qty');
-            if (totalIngapuEl) totalIngapuEl.value = ingapu;
+            if (totalIngapuEl) totalIngapuEl.value = blankZero(ingapu);
 
             const distTotalEl = document.getElementById('distributed_total');
-            if (distTotalEl) distTotalEl.value = distributedTotal;
+            if (distTotalEl) distTotalEl.value = blankZero(distributedTotal);
 
             const remTotalEl = document.getElementById('remaining_total');
-            if (remTotalEl) remTotalEl.value = remainingTotal;
+            if (remTotalEl) remTotalEl.value = blankZero(remainingTotal);
         };
 
         fieldIds.forEach((id) => {

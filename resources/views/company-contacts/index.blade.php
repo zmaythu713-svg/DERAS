@@ -69,7 +69,7 @@
                             <td class="font-semibold text-slate-800 text-left px-4">{{ $row->company_name }}</td>
                             <td class="font-mono text-slate-600">{{ $row->lot }}</td>
                             <td class="font-medium text-slate-800">{{ $row->responsible_name }}</td>
-                            <td class="font-mono text-slate-700">{{ $row->phone }}</td>
+                            <td class="font-mono text-slate-700 whitespace-nowrap">{{ $row->formatted_phone }}</td>
                             <td>
                                 @if ($row->is_active)
                                     <span class="badge-active">

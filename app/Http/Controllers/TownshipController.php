@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Township;
+use App\Support\TextName;
 use Illuminate\Http\Request;
 
 class TownshipController extends Controller
@@ -31,7 +32,7 @@ class TownshipController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|unique:townships,name',
+            'name' => ['required', 'string', 'max:255', 'unique:townships,name', TextName::validationRule('မြို့နယ်အမည်')],
             'is_active' => 'required|boolean',
         ]);
 
@@ -51,7 +52,7 @@ class TownshipController extends Controller
     public function update(Request $request, Township $township)
     {
         $request->validate([
-            'name' => 'required|unique:townships,name,' . $township->id,
+            'name' => ['required', 'string', 'max:255', 'unique:townships,name,' . $township->id, TextName::validationRule('မြို့နယ်အမည်')],
             'is_active' => 'required|boolean',
         ]);
 

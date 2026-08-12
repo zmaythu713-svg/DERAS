@@ -9,16 +9,33 @@ use App\Models\TeacherGuideSummary;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class TeacherGuideSummaryController extends Controller
 {
     public function index(Request $request): View
     {
-        $yearId = $request->integer('academic_year_id') ?: null;
+        $years = AcademicYear::query()
+            ->where('is_active', true)
+            ->orderBy('start_year')
+            ->orderBy('name')
+            ->get();
+
+        $currentYear = AcademicYear::current()->first();
+        $yearId = $request->filled('academic_year_id')
+            ? $request->integer('academic_year_id')
+            : $currentYear?->id;
+
         $gradeId = $request->integer('grade_id') ?: null;
         $guideType = $request->string('guide_type')->toString();
         $search = trim($request->string('search')->toString());
+
+        $selectedYear = $yearId
+            ? $years->firstWhere('id', (int) $yearId) ?? AcademicYear::find($yearId)
+            : null;
+
+        $canCreate = $selectedYear?->allowsDataEntry() ?? false;
 
         $query = TeacherGuideSummary::query()
             ->with(['academicYear', 'grade', 'bookName']);
@@ -45,34 +62,57 @@ class TeacherGuideSummaryController extends Controller
             });
         }
 
-        $summaries = $query
-            ->orderBy('group_no')
-            ->orderBy('sequence_no')
-            ->get();
+        if ($selectedYear?->isFuture()) {
+            $summaries = collect();
+        } else {
+            $summaries = $query
+                ->orderBy('group_no')
+                ->orderBy('sequence_no')
+                ->get();
+        }
 
-        $years = AcademicYear::where('is_active', true)->orderBy('name')->get();
-        $grades = Grade::dropdownOptions();
-        $selectedYear = $yearId ? AcademicYear::find($yearId) : null;
+        $emptyMessage = 'အချက်အလက်မရှိပါ';
+        if ($selectedYear?->isFuture()) {
+            $emptyMessage = 'မရောက်သေးသောပညာသင်နှစ်ဖြစ်သဖြင့် အချက်အလက်ထည့်သွင်း၍မရနိုင်ပါ';
+        }
 
-        return view('teacher-guide-summaries.index', compact(
-            'summaries',
-            'years',
-            'grades',
-            'yearId',
-            'gradeId',
-            'guideType',
-            'search',
-            'selectedYear'
-        ));
+        return view('teacher-guide-summaries.index', [
+            'summaries' => $summaries,
+            'years' => $years,
+            'grades' => Grade::dropdownOptions(),
+            'yearId' => $yearId,
+            'gradeId' => $gradeId,
+            'guideType' => $guideType,
+            'search' => $search,
+            'selectedYear' => $selectedYear,
+            'currentYear' => $currentYear,
+            'canCreate' => $canCreate,
+            'emptyMessage' => $emptyMessage,
+        ]);
     }
 
-    public function create(): View
+    public function create(Request $request): View|RedirectResponse
     {
-        return view('teacher-guide-summaries.create', $this->formOptions());
+        if ($request->filled('academic_year_id')) {
+            $year = AcademicYear::find($request->academic_year_id);
+            if ($year && !$year->allowsDataEntry()) {
+                return redirect()
+                    ->route('teacher-guide-summaries.index', ['academic_year_id' => $year->id])
+                    ->with('error', 'မရောက်သေးသောပညာသင်နှစ်ဖြစ်သဖြင့် အချက်အလက်ထည့်သွင်း၍မရနိုင်ပါ');
+            }
+        }
+
+        return view('teacher-guide-summaries.create', $this->formOptions() + [
+            'preselectedYearId' => $request->academic_year_id,
+            'preselectedGradeId' => $request->grade_id,
+            'preselectedGuideType' => $request->guide_type,
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
+        $this->assertYearAllowsDataEntry($request->input('academic_year_id'));
+
         $data = $this->validatedData($request);
 
         if (empty($data['group_no'])) {
@@ -87,7 +127,9 @@ class TeacherGuideSummaryController extends Controller
         TeacherGuideSummary::create($data);
 
         return redirect()
-            ->route('teacher-guide-summaries.index')
+            ->route('teacher-guide-summaries.index', array_filter([
+                'academic_year_id' => $request->academic_year_id,
+            ]))
             ->with('success', 'စာရင်းချုပ်အသစ် ဖန်တီးပြီးပါပြီ။');
     }
 
@@ -96,38 +138,64 @@ class TeacherGuideSummaryController extends Controller
         $teacherGuideSummary->load('bookName');
 
         return view('teacher-guide-summaries.edit', array_merge(
-            $this->formOptions(),
+            $this->formOptions($teacherGuideSummary->academic_year_id),
             ['teacherGuideSummary' => $teacherGuideSummary]
         ));
     }
 
     public function update(Request $request, TeacherGuideSummary $teacherGuideSummary): RedirectResponse
     {
+        $this->assertYearAllowsDataEntry($request->input('academic_year_id'));
+
         $data = $this->validatedData($request, $teacherGuideSummary);
         $data = $this->calculateTotals($data);
 
         $teacherGuideSummary->update($data);
 
         return redirect()
-            ->route('teacher-guide-summaries.index')
+            ->route('teacher-guide-summaries.index', array_filter([
+                'academic_year_id' => $request->academic_year_id,
+            ]))
             ->with('success', 'စာရင်းချုပ် ပြင်ဆင်ပြီးပါပြီ။');
     }
 
     public function destroy(TeacherGuideSummary $teacherGuideSummary): RedirectResponse
     {
+        $yearId = $teacherGuideSummary->academic_year_id;
         $teacherGuideSummary->delete();
 
         return redirect()
-            ->route('teacher-guide-summaries.index')
+            ->route('teacher-guide-summaries.index', array_filter([
+                'academic_year_id' => $yearId,
+            ]))
             ->with('success', 'စာရင်းချုပ် ဖျက်ပြီးပါပြီ။');
     }
 
-    private function formOptions(): array
+    private function formOptions(?int $keepYearId = null): array
     {
+        $years = AcademicYear::where('is_active', true)
+            ->orderByDesc('start_year')
+            ->orderBy('name')
+            ->get()
+            ->filter(fn (AcademicYear $year) => $year->allowsDataEntry()
+                || ($keepYearId !== null && (int) $year->id === (int) $keepYearId))
+            ->values();
+
         return [
-            'years' => AcademicYear::where('is_active', true)->orderBy('name')->get(),
+            'years' => $years,
+            'currentYearId' => AcademicYear::current()->value('id'),
             'grades' => Grade::dropdownOptions(),
         ];
+    }
+
+    private function assertYearAllowsDataEntry(mixed $academicYearId): void
+    {
+        $year = AcademicYear::find($academicYearId);
+        if (!$year || !$year->allowsDataEntry()) {
+            throw ValidationException::withMessages([
+                'academic_year_id' => 'မရောက်သေးသောပညာသင်နှစ်ဖြစ်သဖြင့် အချက်အလက်ထည့်သွင်း၍မရနိုင်ပါ',
+            ]);
+        }
     }
 
     private function validatedData(

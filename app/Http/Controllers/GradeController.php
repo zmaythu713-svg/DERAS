@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\BookName;
 use App\Models\Category;
 use App\Models\Grade;
+use App\Support\GradeSubjectMap;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class GradeController extends Controller
@@ -38,7 +40,9 @@ class GradeController extends Controller
 
     public function create()
     {
-        return view('grades.create', $this->formData());
+        $hint = old('name') ? new Grade(['name' => old('name')]) : null;
+
+        return view('grades.create', $this->formData($hint));
     }
 
     public function store(Request $request)
@@ -54,7 +58,7 @@ class GradeController extends Controller
 
     public function edit(Grade $grade)
     {
-        $data = $this->formData();
+        $data = $this->formData($grade);
         $data['grade'] = $grade;
 
         $linked = DB::table('grade_book_names')
@@ -97,13 +101,64 @@ class GradeController extends Controller
         return app(ResourceLookupController::class)->subjects($request, $grade);
     }
 
-    private function formData(): array
+    private function formData(?Grade $grade = null): array
     {
+        $categories = Category::where('is_active', true)->orderBy('id')->get();
+        $allBooks = BookName::where('is_active', true)->orderBy('name')->get();
+
         return [
-            'bookNames' => BookName::where('is_active', true)->orderBy('name')->get(),
-            'categories' => Category::where('is_active', true)->orderBy('id')->get(),
+            // Create: full catalog. Edit: only that grade's subjects per category.
+            'bookNames' => $allBooks,
+            'bookNamesByCategory' => $this->bookNamesByCategory($categories, $allBooks, $grade),
+            'categories' => $categories,
             'fieldMap' => Category::fieldMap(),
         ];
+    }
+
+    /**
+     * Per-category subject checklist for a grade (KG → only KG subjects, etc.).
+     * Create form (no grade): full catalog in every section.
+     */
+    private function bookNamesByCategory(Collection $categories, Collection $allBooks, ?Grade $grade): array
+    {
+        if (!$grade || !$grade->name) {
+            $list = $allBooks->values();
+
+            return $categories->mapWithKeys(
+                fn (Category $category) => [$category->slug => $list]
+            )->all();
+        }
+
+        $linkedIdsByCategory = $grade->exists
+            ? DB::table('grade_book_names')
+                ->where('grade_id', $grade->id)
+                ->get()
+                ->groupBy('category_id')
+                ->map(fn ($rows) => $rows->pluck('book_name_id')->map(fn ($id) => (int) $id)->all())
+            : collect();
+
+        $byName = $allBooks->keyBy('name');
+        $byId = $allBooks->keyBy('id');
+        $result = [];
+
+        foreach ($categories as $category) {
+            $names = GradeSubjectMap::subjectsFor($grade->name, $category->slug);
+            $books = collect($names)
+                ->map(fn (string $name) => $byName->get($name))
+                ->filter();
+
+            // Keep any custom links not in the canonical map
+            foreach ($linkedIdsByCategory->get($category->id, []) as $bookId) {
+                $book = $byId->get($bookId);
+                if ($book && !$books->contains('id', $book->id)) {
+                    $books->push($book);
+                }
+            }
+
+            $result[$category->slug] = $books->sortBy('name', SORT_NATURAL)->values();
+        }
+
+        return $result;
     }
 
     private function rules(?Grade $grade = null): array

@@ -163,7 +163,7 @@
                                 class="form-control @error('password') is-invalid @enderror"
                                 style="padding-right: 42px;"
                                 placeholder="စကားဝှက်အသစ် ထည့်သွင်းပါ"
-                                required minlength="6" autocomplete="new-password">
+                                required minlength="8" autocomplete="new-password">
                             <i class="fas fa-eye-slash password-toggle-icon" id="icon_password"
                                 onclick="togglePassword('password','icon_password')"></i>
                         </div>
@@ -181,7 +181,7 @@
                                 class="form-control"
                                 style="padding-right: 42px;"
                                 placeholder="စကားဝှက်အသစ် ပြန်လည်ရိုက်ထည့်ပါ"
-                                required minlength="6" data-match="password" autocomplete="new-password">
+                                required minlength="8" data-match="password" autocomplete="new-password">
                             <i class="fas fa-eye-slash password-toggle-icon" id="icon_confirmation"
                                 onclick="togglePassword('password_confirmation','icon_confirmation')"></i>
                         </div>

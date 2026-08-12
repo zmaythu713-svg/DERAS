@@ -76,7 +76,7 @@
     <!-- Page level custom scripts -->
     <script src="{{ asset('admin_folder/js/demo/chart-area-demo.js') }}"></script>
     <script src="{{ asset('admin_folder/js/demo/chart-pie-demo.js') }}"></script>
-    <script src="{{ asset('js/deras-validation.js') }}?v=10"></script>
+    <script src="{{ asset('js/deras-validation.js') }}?v=18"></script>
 
     @yield('scripts')
 

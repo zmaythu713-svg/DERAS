@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Support\TextName;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -33,7 +34,7 @@ class AdminUserController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name'     => 'required|string|max:255',
+            'name'     => ['required', 'string', 'max:255', TextName::validationRule('အမည်')],
             'email'    => 'required|email|unique:users,email',
             'role'     => 'required|in:super,admin',
             'password' => 'required|string|min:8|confirmed',
@@ -61,7 +62,7 @@ class AdminUserController extends Controller
     public function update(Request $request, User $adminUser)
     {
         $data = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => ['required', 'string', 'max:255', TextName::validationRule('အမည်')],
 
             'email' => [
                 'required',

@@ -10,14 +10,30 @@ use App\Models\SupplyDetail;
 use App\Models\SupplyItem;
 use App\Models\Township;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class SupplyDetailController extends Controller
 {
     public function index(Request $request)
     {
-        $yearId = $request->academic_year_id;
+        $years = AcademicYear::where('is_active', true)
+            ->orderBy('start_year')
+            ->orderBy('name')
+            ->get();
+
+        $currentYear = AcademicYear::current()->first();
+        $yearId = $request->filled('academic_year_id')
+            ? $request->academic_year_id
+            : $currentYear?->id;
+
         $townshipId = $request->township_id;
         $gradeId = $request->grade_id;
+
+        $selectedYear = $yearId
+            ? $years->firstWhere('id', (int) $yearId) ?? AcademicYear::find($yearId)
+            : null;
+
+        $canCreate = $selectedYear?->allowsDataEntry() ?? false;
 
         $query = SupplyDetail::with([
             'academicYear',
@@ -30,82 +46,151 @@ class SupplyDetailController extends Controller
             $query->where('academic_year_id', $yearId);
         }
 
-        if ($townshipId) {
+        if ($request->filled('township_id')) {
             $query->where('township_id', $townshipId);
         }
 
-        if ($gradeId) {
+        if ($request->filled('grade_id')) {
             $query->where('grade_id', $gradeId);
         }
 
-        $details = $query
-            ->orderBy('township_id')
-            ->orderBy('grade_id')
-            ->orderBy('sequence_no')
-            ->get();
+        if ($selectedYear?->isFuture()) {
+            $details = collect();
+        } else {
+            $details = $query
+                ->orderBy('township_id')
+                ->orderBy('grade_id')
+                ->orderBy('sequence_no')
+                ->get();
+        }
 
-        $years = AcademicYear::where('is_active', true)->orderBy('name')->get();
-        $townships = Township::dropdownOptions();
-        $grades = Grade::dropdownOptions();
+        $emptyMessage = 'အချက်အလက်မရှိပါ';
+        if ($selectedYear?->isFuture()) {
+            $emptyMessage = 'မရောက်သေးသောပညာသင်နှစ်ဖြစ်သဖြင့် အချက်အလက်ထည့်သွင်း၍မရနိုင်ပါ';
+        }
 
-        return view('supply-details.index', compact(
-            'details',
-            'years',
-            'townships',
-            'grades',
-            'yearId',
-            'townshipId',
-            'gradeId'
-        ));
-    }
-
-    public function create()
-    {
-        return view('supply-details.create', [
-            'years' => AcademicYear::where('is_active', true)->orderBy('name')->get(),
+        return view('supply-details.index', [
+            'details' => $details,
+            'years' => $years,
             'townships' => Township::dropdownOptions(),
             'grades' => Grade::dropdownOptions(),
-            'items' => SupplyItem::where('is_active', true)->orderBy('name')->get(),
+            'yearId' => $yearId,
+            'townshipId' => $townshipId,
+            'gradeId' => $gradeId,
+            'selectedYear' => $selectedYear,
+            'currentYear' => $currentYear,
+            'canCreate' => $canCreate,
+            'emptyMessage' => $emptyMessage,
         ]);
+    }
+
+    public function create(Request $request)
+    {
+        $data = $this->formData();
+
+        if ($request->filled('academic_year_id')) {
+            $year = AcademicYear::find($request->academic_year_id);
+            if ($year && !$year->allowsDataEntry()) {
+                return redirect()
+                    ->route('supply-details.index', ['academic_year_id' => $year->id])
+                    ->with('error', 'မရောက်သေးသောပညာသင်နှစ်ဖြစ်သဖြင့် အချက်အလက်ထည့်သွင်း၍မရနိုင်ပါ');
+            }
+            $data['preselectedYearId'] = $request->academic_year_id;
+        }
+
+        if ($request->filled('township_id')) {
+            $data['preselectedTownshipId'] = $request->township_id;
+        }
+
+        if ($request->filled('grade_id')) {
+            $data['preselectedGradeId'] = $request->grade_id;
+        }
+
+        return view('supply-details.create', $data);
     }
 
     public function store(Request $request)
     {
-        $data = $this->validatedData($request);
+        $this->assertYearAllowsDataEntry($request->input('academic_year_id'));
 
+        $data = $this->validatedData($request);
         $data['sequence_no'] = SupplyDetail::max('sequence_no') + 1;
 
         SupplyDetail::create($data);
 
-        return redirect()->route('supply-details.index')
+        return redirect()
+            ->route('supply-details.index', array_filter([
+                'academic_year_id' => $request->academic_year_id,
+                'township_id' => $request->township_id,
+                'grade_id' => $request->grade_id,
+            ], fn ($v) => $v !== null && $v !== ''))
             ->with('success', 'အောင်မြင်စွာဖန်တီးပြီးပါပြီ.');
     }
 
     public function edit(SupplyDetail $supplyDetail)
     {
-        return view('supply-details.edit', [
+        return view('supply-details.edit', $this->formData() + [
             'supplyDetail' => $supplyDetail,
-            'years' => AcademicYear::where('is_active', true)->orderBy('name')->get(),
-            'townships' => Township::dropdownOptions(),
-            'grades' => Grade::dropdownOptions(),
-            'items' => SupplyItem::where('is_active', true)->orderBy('name')->get(),
         ]);
     }
 
     public function update(Request $request, SupplyDetail $supplyDetail)
     {
+        $this->assertYearAllowsDataEntry($request->input('academic_year_id'));
+
         $supplyDetail->update($this->validatedData($request));
 
-        return redirect()->route('supply-details.index')
+        return redirect()
+            ->route('supply-details.index', array_filter([
+                'academic_year_id' => $request->academic_year_id,
+                'township_id' => $request->township_id,
+                'grade_id' => $request->grade_id,
+            ], fn ($v) => $v !== null && $v !== ''))
             ->with('success', 'အောင်မြင်စွာပြင်ဆင်ပြီးပါပြီ.');
     }
 
     public function destroy(SupplyDetail $supplyDetail)
     {
+        $yearId = $supplyDetail->academic_year_id;
+        $townshipId = $supplyDetail->township_id;
+        $gradeId = $supplyDetail->grade_id;
         $supplyDetail->delete();
 
-        return redirect()->route('supply-details.index')
+        return redirect()
+            ->route('supply-details.index', array_filter([
+                'academic_year_id' => $yearId,
+                'township_id' => $townshipId,
+                'grade_id' => $gradeId,
+            ], fn ($v) => $v !== null && $v !== ''))
             ->with('success', 'အောင်မြင်စွာဖျက်ပြီးပါပြီ.');
+    }
+
+    private function formData(): array
+    {
+        $years = AcademicYear::where('is_active', true)
+            ->orderByDesc('start_year')
+            ->orderBy('name')
+            ->get()
+            ->filter(fn (AcademicYear $year) => $year->allowsDataEntry())
+            ->values();
+
+        return [
+            'years' => $years,
+            'currentYearId' => AcademicYear::current()->value('id'),
+            'townships' => Township::dropdownOptions(),
+            'grades' => Grade::dropdownOptions(),
+            'items' => SupplyItem::where('is_active', true)->orderBy('name')->get(),
+        ];
+    }
+
+    private function assertYearAllowsDataEntry(mixed $academicYearId): void
+    {
+        $year = AcademicYear::find($academicYearId);
+        if (!$year || !$year->allowsDataEntry()) {
+            throw ValidationException::withMessages([
+                'academic_year_id' => 'မရောက်သေးသောပညာသင်နှစ်ဖြစ်သဖြင့် အချက်အလက်ထည့်သွင်း၍မရနိုင်ပါ',
+            ]);
+        }
     }
 
     private function validatedData(Request $request): array
@@ -116,14 +201,13 @@ class SupplyDetailController extends Controller
             'grade_id' => 'required|exists:grades,id',
             'supply_item_id' => 'required|exists:supply_items,id',
             'sequence_no' => 'nullable|integer|min:1',
-            'unit' => 'nullable|integer|min:0',
+            'unit' => 'required|integer|min:1',
             'issued_total' => 'nullable|integer|min:0',
             'package_count' => 'nullable|integer|min:0',
             'loose_count' => 'nullable|integer|min:0',
             'remark' => 'nullable|string|max:255',
         ]);
 
-        // Auto: ထုတ်ပေးမှု ← ခွဲတမ်း အရေအတွက်
         $quotaQty = $this->quotaQuantityFor(
             $data['academic_year_id'] ?? null,
             $data['township_id'],

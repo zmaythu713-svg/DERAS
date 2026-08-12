@@ -133,7 +133,7 @@
                     @csrf
                     <div class="mb-4">
                         <label class="form-label"><i class="fas fa-book-open me-1"></i> ဘာသာရပ်အမည် <span class="text-danger">*</span></label>
-                        <input type="text" name="name" class="form-control" placeholder="ဘာသာရပ်အမည် ထည့်သွင်းပါ" required>
+                        <input type="text" name="name" class="form-control" placeholder="ဘာသာရပ်အမည် ထည့်သွင်းပါ" required data-allow-digits="1">
                     </div>
 
                     <div class="mb-4">

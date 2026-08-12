@@ -133,7 +133,7 @@
                     @csrf
                     <div class="mb-4">
                         <label class="form-label"><i class="fas fa-calendar me-1"></i> ပညာသင်နှစ် <span class="text-danger">*</span></label>
-                        <input type="text" name="name" class="form-control" placeholder="2025-2026" required>
+                        <input type="text" name="name" class="form-control" placeholder="2025-2026" required data-allow-digits="1">
                     </div>
 
                     <div class="mb-4">

@@ -122,7 +122,7 @@
             <option value="">ပညာသင်နှစ်ရွေးချယ်ပါ</option>
             @foreach ($years as $year)
                 <option value="{{ $year->id }}"
-                    {{ old('academic_year_id', $schoolSupply->academic_year_id ?? '') == $year->id ? 'selected' : '' }}>
+                    {{ (string) old('academic_year_id', $schoolSupply->academic_year_id ?? ($preselectedYearId ?? $currentYearId ?? '')) === (string) $year->id ? 'selected' : '' }}>
                     {{ $year->name }}
                 </option>
             @endforeach
@@ -183,8 +183,8 @@
             <i class="fas fa-percentage me-1"></i>နှုန်း
         </label>
         <input type="number" id="item_rate" class="form-control calc-input"
-            value="{{ old('item_rate', isset($schoolSupply) ? (int) optional($schoolSupply->item)->rate : '') }}"
-            min="0" readonly>
+            value="{{ \App\Support\FormValue::number(old('item_rate', isset($schoolSupply) ? optional($schoolSupply->item)->rate : null)) }}"
+            min="0" readonly placeholder="0">
     </div>
 
     <div class="col-md-4 ps-md-3">
@@ -192,8 +192,8 @@
             <i class="fas fa-school me-1"></i>ကျောင်းအရေအတွက်
         </label>
         <input type="number" name="school_count" id="school_count" class="form-control calc-input"
-            value="{{ old('school_count', $schoolSupply->school_count ?? '') }}"
-            min="0" readonly>
+            value="{{ \App\Support\FormValue::number(old('school_count', $schoolSupply->school_count ?? null)) }}"
+            min="0" readonly placeholder="0">
     </div>
 </div>
 
@@ -204,8 +204,8 @@
             <i class="fas fa-calculator me-1"></i>အရေအတွက်
         </label>
         <input type="number" name="quantity" id="quantity" class="form-control calc-input"
-            value="{{ old('quantity', $schoolSupply->quantity ?? '') }}"
-            min="0" readonly>
+            value="{{ \App\Support\FormValue::number(old('quantity', $schoolSupply->quantity ?? null)) }}"
+            min="0" readonly placeholder="0">
     </div>
 
     <div class="col-md-8 ps-md-2">
@@ -239,13 +239,18 @@
         function recalcQuantity() {
             const rate = parseInt(rateInput.value || '0', 10) || 0;
             const count = parseInt(countInput.value || '0', 10) || 0;
-            quantityInput.value = rate * count;
+            const qty = rate * count;
+            quantityInput.value = (window.DerasForm?.displayNumber || function (v) {
+                return Number(v) === 0 ? '' : v;
+            })(qty);
         }
 
         function syncRateFromItem() {
             const selected = itemSelect.options[itemSelect.selectedIndex];
             const rate = selected ? (parseInt(selected.getAttribute('data-rate') || '0', 10) || 0) : 0;
-            rateInput.value = itemSelect.value ? rate : '';
+            rateInput.value = itemSelect.value
+                ? (window.DerasForm?.displayNumber || function (v) { return Number(v) === 0 ? '' : v; })(rate)
+                : '';
             recalcQuantity();
         }
 

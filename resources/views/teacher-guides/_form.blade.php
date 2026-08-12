@@ -115,7 +115,7 @@
             <option value="">ပညာသင်နှစ်ရွေးချယ်ပါ</option>
             @foreach ($years as $year)
                 <option value="{{ $year->id }}"
-                    {{ old('academic_year_id', $teacherGuide->academic_year_id ?? '') == $year->id ? 'selected' : '' }}>
+                    {{ (string) old('academic_year_id', $teacherGuide->academic_year_id ?? ($preselectedYearId ?? $currentYearId ?? '')) === (string) $year->id ? 'selected' : '' }}>
                     {{ $year->name }}
                 </option>
             @endforeach
@@ -130,7 +130,7 @@
             <option value="">အတန်းရွေးချယ်ပါ</option>
             @foreach ($grades as $grade)
                 <option value="{{ $grade->id }}"
-                    {{ old('grade_id', $teacherGuide->grade_id ?? '') == $grade->id ? 'selected' : '' }}>
+                    {{ (string) old('grade_id', $teacherGuide->grade_id ?? ($preselectedGradeId ?? '')) === (string) $grade->id ? 'selected' : '' }}>
                     {{ $grade->name }}
                 </option>
             @endforeach
@@ -144,12 +144,14 @@
         <select name="book_name_id" id="book_name_id" class="form-select @error('book_name_id') is-invalid @enderror" required
             data-placeholder="ဘာသာရပ်ရွေးချယ်ပါ">
             <option value="">ဘာသာရပ်ရွေးချယ်ပါ</option>
-            @foreach ($bookNames as $bookName)
-                <option value="{{ $bookName->id }}"
-                    {{ old('book_name_id', $teacherGuide->book_name_id ?? '') == $bookName->id ? 'selected' : '' }}>
-                    {{ $bookName->name }}
-                </option>
-            @endforeach
+            @php $selectedBookId = old('book_name_id', $teacherGuide->book_name_id ?? ''); @endphp
+            @if ($selectedBookId)
+                @foreach ($bookNames as $bookName)
+                    @if ((string) $bookName->id === (string) $selectedBookId)
+                        <option value="{{ $bookName->id }}" selected>{{ $bookName->name }}</option>
+                    @endif
+                @endforeach
+            @endif
         </select>
     </div>
 </div>
@@ -170,11 +172,11 @@
         </label>
         <select name="guide_type" class="form-select @error('guide_type') is-invalid @enderror" required>
             <option value="ဆရာကိုင်"
-                {{ old('guide_type', $teacherGuide->guide_type ?? '') === 'ဆရာကိုင်' ? 'selected' : '' }}>
+                {{ old('guide_type', $teacherGuide->guide_type ?? ($preselectedGuideType ?? '')) === 'ဆရာကိုင်' ? 'selected' : '' }}>
                 ဆရာကိုင်
             </option>
             <option value="ဆရာလမ်းညွှန်"
-                {{ old('guide_type', $teacherGuide->guide_type ?? '') === 'ဆရာလမ်းညွှန်' ? 'selected' : '' }}>
+                {{ old('guide_type', $teacherGuide->guide_type ?? ($preselectedGuideType ?? '')) === 'ဆရာလမ်းညွှန်' ? 'selected' : '' }}>
                 ဆရာလမ်းညွှန်
             </option>
         </select>
@@ -185,7 +187,7 @@
             <i class="fas fa-sort-numeric-up me-1"></i>KG to G-12 ခရိုင်ရရှိခွဲတမ်း
         </label>
         <input type="number" id="kg_to_g12_quota" name="kg_to_g12_quota" class="form-control"
-            value="{{ old('kg_to_g12_quota', $teacherGuide->kg_to_g12_quota ?? '') }}" placeholder="0" min="0">
+            value="{{ \App\Support\FormValue::number(old('kg_to_g12_quota', $teacherGuide->kg_to_g12_quota ?? null)) }}" placeholder="0" min="0">
     </div>
 </div>
 
@@ -196,7 +198,7 @@
             <i class="fas fa-sort-numeric-up me-1"></i>G-1 to G-5 ခရိုင်ရရှိခွဲတမ်း
         </label>
         <input type="number" id="g1_to_g5_quota" name="g1_to_g5_quota" class="form-control"
-            value="{{ old('g1_to_g5_quota', $teacherGuide->g1_to_g5_quota ?? '') }}" placeholder="0" min="0">
+            value="{{ \App\Support\FormValue::number(old('g1_to_g5_quota', $teacherGuide->g1_to_g5_quota ?? null)) }}" placeholder="0" min="0">
     </div>
 
     @isset($teacherGuide)
@@ -206,8 +208,8 @@
             </label>
             <input type="number" id="total_quota_display" class="form-control fw-bold"
                 style="background-color: #f0faf4; color: #105c3a; border-color: #aad6bc;"
-                value="{{ old('total_quota', ($teacherGuide->kg_to_g12_quota ?? 0) + ($teacherGuide->g1_to_g5_quota ?? 0)) }}"
-                disabled>
+                value="{{ \App\Support\FormValue::number(old('total_quota', ($teacherGuide->kg_to_g12_quota ?? 0) + ($teacherGuide->g1_to_g5_quota ?? 0))) }}"
+                disabled placeholder="0">
             <input type="hidden" id="total_quota" name="total_quota"
                 value="{{ old('total_quota', ($teacherGuide->kg_to_g12_quota ?? 0) + ($teacherGuide->g1_to_g5_quota ?? 0)) }}">
         </div>
@@ -292,7 +294,9 @@
             totalHiddenInput.value = total;
 
             if (totalDisplayInput) {
-                totalDisplayInput.value = total;
+                totalDisplayInput.value = (window.DerasForm?.displayNumber || function (v) {
+                    return Number(v) === 0 ? '' : v;
+                })(total);
             }
         }
 

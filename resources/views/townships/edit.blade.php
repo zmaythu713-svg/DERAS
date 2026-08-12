@@ -134,7 +134,7 @@
                     @method('PUT')
                     <div class="mb-4">
                         <label class="form-label"><i class="fas fa-city me-1"></i> မြို့နယ်အမည် <span class="text-danger">*</span></label>
-                        <input type="text" name="name" class="form-control" value="{{ $township->name }}" required>
+                        <input type="text" name="name" class="form-control" value="{{ $township->name }}" required data-validate="name" data-label="မြို့နယ်အမည်">
                     </div>
 
                     <div class="mb-4">

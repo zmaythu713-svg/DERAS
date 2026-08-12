@@ -122,7 +122,7 @@
             <option value="">ပညာသင်နှစ်ရွေးချယ်ပါ</option>
             @foreach ($years as $year)
                 <option value="{{ $year->id }}"
-                    {{ old('academic_year_id', $supplyDetail->academic_year_id ?? '') == $year->id ? 'selected' : '' }}>
+                    {{ (string) old('academic_year_id', $supplyDetail->academic_year_id ?? ($preselectedYearId ?? $currentYearId ?? '')) === (string) $year->id ? 'selected' : '' }}>
                     {{ $year->name }}
                 </option>
             @endforeach
@@ -137,7 +137,7 @@
             <option value="">မြို့နယ်ရွေးချယ်ပါ</option>
             @foreach ($townships as $township)
                 <option value="{{ $township->id }}"
-                    {{ old('township_id', $supplyDetail->township_id ?? '') == $township->id ? 'selected' : '' }}>
+                    {{ (string) old('township_id', $supplyDetail->township_id ?? ($preselectedTownshipId ?? '')) === (string) $township->id ? 'selected' : '' }}>
                     {{ $township->name }}
                 </option>
             @endforeach
@@ -152,7 +152,7 @@
             <option value="">အတန်းရွေးချယ်ပါ</option>
             @foreach ($grades as $grade)
                 <option value="{{ $grade->id }}"
-                    {{ old('grade_id', $supplyDetail->grade_id ?? '') == $grade->id ? 'selected' : '' }}>
+                    {{ (string) old('grade_id', $supplyDetail->grade_id ?? ($preselectedGradeId ?? '')) === (string) $grade->id ? 'selected' : '' }}>
                     {{ $grade->name }}
                 </option>
             @endforeach
@@ -179,10 +179,10 @@
 
     <div class="col-md-4 px-md-2">
         <label class="form-label">
-            <i class="fas fa-boxes me-1"></i>လက်ခံရရှိမှု (Unit)
+            <i class="fas fa-boxes me-1"></i>လက်ခံရရှိမှု (Unit) <span class="text-danger">*</span>
         </label>
         <input type="number" id="unit" name="unit" class="form-control @error('unit') is-invalid @enderror"
-            value="{{ old('unit', $supplyDetail->unit ?? '') }}" placeholder="0" min="0">
+            value="{{ old('unit', $supplyDetail->unit ?? '') }}" placeholder="1" min="1" required>
     </div>
 
     <div class="col-md-4 ps-md-3">
@@ -191,8 +191,8 @@
         </label>
         <input type="number" id="issued_total" name="issued_total"
             class="form-control calc-input @error('issued_total') is-invalid @enderror"
-            value="{{ old('issued_total', $supplyDetail->issued_total ?? '') }}"
-            min="0" readonly>
+            value="{{ \App\Support\FormValue::number(old('issued_total', $supplyDetail->issued_total ?? null)) }}"
+            min="0" readonly placeholder="0">
     </div>
 </div>
 
@@ -212,7 +212,7 @@
             </label>
             <input type="number" id="calculated_package_count" class="form-control fw-bold"
                 style="background-color: #f0faf4; color: #105c3a; border-color: #aad6bc;"
-                value="{{ $calculatedPackageCount }}" disabled>
+                value="{{ \App\Support\FormValue::number($calculatedPackageCount) }}" disabled placeholder="0">
         </div>
 
         <div class="col-md-4 px-md-2">
@@ -221,7 +221,7 @@
             </label>
             <input type="number" id="calculated_loose_count" class="form-control fw-bold"
                 style="background-color: #f0faf4; color: #105c3a; border-color: #aad6bc;"
-                value="{{ $calculatedLooseCount }}" disabled>
+                value="{{ \App\Support\FormValue::number($calculatedLooseCount) }}" disabled placeholder="0">
         </div>
 
         <div class="col-md-4 ps-md-3">
@@ -266,15 +266,18 @@
             function calculatePackageAndLoose() {
                 const unit = parseInt(unitInput.value, 10) || 0;
                 const issuedTotal = parseInt(issuedInput.value, 10) || 0;
+                const blankZero = window.DerasForm?.displayNumber || function (v) {
+                    return Number(v) === 0 ? '' : v;
+                };
 
                 if (unit <= 0) {
-                    packageInput.value = 0;
-                    looseInput.value = 0;
+                    packageInput.value = '';
+                    looseInput.value = '';
                     return;
                 }
 
-                packageInput.value = Math.floor(issuedTotal / unit);
-                looseInput.value = issuedTotal % unit;
+                packageInput.value = blankZero(Math.floor(issuedTotal / unit));
+                looseInput.value = blankZero(issuedTotal % unit);
             }
 
             unitInput.addEventListener('input', calculatePackageAndLoose);

@@ -6,139 +6,183 @@ use App\Models\AcademicYear;
 use App\Models\Quota;
 use App\Models\Township;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class QuotaController extends Controller
 {
     public function index(Request $request)
     {
         $years = AcademicYear::where('is_active', true)
+            ->orderBy('start_year')
             ->orderBy('name')
             ->get();
 
-        $academicYearId = $request->get('academic_year_id')
-            ?? AcademicYear::where('name', '2025-2026')->value('id')
-            ?? $years->last()?->id;
+        $currentYear = AcademicYear::current()->first();
+        $academicYearId = $request->filled('academic_year_id')
+            ? $request->academic_year_id
+            : ($currentYear?->id ?? $years->last()?->id);
 
-        $selectedYear = AcademicYear::find($academicYearId);
+        $selectedYear = $academicYearId
+            ? $years->firstWhere('id', (int) $academicYearId) ?? AcademicYear::find($academicYearId)
+            : null;
+
+        $canCreate = $selectedYear?->allowsDataEntry() ?? false;
 
         $quotaQuery = Quota::with(['academicYear', 'township'])
             ->where('academic_year_id', $academicYearId);
 
-        $rows = $quotaQuery
-            ->orderBy('id')
-            ->get()
-            ->map(function ($quota) {
-                return [
-                    'id' => $quota->id,
-                    'academic_year' => $quota->academicYear?->name,
-                    'township' => $quota->township?->name,
+        if ($selectedYear?->isFuture()) {
+            $quotas = collect();
+        } else {
+            $quotas = $quotaQuery->orderBy('id')->get();
+        }
 
-                    'primary_public' => $quota->primary_public,
-                    'primary_monk' => $quota->primary_monk,
-                    'primary_private' => $quota->primary_private,
-                    'primary_total' => $quota->primary_total,
+        $rows = $quotas->map(function ($quota) {
+            return [
+                'id' => $quota->id,
+                'academic_year' => $quota->academicYear?->name,
+                'township' => $quota->township?->name,
 
-                    'middle_public' => $quota->middle_public,
-                    'middle_monk' => $quota->middle_monk,
-                    'middle_private' => $quota->middle_private,
-                    'middle_total' => $quota->middle_total,
+                'primary_public' => $quota->primary_public,
+                'primary_monk' => $quota->primary_monk,
+                'primary_private' => $quota->primary_private,
+                'primary_total' => $quota->primary_total,
 
-                    'high_public' => $quota->high_public,
-                    'high_monk' => $quota->high_monk,
-                    'high_private' => $quota->high_private,
-                    'high_total' => $quota->high_total,
+                'middle_public' => $quota->middle_public,
+                'middle_monk' => $quota->middle_monk,
+                'middle_private' => $quota->middle_private,
+                'middle_total' => $quota->middle_total,
 
-                    'grand_public' => $quota->grand_public,
-                    'grand_monk' => $quota->grand_monk,
-                    'grand_private' => $quota->grand_private,
-                    'grand_total' => $quota->grand_total,
+                'high_public' => $quota->high_public,
+                'high_monk' => $quota->high_monk,
+                'high_private' => $quota->high_private,
+                'high_total' => $quota->high_total,
 
-                    'agriculture' => $quota->agriculture,
-                    'total_with_agriculture' => $quota->total_with_agriculture,
-                    'distribution_total' => $quota->distribution_total,
-                ];
-            });
+                'grand_public' => $quota->grand_public,
+                'grand_monk' => $quota->grand_monk,
+                'grand_private' => $quota->grand_private,
+                'grand_total' => $quota->grand_total,
 
-        $query = Quota::where('academic_year_id', $academicYearId);
+                'agriculture' => $quota->agriculture,
+                'total_with_agriculture' => $quota->total_with_agriculture,
+                'distribution_total' => $quota->distribution_total,
+            ];
+        });
 
-        $totals = [
-            'primary_public' => (clone $query)->sum('primary_public'),
-            'primary_monk' => (clone $query)->sum('primary_monk'),
-            'primary_private' => (clone $query)->sum('primary_private'),
-            'primary_total' => (clone $query)->sum('primary_total'),
+        $emptyMessage = 'အချက်အလက်မရှိပါ';
+        if ($selectedYear?->isFuture()) {
+            $emptyMessage = 'မရောက်သေးသောပညာသင်နှစ်ဖြစ်သဖြင့် အချက်အလက်ထည့်သွင်း၍မရနိုင်ပါ';
+        }
 
-            'middle_public' => (clone $query)->sum('middle_public'),
-            'middle_monk' => (clone $query)->sum('middle_monk'),
-            'middle_private' => (clone $query)->sum('middle_private'),
-            'middle_total' => (clone $query)->sum('middle_total'),
+        $academicYear = $selectedYear?->name ?? '';
 
-            'high_public' => (clone $query)->sum('high_public'),
-            'high_monk' => (clone $query)->sum('high_monk'),
-            'high_private' => (clone $query)->sum('high_private'),
-            'high_total' => (clone $query)->sum('high_total'),
-
-            'grand_public' => (clone $query)->sum('grand_public'),
-            'grand_monk' => (clone $query)->sum('grand_monk'),
-            'grand_private' => (clone $query)->sum('grand_private'),
-            'grand_total' => (clone $query)->sum('grand_total'),
-
-            'agriculture' => (clone $query)->sum('agriculture'),
-            'total_with_agriculture' => (clone $query)->sum('total_with_agriculture'),
-            'distribution_total' => (clone $query)->sum('distribution_total'),
-        ];
-
-        $academicYear = $selectedYear?->name ?? '2025-2026';
-
-        return view('quota.index', compact(
-            'rows',
-            'totals',
-            'years',
-            'academicYear',
-            'academicYearId'
-        ));
+        return view('quota.index', [
+            'rows' => $rows,
+            'years' => $years,
+            'academicYear' => $academicYear,
+            'academicYearId' => $academicYearId,
+            'selectedYear' => $selectedYear,
+            'currentYear' => $currentYear,
+            'canCreate' => $canCreate,
+            'emptyMessage' => $emptyMessage,
+        ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        $years = AcademicYear::where('is_active', true)->orderBy('name')->get();
-        $townships = Township::dropdownOptions();
+        $data = $this->formData();
 
-        return view('quota.create', compact('years', 'townships'));
+        if ($request->filled('academic_year_id')) {
+            $year = AcademicYear::find($request->academic_year_id);
+            if ($year && !$year->allowsDataEntry()) {
+                return redirect()
+                    ->route('quota.index', ['academic_year_id' => $year->id])
+                    ->with('error', 'မရောက်သေးသောပညာသင်နှစ်ဖြစ်သဖြင့် အချက်အလက်ထည့်သွင်း၍မရနိုင်ပါ');
+            }
+            $data['preselectedYearId'] = $request->academic_year_id;
+        }
+
+        return view('quota.create', $data);
     }
 
     public function store(Request $request)
     {
+        $this->assertYearAllowsDataEntry($request->input('academic_year_id'));
+
         Quota::create($this->validatedData($request));
 
-        return redirect()->route('quota.index')->with('success', 'အောင်မြင်စွာဖန်တီးပြီးပါပြီ');
+        return redirect()
+            ->route('quota.index', array_filter([
+                'academic_year_id' => $request->academic_year_id,
+            ]))
+            ->with('success', 'အောင်မြင်စွာဖန်တီးပြီးပါပြီ');
     }
 
     public function edit($id)
     {
         $quota = Quota::findOrFail($id);
-        $years = AcademicYear::where('is_active', true)->orderBy('name')->get();
-        $townships = Township::dropdownOptions();
-        return view('quota.edit', compact('quota', 'years', 'townships'));
+
+        return view('quota.edit', $this->formData() + [
+            'quota' => $quota,
+        ]);
     }
 
     public function update(Request $request, $id)
     {
-        $quota = Quota::findOrFail($id);
-        $quota->update($request->all());
+        $this->assertYearAllowsDataEntry($request->input('academic_year_id'));
 
-        return redirect()->route('quota.index')->with('success', 'အောင်မြင်စွာပြင်ဆင်ပြီးပါပြီ');
+        $quota = Quota::findOrFail($id);
+        $quota->update($this->validatedData($request));
+
+        return redirect()
+            ->route('quota.index', array_filter([
+                'academic_year_id' => $request->academic_year_id,
+            ]))
+            ->with('success', 'အောင်မြင်စွာပြင်ဆင်ပြီးပါပြီ');
     }
 
     public function destroy($id)
     {
-        Quota::findOrFail($id)->delete();
+        $quota = Quota::findOrFail($id);
+        $yearId = $quota->academic_year_id;
+        $quota->delete();
 
-        return redirect()->route('quota.index')->with('success', 'အောင်မြင်စွာဖျက်လိုက်ပါပြီ');
+        return redirect()
+            ->route('quota.index', array_filter([
+                'academic_year_id' => $yearId,
+            ]))
+            ->with('success', 'အောင်မြင်စွာဖျက်လိုက်ပါပြီ');
+    }
+
+    private function formData(): array
+    {
+        $years = AcademicYear::where('is_active', true)
+            ->orderByDesc('start_year')
+            ->orderBy('name')
+            ->get()
+            ->filter(fn (AcademicYear $year) => $year->allowsDataEntry())
+            ->values();
+
+        return [
+            'years' => $years,
+            'currentYearId' => AcademicYear::current()->value('id'),
+            'townships' => Township::dropdownOptions(),
+        ];
+    }
+
+    private function assertYearAllowsDataEntry(mixed $academicYearId): void
+    {
+        $year = AcademicYear::find($academicYearId);
+        if (!$year || !$year->allowsDataEntry()) {
+            throw ValidationException::withMessages([
+                'academic_year_id' => 'မရောက်သေးသောပညာသင်နှစ်ဖြစ်သဖြင့် အချက်အလက်ထည့်သွင်း၍မရနိုင်ပါ',
+            ]);
+        }
     }
 
     private function validatedData(Request $request): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'academic_year_id' => 'required|exists:academic_years,id',
             'township_id' => 'required|exists:townships,id',
 
@@ -166,5 +210,26 @@ class QuotaController extends Controller
             'total_with_agriculture' => 'nullable|integer|min:0',
             'distribution_total' => 'nullable|integer|min:0',
         ]);
+
+        foreach ([
+            'primary_public', 'primary_monk', 'primary_private',
+            'middle_public', 'middle_monk', 'middle_private',
+            'high_public', 'high_monk', 'high_private',
+            'agriculture',
+        ] as $field) {
+            $data[$field] = (int) ($data[$field] ?? 0);
+        }
+
+        $data['primary_total'] = $data['primary_public'] + $data['primary_monk'] + $data['primary_private'];
+        $data['middle_total'] = $data['middle_public'] + $data['middle_monk'] + $data['middle_private'];
+        $data['high_total'] = $data['high_public'] + $data['high_monk'] + $data['high_private'];
+        $data['grand_public'] = $data['primary_public'] + $data['middle_public'] + $data['high_public'];
+        $data['grand_monk'] = $data['primary_monk'] + $data['middle_monk'] + $data['high_monk'];
+        $data['grand_private'] = $data['primary_private'] + $data['middle_private'] + $data['high_private'];
+        $data['grand_total'] = $data['grand_public'] + $data['grand_monk'] + $data['grand_private'];
+        $data['total_with_agriculture'] = $data['grand_total'] + $data['agriculture'];
+        $data['distribution_total'] = $data['total_with_agriculture'];
+
+        return $data;
     }
 }

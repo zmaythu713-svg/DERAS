@@ -142,7 +142,7 @@
             <option value="">-- ရွေးချယ်ပါ --</option>
             @foreach ($years as $year)
                 <option value="{{ $year->id }}"
-                    {{ old('academic_year_id', $teacherGuideSummary->academic_year_id ?? '') == $year->id ? 'selected' : '' }}>
+                    {{ (string) old('academic_year_id', isset($teacherGuideSummary) ? $teacherGuideSummary->academic_year_id : ($preselectedYearId ?? $currentYearId ?? '')) === (string) $year->id ? 'selected' : '' }}>
                     {{ $year->name }}
                 </option>
             @endforeach
@@ -160,7 +160,7 @@
             <option value="">-- ရွေးချယ်ပါ --</option>
             @foreach ($grades as $grade)
                 <option value="{{ $grade->id }}"
-                    {{ old('grade_id', $teacherGuideSummary->grade_id ?? '') == $grade->id ? 'selected' : '' }}>
+                    {{ (string) old('grade_id', isset($teacherGuideSummary) ? $teacherGuideSummary->grade_id : ($preselectedGradeId ?? '')) === (string) $grade->id ? 'selected' : '' }}>
                     {{ $grade->name }}
                 </option>
             @endforeach
@@ -175,12 +175,13 @@
             <i class="fas fa-tags me-1"></i>အမျိုးအစား <span class="text-danger">*</span>
         </label>
         <select name="guide_type" id="guide_type" class="form-select @error('guide_type') is-invalid @enderror" required>
+            @php $selectedGuideType = old('guide_type', isset($teacherGuideSummary) ? $teacherGuideSummary->guide_type : ($preselectedGuideType ?? 'ဆရာလမ်းညွှန်')); @endphp
             <option value="ဆရာလမ်းညွှန်"
-                {{ old('guide_type', $teacherGuideSummary->guide_type ?? 'ဆရာလမ်းညွှန်') === 'ဆရာလမ်းညွှန်' ? 'selected' : '' }}>
+                {{ $selectedGuideType === 'ဆရာလမ်းညွှန်' ? 'selected' : '' }}>
                 ဆရာလမ်းညွှန်
             </option>
             <option value="ဆရာကိုင်"
-                {{ old('guide_type', $teacherGuideSummary->guide_type ?? '') === 'ဆရာကိုင်' ? 'selected' : '' }}>
+                {{ $selectedGuideType === 'ဆရာကိုင်' ? 'selected' : '' }}>
                 ဆရာကိုင်
             </option>
         </select>
@@ -219,7 +220,7 @@
             <i class="fas fa-history me-1"></i>ယခင်နှစ်လက်ကျန်
         </label>
         <input type="number" name="previous_balance" id="previous_balance" min="0" class="form-control calc-field"
-            value="{{ old('previous_balance', $teacherGuideSummary->previous_balance ?? 0) }}"
+            value="{{ \App\Support\FormValue::number(old('previous_balance', $teacherGuideSummary->previous_balance ?? null)) }}"
             placeholder="0">
     </div>
 
@@ -228,7 +229,7 @@
             <i class="fas fa-layer-group me-1"></i>ဘဏ္ဍာရေးနှစ်ခွဲတမ်း
         </label>
         <input type="number" name="fiscal_year_quota" id="fiscal_year_quota" min="0" class="form-control calc-field calc-blue-input"
-            value="{{ old('fiscal_year_quota', $teacherGuideSummary->fiscal_year_quota ?? '') }}" readonly>
+            value="{{ \App\Support\FormValue::number(old('fiscal_year_quota', $teacherGuideSummary->fiscal_year_quota ?? null)) }}" readonly placeholder="0">
     </div>
 
     <div class="col-md-4">
@@ -236,7 +237,7 @@
             <i class="fas fa-plus-circle me-1"></i>စုစုပေါင်းအုပ်ရေ
         </label>
         <input type="number" id="total_books" class="form-control fw-bold"
-            style="background-color: #f0faf4; color: #105c3a; border-color: #aad6bc;" readonly>
+            style="background-color: #f0faf4; color: #105c3a; border-color: #aad6bc;" readonly placeholder="0">
     </div>
 </div>
 
@@ -246,7 +247,7 @@
             <i class="fas fa-truck-loading me-1"></i>ဖြန့်ဝေပြီးအုပ်ရေ
         </label>
         <input type="number" name="distributed_books" id="distributed_books" min="0" class="form-control calc-field calc-blue-input"
-            value="{{ old('distributed_books', $teacherGuideSummary->distributed_books ?? '') }}" readonly>
+            value="{{ \App\Support\FormValue::number(old('distributed_books', $teacherGuideSummary->distributed_books ?? null)) }}" readonly placeholder="0">
     </div>
 
     <div class="col-md-6">
@@ -254,7 +255,7 @@
             <i class="fas fa-warehouse me-1"></i>လက်ကျန်
         </label>
         <input type="number" id="remaining_books" class="form-control fw-bold"
-            style="background-color: #fff9e6; color: #b45309; border-color: #fde68a;" readonly>
+            style="background-color: #fff9e6; color: #b45309; border-color: #fde68a;" readonly placeholder="0">
     </div>
 </div>
 
@@ -288,8 +289,12 @@
 
         function calculate() {
             const totalValue = Number(previous?.value || 0) + Number(quota?.value || 0);
-            if (total) total.value = totalValue;
-            if (remaining) remaining.value = totalValue - Number(distributed?.value || 0);
+            const remainingValue = totalValue - Number(distributed?.value || 0);
+            const blankZero = window.DerasForm?.displayNumber || function (v) {
+                return Number(v) === 0 ? '' : v;
+            };
+            if (total) total.value = blankZero(totalValue);
+            if (remaining) remaining.value = blankZero(remainingValue);
         }
 
         if (window.DerasForm) {

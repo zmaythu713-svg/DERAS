@@ -12,19 +12,29 @@
                 </h5>
                 <span class="text-xs bg-emerald-950/50 text-amber-300 px-3 py-1 rounded-full font-semibold">
                     {{ $academicYear }} ပညာသင်နှစ်
+                    @if ($selectedYear?->is_current)
+                        · Current
+                    @endif
                 </span>
             </div>
 
             <div class="modern-card-body">
                 <!-- Filter & Actions -->
-                <form method="GET" action="{{ route('quota.index') }}" class="m-0 mb-5">
+                <form method="GET" action="{{ route('quota.index') }}" id="quotaFilterForm" class="m-0 mb-5">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
                         <div>
-                            <label class="label-year-select">ပညာသင်နှစ်</label>
-                            <select name="academic_year_id" class="modern-select" onchange="this.form.submit()">
+                            <label class="label-year-select" style="display: flex; align-items: center; gap: 8px; flex-wrap: nowrap;">
+                                <span>ပညာသင်နှစ်</span>
+                                @if ($selectedYear?->is_current)
+                                    <span class="badge-active" style="font-size: 10px; padding: 2px 8px; white-space: nowrap; line-height: 1.4;">
+                                        <i class="fas fa-star"></i> Current
+                                    </span>
+                                @endif
+                            </label>
+                            <select name="academic_year_id" id="filter_academic_year_id" class="modern-select" onchange="this.form.submit()">
                                 @foreach ($years as $year)
                                     <option value="{{ $year->id }}"
-                                        {{ $academicYearId == $year->id ? 'selected' : '' }}>
+                                        {{ (string) $academicYearId === (string) $year->id ? 'selected' : '' }}>
                                         {{ $year->name }}
                                     </option>
                                 @endforeach
@@ -36,10 +46,20 @@
                                 <i class="fas fa-file-excel"></i>
                                 Excel ထုတ်ပါ
                             </button>
-                            <a href="{{ route('quota.create') }}" class="btn-modern-primary">
-                                <i class="fas fa-plus"></i>
-                                ကျောင်းသားဦးရေတွက်ချက်ရန်
-                            </a>
+                            @if ($canCreate ?? true)
+                                <a href="{{ route('quota.create', array_filter(['academic_year_id' => $academicYearId])) }}"
+                                    class="btn-modern-primary">
+                                    <i class="fas fa-plus"></i>
+                                    ကျောင်းသားဦးရေတွက်ချက်ရန်
+                                </a>
+                            @else
+                                <span class="btn-modern-primary"
+                                    style="opacity: 0.45; cursor: not-allowed; pointer-events: none;"
+                                    title="မရောက်သေးသောနှစ် — အချက်အလက် ထည့်မရပါ">
+                                    <i class="fas fa-plus"></i>
+                                    ကျောင်းသားဦးရေတွက်ချက်ရန်
+                                </span>
+                            @endif
                         </div>
                     </div>
                 </form>
@@ -145,6 +165,16 @@
                     }
         @endphp
 
+        @if (count($calculatedRows) === 0)
+            <div class="modern-card mt-4">
+                <div class="modern-card-body p-5 text-center">
+                    <i class="fas fa-inbox text-3xl mb-3 block" style="color: #94a3b8;"></i>
+                    <p class="mb-0 font-medium text-base" style="color: #475569;">
+                        {{ $emptyMessage ?? 'အချက်အလက်မရှိပါ' }}
+                    </p>
+                </div>
+            </div>
+        @else
         <div class="modern-table-container mt-4">
 
             <table id="quotaTable" class="modern-table quota-table" style="min-width: 1600px;">
@@ -205,7 +235,7 @@
 
                         <tbody>
 
-                            @forelse ($calculatedRows as $row)
+                            @foreach ($calculatedRows as $row)
                                 <tr>
 
                                     <td class="font-mono text-slate-500">{{ $loop->iteration }}</td>
@@ -280,14 +310,7 @@
                                     </td>
                                 </tr>
 
-                            @empty
-
-                                <tr>
-                                    <td colspan="22" class="py-4 text-muted">
-                                        အချက်အလက် မရှိသေးပါ။
-                                    </td>
-                                </tr>
-                            @endforelse
+                            @endforeach
 
                         </tbody>
 
@@ -338,6 +361,7 @@
         </table>
 
         </div>
+        @endif
 
         <style>
             .sub-header-border {

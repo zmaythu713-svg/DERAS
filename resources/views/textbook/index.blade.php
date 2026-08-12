@@ -13,7 +13,7 @@
             </div>
 
             <div class="modern-card-body p-4 sm:p-6">
-                <form method="GET" action="{{ route('textbook.index') }}" class="m-0">
+                <form method="GET" action="{{ route('textbook.index') }}" id="textbookFilterForm" class="m-0">
 
                     {{-- Top: စာအုပ်ရှာဖွေရန် + actions --}}
                     <div class="flex flex-wrap items-end justify-between gap-3">
@@ -48,19 +48,38 @@
                                 <i class="fas fa-file-excel"></i>
                                 Excel ထုတ်ပါ
                             </button>
-                            <a href="{{ route('textbook.create') }}" class="btn-modern-primary">
-                                <i class="fas fa-plus"></i>
-                                ဖန်တီးပါ
-                            </a>
+                            @if ($canCreate ?? true)
+                                <a href="{{ route('textbook.create', array_filter([
+                                        'academic_year_id' => $yearId,
+                                        'township_id' => $townshipId,
+                                    ])) }}"
+                                    class="btn-modern-primary">
+                                    <i class="fas fa-plus"></i>
+                                    ဖန်တီးပါ
+                                </a>
+                            @else
+                                <span class="btn-modern-primary"
+                                    style="opacity: 0.45; cursor: not-allowed; pointer-events: none;"
+                                    title="မရောက်သေးသောနှစ် — အချက်အလက် ထည့်မရပါ">
+                                    <i class="fas fa-plus"></i>
+                                    ဖန်တီးပါ
+                                </span>
+                            @endif
                         </div>
                     </div>
 
                     {{-- Bottom: ပညာသင်နှစ် / မြို့နယ် --}}
                     <div class="flex flex-wrap items-end gap-3 mt-4 pt-3 border-t border-slate-100">
                         <div style="flex: 2; min-width: 160px;">
-                            <label class="block text-sm font-extrabold mb-1.5" style="color: #105c3a;">ပညာသင်နှစ်</label>
-                            <select name="academic_year_id" class="modern-select text-sm font-medium">
-                                <option value="">ပညာသင်နှစ်ရွေးချယ်ပါ</option>
+                            <label class="block text-sm font-extrabold mb-1.5" style="color: #105c3a; display: flex; align-items: center; gap: 8px; flex-wrap: nowrap;">
+                                <span>ပညာသင်နှစ်</span>
+                                @if ($selectedYear?->is_current)
+                                    <span class="badge-active" style="font-size: 10px; padding: 2px 8px; white-space: nowrap; line-height: 1.4;">
+                                        <i class="fas fa-star"></i> Current
+                                    </span>
+                                @endif
+                            </label>
+                            <select name="academic_year_id" id="filter_academic_year_id" class="modern-select text-sm font-medium">
                                 @foreach ($years as $year)
                                     <option value="{{ $year->id }}"
                                         {{ (string) $yearId === (string) $year->id ? 'selected' : '' }}>
@@ -72,8 +91,8 @@
 
                         <div style="flex: 2; min-width: 160px;">
                             <label class="block text-sm font-extrabold mb-1.5" style="color: #105c3a;">မြို့နယ်</label>
-                            <select name="township_id" class="modern-select text-sm font-medium">
-                                <option value="">မြို့နယ်ရွေးချယ်ပါ</option>
+                            <select name="township_id" id="filter_township_id" class="modern-select text-sm font-medium">
+                                <option value="">မြို့နယ်အားလုံး</option>
                                 @foreach ($townships as $t)
                                     <option value="{{ $t->id }}"
                                         {{ (string) $townshipId === (string) $t->id ? 'selected' : '' }}>
@@ -84,14 +103,29 @@
                         </div>
                     </div>
                 </form>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const form = document.getElementById('textbookFilterForm');
+                        if (!form) return;
+                        ['filter_academic_year_id', 'filter_township_id'].forEach(function (id) {
+                            document.getElementById(id)?.addEventListener('change', function () {
+                                form.submit();
+                            });
+                        });
+                    });
+                </script>
             </div>
         </div>
 
-        {{-- Data Table (plain, outside card) --}}
+        {{-- Data / empty state --}}
         @if (empty($blocks))
-            <div class="bg-amber-50 border border-amber-200 text-amber-800 rounded-xl p-4 text-center font-medium mt-4">
-                <i class="fas fa-exclamation-triangle mr-2 text-amber-600"></i>
-                အချက်အလက် မရှိသေးပါ။
+            <div class="modern-card mt-4">
+                <div class="modern-card-body p-5 text-center">
+                    <i class="fas fa-inbox text-3xl mb-3 block" style="color: #94a3b8;"></i>
+                    <p class="mb-0 font-medium text-base" style="color: #475569;">
+                        {{ $emptyMessage ?? 'အချက်အလက်မရှိပါ' }}
+                    </p>
+                </div>
             </div>
         @else
             <div class="modern-table-container mt-4">

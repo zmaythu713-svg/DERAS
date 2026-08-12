@@ -111,7 +111,7 @@
             <option value="">ပညာသင်နှစ်ရွေးချယ်ပါ</option>
             @foreach ($years as $year)
                 <option value="{{ $year->id }}"
-                    {{ old('academic_year_id', $textbook->academic_year_id ?? '') == $year->id ? 'selected' : '' }}>
+                    {{ (string) old('academic_year_id', $textbook->academic_year_id ?? ($preselectedYearId ?? $currentYearId ?? '')) === (string) $year->id ? 'selected' : '' }}>
                     {{ $year->name }}
                 </option>
             @endforeach
@@ -126,7 +126,7 @@
             <option value="">မြို့နယ်ရွေးချယ်ပါ</option>
             @foreach ($townships as $township)
                 <option value="{{ $township->id }}"
-                    {{ old('township_id', $textbook->township_id ?? '') == $township->id ? 'selected' : '' }}>
+                    {{ (string) old('township_id', $textbook->township_id ?? ($preselectedTownshipId ?? '')) === (string) $township->id ? 'selected' : '' }}>
                     {{ $township->name }}
                 </option>
             @endforeach
@@ -158,12 +158,14 @@
         <select name="book_name_id" id="book_name_id" class="form-select" required
             data-placeholder="ဘာသာရပ်အမည်ရွေးချယ်ပါ">
             <option value="">ဘာသာရပ်အမည်ရွေးချယ်ပါ</option>
-            @foreach ($bookNames as $bookName)
-                <option value="{{ $bookName->id }}"
-                    {{ old('book_name_id', $textbook->book_name_id ?? '') == $bookName->id ? 'selected' : '' }}>
-                    {{ $bookName->name }}
-                </option>
-            @endforeach
+            @php $selectedBookId = old('book_name_id', $textbook->book_name_id ?? ''); @endphp
+            @if ($selectedBookId)
+                @foreach ($bookNames as $bookName)
+                    @if ((string) $bookName->id === (string) $selectedBookId)
+                        <option value="{{ $bookName->id }}" selected>{{ $bookName->name }}</option>
+                    @endif
+                @endforeach
+            @endif
         </select>
     </div>
 
@@ -172,8 +174,8 @@
             <i class="fas fa-boxes me-1"></i>တစ်အိတ်ပါ ယူနစ်
         </label>
         <input type="number" name="books_per_set" id="books_per_set" class="form-control calc-input"
-            value="{{ old('books_per_set', $textbook->books_per_set ?? '') }}"
-            min="0" readonly>
+            value="{{ \App\Support\FormValue::number(old('books_per_set', $textbook->books_per_set ?? null)) }}"
+            min="0" readonly placeholder="0">
     </div>
 
     <div class="col-md-4 ps-md-3">
@@ -181,8 +183,8 @@
             <i class="fas fa-sort-numeric-up-alt me-1"></i>ထုတ်ပေးသည့် အုပ်ရေ
         </label>
         <input type="number" name="student_count" id="student_count" class="form-control calc-input"
-            value="{{ old('student_count', $textbook->student_count ?? '') }}"
-            min="0" readonly>
+            value="{{ \App\Support\FormValue::number(old('student_count', $textbook->student_count ?? null)) }}"
+            min="0" readonly placeholder="0">
     </div>
 </div>
 

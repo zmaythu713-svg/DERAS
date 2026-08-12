@@ -132,7 +132,7 @@
                     <div class="row mb-4">
                         <div class="col-md-6 mb-3 mb-md-0">
                             <label class="form-label"><i class="fas fa-user me-1"></i> အမည် <span class="text-danger">*</span></label>
-                            <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $user->name) }}" required placeholder="အမည် ထည့်သွင်းပါ">
+                            <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $user->name) }}" required placeholder="အမည် ထည့်သွင်းပါ" data-validate="name" data-label="အမည်">
                             @error('name')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -162,7 +162,7 @@
                         <div class="col-md-6">
                             <label class="form-label"><i class="fas fa-lock me-1"></i> စကားဝှက်အသစ်</label>
                             <div class="position-relative">
-                                <input type="password" id="password" name="password" class="form-control @error('password') is-invalid @enderror" style="padding-right: 42px;" placeholder="မပြောင်းလဲပါက ချန်ထားပါ" minlength="6" autocomplete="new-password">
+                                <input type="password" id="password" name="password" class="form-control @error('password') is-invalid @enderror" style="padding-right: 42px;" placeholder="မပြောင်းလဲပါက ချန်ထားပါ" minlength="8" autocomplete="new-password">
                                 <i class="fas fa-eye-slash password-toggle-icon" id="password_icon" onclick="togglePassword('password','password_icon')"></i>
                             </div>
                             <small class="text-muted d-block mt-1" style="font-size: 12px;">မပြောင်းလဲချင်ပါက ကွက်လပ်ထားခဲ့ပါ။</small>
@@ -176,7 +176,7 @@
                         <div class="col-md-6">
                             <label class="form-label"><i class="fas fa-key me-1"></i> စကားဝှက် အတည်ပြုပါ</label>
                             <div class="position-relative">
-                                <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" style="padding-right: 42px;" placeholder="စကားဝှက်အသစ် ပြန်လည်ရိုက်ထည့်ပါ" data-match="password" minlength="6" autocomplete="new-password">
+                                <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" style="padding-right: 42px;" placeholder="စကားဝှက်အသစ် ပြန်လည်ရိုက်ထည့်ပါ" data-match="password" minlength="8" autocomplete="new-password">
                                 <i class="fas fa-eye-slash password-toggle-icon" id="password_confirmation_icon" onclick="togglePassword('password_confirmation','password_confirmation_icon')"></i>
                             </div>
                         </div>

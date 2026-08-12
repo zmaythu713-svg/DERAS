@@ -45,6 +45,68 @@ class AcademicYear extends Model
         return $this->status === self::STATUS_CLOSED;
     }
 
+    public function isCurrent(): bool
+    {
+        return (bool) $this->is_current;
+    }
+
+    /** Years after the active current year (e.g. 2026-2027 while current is 2025-2026). */
+    public function isFuture(): bool
+    {
+        static $currentStart = false;
+        if ($currentStart === false) {
+            $currentStart = static::query()->where('is_current', true)->value('start_year');
+            if ($currentStart === null) {
+                $currentName = static::query()->where('is_current', true)->value('name');
+                $currentStart = $currentName && preg_match('/^(\d{4})-/', $currentName, $m)
+                    ? (int) $m[1]
+                    : null;
+            }
+        }
+
+        $thisStart = $this->start_year;
+        if ($thisStart === null && $this->name && preg_match('/^(\d{4})-/', $this->name, $m)) {
+            $thisStart = (int) $m[1];
+        }
+
+        if ($currentStart === null || $thisStart === null) {
+            return false;
+        }
+
+        return (int) $thisStart > (int) $currentStart;
+    }
+
+    public function isPast(): bool
+    {
+        static $currentStart = false;
+        if ($currentStart === false) {
+            $currentStart = static::query()->where('is_current', true)->value('start_year');
+            if ($currentStart === null) {
+                $currentName = static::query()->where('is_current', true)->value('name');
+                $currentStart = $currentName && preg_match('/^(\d{4})-/', $currentName, $m)
+                    ? (int) $m[1]
+                    : null;
+            }
+        }
+
+        $thisStart = $this->start_year;
+        if ($thisStart === null && $this->name && preg_match('/^(\d{4})-/', $this->name, $m)) {
+            $thisStart = (int) $m[1];
+        }
+
+        if ($currentStart === null || $thisStart === null) {
+            return false;
+        }
+
+        return (int) $thisStart < (int) $currentStart;
+    }
+
+    /** Data entry allowed for current + past years only. */
+    public function allowsDataEntry(): bool
+    {
+        return !$this->isFuture();
+    }
+
     public static function makeName(int $startYear): string
     {
         return $startYear . '-' . ($startYear + 1);

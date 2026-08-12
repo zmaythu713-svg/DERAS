@@ -1,8 +1,8 @@
 /**
  * DERAS global frontend form validation.
  * - Red border + red error text under invalid fields
- * - Supports: required, email, number min/max, minlength/maxlength,
- *   pattern, phone, password confirmation
+ * - required / email / number / phone / person-name / password
+ * - Words-only for data-validate="name"; digits for number/phone fields
  */
 (function () {
     'use strict';
@@ -17,9 +17,15 @@
         minlength: function (n) { return 'အနည်းဆုံး ' + n + ' လုံး ဖြည့်ပါ။'; },
         maxlength: function (n) { return 'အများဆုံး ' + n + ' လုံးသာ ခွင့်ပြုပါသည်။'; },
         pattern: 'ပုံစံမှန်ကန်စွာ ဖြည့်သွင်းပါ။',
-        phone: 'ဖုန်းနံပါတ် မှန်ကန်စွာ ဖြည့်ပါ။',
+        phone: 'ဖုန်းနံပါတ်သည် 09 (သို့) ၀၉ ဖြင့် စပြီး ဂဏန်း ၉ လုံး ပြည့်အောင် ဖြည့်ရမည်။ ဥပမာ — 09-450708675',
+        name: 'စကားလုံးသာ ဖြည့်ရမည် — ဂဏန်း ထည့်၍မရပါ။',
         passwordMatch: 'စကားဝှက်နှင့် မကိုက်ညီပါ။',
         select: 'ရွေးချယ်ရန် လိုအပ်ပါသည်။'
+    };
+
+    var MYANMAR_DIGIT_MAP = {
+        '၀': '0', '၁': '1', '၂': '2', '၃': '3', '၄': '4',
+        '၅': '5', '၆': '6', '၇': '7', '၈': '8', '၉': '9'
     };
 
     function isValidateableForm(form) {
@@ -87,7 +93,6 @@
         err.className = 'deras-field-error';
         err.textContent = message;
 
-        // Prefer insert after the field, or after password wrapper
         var anchor = el;
         var relativeWrap = el.closest('[style*="position: relative"], .position-relative');
         if (relativeWrap && relativeWrap.contains(el) && relativeWrap.parentElement) {
@@ -108,7 +113,6 @@
         }
         var type = (el.getAttribute('type') || '').toLowerCase();
         if (type === 'number') {
-            // Cleared / incomplete number inputs must be treated as empty
             if (el.validity && el.validity.badInput) return true;
             var raw = String(el.value == null ? '' : el.value).trim();
             if (raw === '') return true;
@@ -119,7 +123,6 @@
     }
 
     function isOptionalEmptyPassword(el) {
-        // Edit profile password fields: optional when empty
         if (el.type !== 'password') return false;
         if (el.name !== 'password' && el.name !== 'password_confirmation') return false;
         if (el.hasAttribute('required')) return false;
@@ -127,16 +130,18 @@
     }
 
     function isSkippedReadonly(el) {
-        // Permanent auto-calc fields are readonly; skip those.
+        // Auto-calc readonly fields: skip when they already have a value.
+        // Required readonly fields that are empty must still fail (important on Edit forms).
         // Password fields often use temporary readonly anti-autofill — still validate them.
         var type = (el.getAttribute('type') || '').toLowerCase();
         if (type === 'password') return false;
-        return !!(el.readOnly || el.hasAttribute('readonly'));
+        if (!(el.readOnly || el.hasAttribute('readonly'))) return false;
+        if (el.hasAttribute('required') && isEmpty(el)) return false;
+        return true;
     }
 
     function isRemarkOrOptional(el) {
         var name = (el.name || '').toLowerCase();
-        // Display-only fields (no name) — skip
         if (!name) return true;
         if (name === 'remark' || name === 'remarks' || name === 'note' || name === 'notes') return true;
         if (el.dataset.optional === '1' || el.hasAttribute('data-optional')) return true;
@@ -147,6 +152,37 @@
         var type = (el.getAttribute('type') || '').toLowerCase();
         return type === 'checkbox' || type === 'radio' || type === 'file'
             || type === 'image' || type === 'range' || type === 'color';
+    }
+
+    function isPhoneField(el, name, type) {
+        return name === 'phone' || type === 'tel' || el.dataset.validate === 'phone';
+    }
+
+    function isPersonNameField(el, name) {
+        if (el.dataset.allowDigits === '1' || el.dataset.validate === 'code') return false;
+        if (el.dataset.validate === 'name') return true;
+        if (name === 'company_name' || name === 'responsible_name') return true;
+        // Person "name" on user/profile/township forms — not grade/book/academic-year
+        if (name !== 'name') return false;
+        var action = ((el.form && el.form.getAttribute('action')) || '').toLowerCase();
+        if (action.indexOf('grade') !== -1) return false;
+        if (action.indexOf('book-name') !== -1 || action.indexOf('book_name') !== -1) return false;
+        if (action.indexOf('academic-year') !== -1 || action.indexOf('academic_year') !== -1) return false;
+        return true;
+    }
+
+    function isNumberField(el, name, type) {
+        if (isPhoneField(el, name, type)) return false;
+        return type === 'number' || el.getAttribute('inputmode') === 'numeric';
+    }
+
+    function normalizePhoneDigits(value) {
+        var digits = String(value).replace(/[၀-၉]/g, function (d) {
+            return MYANMAR_DIGIT_MAP[d] || d;
+        }).replace(/\D+/g, '');
+        if (/^959\d+/.test(digits)) digits = '0' + digits.slice(2);
+        if (/^9\d+/.test(digits) && digits.indexOf('09') !== 0) digits = '0' + digits;
+        return digits;
     }
 
     function validateField(el) {
@@ -160,20 +196,24 @@
         var type = (el.getAttribute('type') || el.tagName).toLowerCase();
         var name = el.name || '';
         var value = String(el.value == null ? '' : el.value).trim();
+        var required = el.hasAttribute('required');
 
-        // Optional empty password on edit screens
         if (isOptionalEmptyPassword(el)) return null;
         if (name === 'password_confirmation' && !el.hasAttribute('required')) {
             var pwd = el.form && el.form.querySelector('[name="password"]');
             if (pwd && isEmpty(pwd) && isEmpty(el)) return null;
         }
 
-        var isNumberField = type === 'number' || el.getAttribute('inputmode') === 'numeric';
+        var phoneField = isPhoneField(el, name, type);
+        var numberField = isNumberField(el, name, type);
+        var nameField = isPersonNameField(el, name);
 
-        // Empty number fields are coerced to 0 before validateForm — do not error on empty
         if (isEmpty(el)) {
-            if (isNonTextControl(el) && !el.hasAttribute('required')) return null;
-            if (isNumberField) return null;
+            if (!required) {
+                if (isNonTextControl(el)) return null;
+                if (numberField) return null;
+                return null;
+            }
             if (el.tagName === 'SELECT') return MSG.select;
             return MSG.required;
         }
@@ -183,20 +223,39 @@
             if (!emailRe.test(value)) return MSG.email;
         }
 
-        if (isNumberField) {
-            if (Number.isNaN(Number(value))) return MSG.number;
+        if (nameField) {
+            if (/[0-9၀-၉]/.test(value)) return MSG.name;
+            var hasLetter = false;
+            try {
+                hasLetter = /\p{L}/u.test(value);
+            } catch (e) {
+                hasLetter = /[A-Za-z\u1000-\u109F]/.test(value);
+            }
+            if (!hasLetter) return MSG.name;
+        }
 
-            // Default min is 0 (no negatives) unless data-allow-negative
+        if (numberField) {
+            // Strict numeric token (no letters / hyphens)
+            if (!/^-?\d+(\.\d+)?$/.test(value)) return MSG.number;
+            var num = Number(value);
+            if (Number.isNaN(num)) return MSG.number;
+
             var allowNeg = el.dataset.allowNegative === '1';
             var minVal = (el.hasAttribute('min') && el.min !== '')
                 ? Number(el.min)
                 : (allowNeg ? null : 0);
 
-            if (minVal !== null && !Number.isNaN(minVal) && Number(value) < minVal) {
+            if (minVal !== null && !Number.isNaN(minVal) && num < minVal) {
                 return MSG.min(minVal);
             }
-            if (el.hasAttribute('max') && el.max !== '' && Number(value) > Number(el.max)) {
+            if (el.hasAttribute('max') && el.max !== '' && num > Number(el.max)) {
                 return MSG.max(el.max);
+            }
+
+            // Default integers unless step allows decimals
+            var step = el.getAttribute('step');
+            if ((!step || step === '1') && !Number.isInteger(num)) {
+                return MSG.number;
             }
         }
 
@@ -210,9 +269,9 @@
             if (!Number.isNaN(maxL) && value.length > maxL) return MSG.maxlength(maxL);
         }
 
-        if (name === 'phone' || type === 'tel' || el.dataset.validate === 'phone') {
-            var phoneRe = /^[0-9+\-\s()]{6,20}$/;
-            if (!phoneRe.test(value)) return MSG.phone;
+        if (phoneField) {
+            var digits = normalizePhoneDigits(value);
+            if (!/^09\d{9}$/.test(digits)) return MSG.phone;
         }
 
         if (el.hasAttribute('pattern')) {
@@ -232,9 +291,8 @@
             }
         }
 
-        // Password min length when provided
-        if (name === 'password' && value !== '' && value.length < 6 && !el.hasAttribute('minlength')) {
-            return MSG.minlength(6);
+        if (name === 'password' && value !== '' && value.length < 8 && !el.hasAttribute('minlength')) {
+            return MSG.minlength(8);
         }
 
         return null;
@@ -254,25 +312,57 @@
     }
 
     function coerceEmptyNumbers(form) {
+        var coerced = [];
         Array.prototype.forEach.call(
             form.querySelectorAll('input[type="number"], input[inputmode="numeric"]'),
             function (el) {
                 if (el.disabled || isSkippedReadonly(el)) return;
                 if (!el.name || el.name === '_token' || el.name === '_method') return;
-                // Incomplete / cleared number → treat as 0
+                if (isPhoneField(el, el.name || '', (el.getAttribute('type') || '').toLowerCase())) return;
                 if (el.validity && el.validity.badInput) {
                     el.value = '0';
+                    coerced.push(el);
                     return;
                 }
                 if (String(el.value == null ? '' : el.value).trim() === '') {
                     el.value = '0';
+                    coerced.push(el);
                 }
             }
         );
+        return coerced;
+    }
+
+    function restoreCoercedNumbers(els) {
+        (els || []).forEach(function (el) {
+            if (String(el.value) === '0') el.value = '';
+        });
+    }
+
+    function blockDigitsOnNameField(el) {
+        el.addEventListener('keydown', function (e) {
+            if (e.ctrlKey || e.metaKey || e.altKey) return;
+            if (e.key.length === 1 && /[0-9၀-၉]/.test(e.key)) e.preventDefault();
+        });
+        el.addEventListener('input', function () {
+            var cleaned = this.value.replace(/[0-9၀-၉]/g, '');
+            if (cleaned !== this.value) this.value = cleaned;
+        });
+        el.addEventListener('paste', function (e) {
+            var text = '';
+            try { text = (e.clipboardData || window.clipboardData).getData('text') || ''; } catch (err) { return; }
+            if (/[0-9၀-၉]/.test(text)) {
+                e.preventDefault();
+                var insert = text.replace(/[0-9၀-၉]/g, '');
+                var start = this.selectionStart || 0;
+                var end = this.selectionEnd || 0;
+                this.value = this.value.slice(0, start) + insert + this.value.slice(end);
+            }
+        });
     }
 
     function validateForm(form) {
-        coerceEmptyNumbers(form);
+        var coerced = coerceEmptyNumbers(form);
 
         var fields = getFields(form);
         var firstInvalid = null;
@@ -288,8 +378,11 @@
             }
         });
 
+        if (!ok) {
+            restoreCoercedNumbers(coerced);
+        }
+
         if (firstInvalid) {
-            // Keep red + error on the field we focus after failed submit
             form.dataset.derasSuppressClear = '1';
             try {
                 firstInvalid.focus({ preventScroll: false });
@@ -307,12 +400,9 @@
         var form = e.target;
         if (!(form instanceof HTMLFormElement)) return;
         if (!isValidateableForm(form)) return;
-        // Allow already-confirmed DELETE submits through
         if (form.dataset.derasConfirmed === '1') return;
 
         try {
-            coerceEmptyNumbers(form);
-
             if (!validateForm(form)) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -337,14 +427,20 @@
 
         getFields(form).forEach(function (el) {
             var t = (el.getAttribute('type') || '').toLowerCase();
-            var isNumberField = t === 'number' || el.getAttribute('inputmode') === 'numeric';
+            var name = el.name || '';
+            var phoneField = isPhoneField(el, name, t);
+            var numberField = isNumberField(el, name, t);
+            var nameField = isPersonNameField(el, name);
 
-            // Enforce min=0 on editable number fields (block negatives)
-            if (isNumberField && el.dataset.allowNegative !== '1' && !el.hasAttribute('min')) {
+            if (nameField) {
+                blockDigitsOnNameField(el);
+            }
+
+            if (numberField && el.dataset.allowNegative !== '1' && !el.hasAttribute('min')) {
                 el.setAttribute('min', '0');
             }
 
-            if (isNumberField && el.dataset.allowNegative !== '1') {
+            if (numberField && el.dataset.allowNegative !== '1') {
                 el.addEventListener('keydown', function (e) {
                     if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') {
                         e.preventDefault();
@@ -361,7 +457,6 @@
                 });
             }
 
-            // Clear red/error as soon as the user focuses or edits (errors return only on submit)
             var clearOnInteract = function () {
                 if (form.dataset.derasSuppressClear === '1') return;
                 if (el.classList.contains('deras-field-invalid') || el.classList.contains('is-invalid')) {
@@ -378,7 +473,6 @@
         document.querySelectorAll('form').forEach(bindForm);
     }
 
-    // Document-level capture so edit/update submits always hit validation
     document.addEventListener('submit', onSubmitCapture, true);
 
     if (document.readyState === 'loading') {
@@ -388,7 +482,6 @@
     }
     window.addEventListener('load', boot);
 
-    // Expose for manual use
     window.DerasValidation = {
         validateForm: validateForm,
         bindForm: bindForm,

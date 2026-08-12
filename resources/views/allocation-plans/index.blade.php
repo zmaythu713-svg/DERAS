@@ -49,21 +49,37 @@
                                 <i class="fas fa-file-excel"></i>
                                 Excel ထုတ်ပါ
                             </button>
-                            <a href="{{ route('allocation-plans.create') }}" class="btn-modern-primary">
-                                <i class="fas fa-plus"></i>
-                                ဖန်တီးပါ
-                            </a>
+                            @if ($canCreate ?? true)
+                                <a href="{{ route('allocation-plans.create', array_filter(['academic_year_id' => $yearId])) }}"
+                                    class="btn-modern-primary">
+                                    <i class="fas fa-plus"></i>
+                                    ဖန်တီးပါ
+                                </a>
+                            @else
+                                <span class="btn-modern-primary"
+                                    style="opacity: 0.45; cursor: not-allowed; pointer-events: none;"
+                                    title="မရောက်သေးသောနှစ် — အချက်အလက် ထည့်မရပါ">
+                                    <i class="fas fa-plus"></i>
+                                    ဖန်တီးပါ
+                                </span>
+                            @endif
                         </div>
                     </div>
 
                     {{-- Bottom: ပညာသင်နှစ် / အတန်း / ဘာသာရပ် --}}
                     <div class="flex flex-wrap items-end gap-3 pt-3 mt-4 border-t border-slate-100">
                         <div style="flex: 2; min-width: 160px;">
-                            <label class="block text-sm font-extrabold mb-1.5" style="color: #105c3a;">ပညာသင်နှစ်</label>
-                            <select name="academic_year_id" class="text-sm font-medium modern-select">
-                                <option value="">ပညာသင်နှစ်ရွေးချယ်ပါ</option>
+                            <label class="block text-sm font-extrabold mb-1.5" style="color: #105c3a; display: flex; align-items: center; gap: 8px; flex-wrap: nowrap;">
+                                <span>ပညာသင်နှစ်</span>
+                                @if ($selectedYear?->is_current)
+                                    <span class="badge-active" style="font-size: 10px; padding: 2px 8px; white-space: nowrap; line-height: 1.4;">
+                                        <i class="fas fa-star"></i> Current
+                                    </span>
+                                @endif
+                            </label>
+                            <select name="academic_year_id" id="filter_academic_year_id" class="text-sm font-medium modern-select">
                                 @foreach ($years as $year)
-                                    <option value="{{ $year->id }}" {{ $yearId == $year->id ? 'selected' : '' }}>
+                                    <option value="{{ $year->id }}" {{ (string) $yearId === (string) $year->id ? 'selected' : '' }}>
                                         {{ $year->name }}
                                     </option>
                                 @endforeach
@@ -72,10 +88,10 @@
 
                         <div style="flex: 2; min-width: 160px;">
                             <label class="block text-sm font-extrabold mb-1.5" style="color: #105c3a;">အတန်း</label>
-                            <select name="grade_id" class="text-sm font-medium modern-select">
-                                <option value="">အတန်းရွေးချယ်ပါ</option>
+                            <select name="grade_id" id="filter_grade_id" class="text-sm font-medium modern-select">
+                                <option value="">အတန်းအားလုံး</option>
                                 @foreach ($grades as $grade)
-                                    <option value="{{ $grade->id }}" {{ $gradeId == $grade->id ? 'selected' : '' }}>
+                                    <option value="{{ $grade->id }}" {{ (string) $gradeId === (string) $grade->id ? 'selected' : '' }}>
                                         {{ $grade->name }}
                                     </option>
                                 @endforeach
@@ -84,20 +100,78 @@
 
                         <div style="flex: 2; min-width: 160px;">
                             <label class="block text-sm font-extrabold mb-1.5" style="color: #105c3a;">ဘာသာရပ်</label>
-                            <select name="book_name_id" class="text-sm font-medium modern-select">
-                                <option value="">ဘာသာရပ်အမည်ရွေးချယ်ပါ</option>
-                                @foreach ($bookNames as $book)
-                                    <option value="{{ $book->id }}" {{ $bookNameId == $book->id ? 'selected' : '' }}>
-                                        {{ $book->name }}
-                                    </option>
-                                @endforeach
+                            <select name="book_name_id" id="filter_book_name_id" class="text-sm font-medium modern-select"
+                                data-placeholder="ဘာသာရပ်အားလုံး">
+                                <option value="">ဘာသာရပ်အားလုံး</option>
+                                @if ($bookNameId)
+                                    @foreach ($bookNames as $book)
+                                        @if ((string) $book->id === (string) $bookNameId)
+                                            <option value="{{ $book->id }}" selected>{{ $book->name }}</option>
+                                        @endif
+                                    @endforeach
+                                @endif
                             </select>
                         </div>
                     </div>
                 </form>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const form = document.querySelector('form[action="{{ route('allocation-plans.index') }}"]');
+                        const yearSelect = document.getElementById('filter_academic_year_id');
+                        const gradeSelect = document.getElementById('filter_grade_id');
+                        const subjectSelect = document.getElementById('filter_book_name_id');
+                        if (!form || !window.DerasForm) return;
+
+                        async function reloadSubjects(keepSelected) {
+                            const gradeId = gradeSelect?.value;
+                            const keep = keepSelected ? (subjectSelect?.value || '') : '';
+
+                            if (!gradeId) {
+                                DerasForm.fillSelect(subjectSelect, [], '');
+                                return;
+                            }
+
+                            try {
+                                const subjects = await DerasForm.fetchJson(
+                                    '/grades/' + gradeId + '/subjects?category=textbook'
+                                );
+                                DerasForm.fillSelect(subjectSelect, subjects, keep);
+                            } catch (e) {
+                                console.error(e);
+                            }
+                        }
+
+                        yearSelect?.addEventListener('change', function () {
+                            if (gradeSelect) gradeSelect.value = '';
+                            if (subjectSelect) DerasForm.fillSelect(subjectSelect, [], '');
+                            form.submit();
+                        });
+
+                        gradeSelect?.addEventListener('change', async function () {
+                            await reloadSubjects(false);
+                            form.submit();
+                        });
+
+                        subjectSelect?.addEventListener('change', function () {
+                            form.submit();
+                        });
+
+                        reloadSubjects(true);
+                    });
+                </script>
             </div>
         </div>
 
+        @if ($plans->isEmpty())
+            <div class="modern-card mt-4">
+                <div class="modern-card-body p-5 text-center">
+                    <i class="fas fa-inbox text-3xl mb-3 block" style="color: #94a3b8;"></i>
+                    <p class="mb-0 font-medium text-base" style="color: #475569;">
+                        {{ $emptyMessage ?? 'အချက်အလက်မရှိပါ' }}
+                    </p>
+                </div>
+            </div>
+        @else
         <div class="table-responsive">
                 <table class="table text-center align-middle table-bordered table-striped township-cols" style="min-width:4200px;">
                     <thead style="background-color: #072a1e; color: #ffffff;">
@@ -312,7 +386,7 @@
                     </thead>
 
                     <tbody>
-                        @forelse($plans as $key => $plan)
+                        @foreach ($plans as $key => $plan)
                             <tr>
                                 <td>
                                     {{ $key + 1 }}
@@ -698,16 +772,11 @@
                                     </div>
                                 </td>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="40">
-                                    အချက်အလက် မရှိသေးပါ။
-                                </td>
-                            </tr>
-                        @endforelse
+                        @endforeach
                     </tbody>
                 </table>
             </div>
+        @endif
         <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/file-saver/dist/FileSaver.min.js"></script>
         <script>

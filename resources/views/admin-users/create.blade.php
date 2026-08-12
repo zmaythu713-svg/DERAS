@@ -131,7 +131,7 @@
                     <div class="row mb-4">
                         <div class="col-md-6 mb-3 mb-md-0">
                             <label class="form-label"><i class="fas fa-user me-1"></i> အမည် <span class="text-danger">*</span></label>
-                            <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" placeholder="အမည် ထည့်သွင်းပါ" required>
+                            <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" placeholder="အမည် ထည့်သွင်းပါ" required data-validate="name" data-label="အမည်">
                             @error('name')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -162,7 +162,7 @@
                         <div class="col-md-6">
                             <label class="form-label"><i class="fas fa-lock me-1"></i> စကားဝှက် <span class="text-danger">*</span></label>
                             <div class="position-relative">
-                                <input type="password" id="password" name="password" class="form-control @error('password') is-invalid @enderror" style="padding-right: 42px;" placeholder="စကားဝှက် ထည့်သွင်းပါ" required minlength="6" autocomplete="new-password">
+                                <input type="password" id="password" name="password" class="form-control @error('password') is-invalid @enderror" style="padding-right: 42px;" placeholder="စကားဝှက် ထည့်သွင်းပါ" required minlength="8" autocomplete="new-password">
                                 <i class="fas fa-eye-slash password-toggle-icon" id="password_icon" onclick="togglePassword('password','password_icon')"></i>
                             </div>
                             @error('password')
@@ -175,7 +175,7 @@
                         <div class="col-md-6">
                             <label class="form-label"><i class="fas fa-key me-1"></i> စကားဝှက် အတည်ပြုပါ <span class="text-danger">*</span></label>
                             <div class="position-relative">
-                                <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" style="padding-right: 42px;" placeholder="စကားဝှက် ပြန်လည်ရိုက်ထည့်ပါ" required minlength="6" data-match="password" autocomplete="new-password">
+                                <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" style="padding-right: 42px;" placeholder="စကားဝှက် ပြန်လည်ရိုက်ထည့်ပါ" required minlength="8" data-match="password" autocomplete="new-password">
                                 <i class="fas fa-eye-slash password-toggle-icon" id="password_confirmation_icon" onclick="togglePassword('password_confirmation','password_confirmation_icon')"></i>
                             </div>
                         </div>

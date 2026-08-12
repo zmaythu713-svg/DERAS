@@ -8,14 +8,30 @@ use App\Models\Grade;
 use App\Models\TeacherGuide;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class TeacherGuideController extends Controller
 {
     public function index(Request $request)
     {
-        $yearId = $request->academic_year_id;
+        $years = AcademicYear::where('is_active', true)
+            ->orderBy('start_year')
+            ->orderBy('name')
+            ->get();
+
+        $currentYear = AcademicYear::current()->first();
+        $yearId = $request->filled('academic_year_id')
+            ? $request->academic_year_id
+            : $currentYear?->id;
+
         $gradeId = $request->grade_id;
         $guideType = $request->guide_type;
+
+        $selectedYear = $yearId
+            ? $years->firstWhere('id', (int) $yearId) ?? AcademicYear::find($yearId)
+            : null;
+
+        $canCreate = $selectedYear?->allowsDataEntry() ?? false;
 
         $query = TeacherGuide::with(['academicYear', 'grade', 'bookName']);
 
@@ -23,81 +39,149 @@ class TeacherGuideController extends Controller
             $query->where('academic_year_id', $yearId);
         }
 
-        if ($gradeId) {
+        if ($request->filled('grade_id')) {
             $query->where('grade_id', $gradeId);
         }
 
-        if ($guideType) {
+        if ($request->filled('guide_type')) {
             $query->where('guide_type', $guideType);
         }
 
-        $teacherGuides = $query
-            ->orderBy('group_no')
-            ->orderBy('sequence_no')
-            ->get();
+        if ($selectedYear?->isFuture()) {
+            $teacherGuides = collect();
+        } else {
+            $teacherGuides = $query
+                ->orderBy('group_no')
+                ->orderBy('sequence_no')
+                ->get();
+        }
 
-        $years = AcademicYear::where('is_active', true)->orderBy('name')->get();
-        $grades = Grade::dropdownOptions();
+        $emptyMessage = 'အချက်အလက်မရှိပါ';
+        if ($selectedYear?->isFuture()) {
+            $emptyMessage = 'မရောက်သေးသောပညာသင်နှစ်ဖြစ်သဖြင့် အချက်အလက်ထည့်သွင်း၍မရနိုင်ပါ';
+        }
 
-        $selectedYear = $yearId ? AcademicYear::find($yearId) : null;
-
-        return view('teacher-guides.index', compact(
-            'teacherGuides',
-            'years',
-            'grades',
-            'yearId',
-            'gradeId',
-            'guideType',
-            'selectedYear'
-        ));
+        return view('teacher-guides.index', [
+            'teacherGuides' => $teacherGuides,
+            'years' => $years,
+            'grades' => Grade::dropdownOptions(),
+            'yearId' => $yearId,
+            'gradeId' => $gradeId,
+            'guideType' => $guideType,
+            'selectedYear' => $selectedYear,
+            'currentYear' => $currentYear,
+            'canCreate' => $canCreate,
+            'emptyMessage' => $emptyMessage,
+        ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        return view('teacher-guides.create', [
-            'years' => AcademicYear::where('is_active', true)->orderBy('name')->get(),
-            'grades' => Grade::dropdownOptions(),
-            'bookNames' => BookName::where('is_active', true)->orderBy('name')->get(),
-        ]);
+        $data = $this->formData();
+
+        if ($request->filled('academic_year_id')) {
+            $year = AcademicYear::find($request->academic_year_id);
+            if ($year && !$year->allowsDataEntry()) {
+                return redirect()
+                    ->route('teacher-guides.index', ['academic_year_id' => $year->id])
+                    ->with('error', 'မရောက်သေးသောပညာသင်နှစ်ဖြစ်သဖြင့် အချက်အလက်ထည့်သွင်း၍မရနိုင်ပါ');
+            }
+            $data['preselectedYearId'] = $request->academic_year_id;
+        }
+
+        if ($request->filled('grade_id')) {
+            $data['preselectedGradeId'] = $request->grade_id;
+        }
+
+        if ($request->filled('guide_type')) {
+            $data['preselectedGuideType'] = $request->guide_type;
+        }
+
+        return view('teacher-guides.create', $data);
     }
 
     public function store(Request $request)
     {
-        $data = $this->validatedData($request);
+        $this->assertYearAllowsDataEntry($request->input('academic_year_id'));
 
+        $data = $this->validatedData($request);
         $data['group_no'] = (TeacherGuide::max('group_no') ?? 0) + 1;
         $data['sequence_no'] = (TeacherGuide::max('sequence_no') ?? 0) + 1;
 
         TeacherGuide::create($data);
 
-        return redirect()->route('teacher-guides.index')
+        return redirect()
+            ->route('teacher-guides.index', array_filter([
+                'academic_year_id' => $request->academic_year_id,
+                'grade_id' => $request->grade_id,
+                'guide_type' => $request->guide_type,
+            ], fn ($v) => $v !== null && $v !== ''))
             ->with('success', 'အောင်မြင်စွာဖန်တီးပြီးပါပြီ.');
     }
 
     public function edit(TeacherGuide $teacherGuide)
     {
-        return view('teacher-guides.edit', [
+        return view('teacher-guides.edit', $this->formData() + [
             'teacherGuide' => $teacherGuide,
-            'years' => AcademicYear::where('is_active', true)->orderBy('name')->get(),
-            'grades' => Grade::dropdownOptions(),
-            'bookNames' => BookName::where('is_active', true)->orderBy('name')->get(),
         ]);
     }
 
     public function update(Request $request, TeacherGuide $teacherGuide)
     {
+        $this->assertYearAllowsDataEntry($request->input('academic_year_id'));
+
         $teacherGuide->update($this->validatedData($request, $teacherGuide));
 
-        return redirect()->route('teacher-guides.index')
+        return redirect()
+            ->route('teacher-guides.index', array_filter([
+                'academic_year_id' => $request->academic_year_id,
+                'grade_id' => $request->grade_id,
+                'guide_type' => $request->guide_type,
+            ], fn ($v) => $v !== null && $v !== ''))
             ->with('success', 'အောင်မြင်စွာပြင်ဆင်ပြီးပါပြီ.');
     }
 
     public function destroy(TeacherGuide $teacherGuide)
     {
+        $yearId = $teacherGuide->academic_year_id;
+        $gradeId = $teacherGuide->grade_id;
+        $guideType = $teacherGuide->guide_type;
         $teacherGuide->delete();
 
-        return redirect()->route('teacher-guides.index')
+        return redirect()
+            ->route('teacher-guides.index', array_filter([
+                'academic_year_id' => $yearId,
+                'grade_id' => $gradeId,
+                'guide_type' => $guideType,
+            ], fn ($v) => $v !== null && $v !== ''))
             ->with('success', 'အောင်မြင်စွာဖျက်ပြီးပါပြီ.');
+    }
+
+    private function formData(): array
+    {
+        $years = AcademicYear::where('is_active', true)
+            ->orderByDesc('start_year')
+            ->orderBy('name')
+            ->get()
+            ->filter(fn (AcademicYear $year) => $year->allowsDataEntry())
+            ->values();
+
+        return [
+            'years' => $years,
+            'currentYearId' => AcademicYear::current()->value('id'),
+            'grades' => Grade::dropdownOptions(),
+            'bookNames' => BookName::where('is_active', true)->orderBy('name')->get(),
+        ];
+    }
+
+    private function assertYearAllowsDataEntry(mixed $academicYearId): void
+    {
+        $year = AcademicYear::find($academicYearId);
+        if (!$year || !$year->allowsDataEntry()) {
+            throw ValidationException::withMessages([
+                'academic_year_id' => 'မရောက်သေးသောပညာသင်နှစ်ဖြစ်သဖြင့် အချက်အလက်ထည့်သွင်း၍မရနိုင်ပါ',
+            ]);
+        }
     }
 
     private function validatedData(Request $request, ?TeacherGuide $teacherGuide = null): array

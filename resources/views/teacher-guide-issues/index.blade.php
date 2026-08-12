@@ -1,6 +1,9 @@
 @extends('layouts.master')
 
 @section('content')
+    @php
+        $yearLabel = $selectedYear?->name ?? '';
+    @endphp
     <div class="app-page-container">
 
         {{-- Main Filter & Action Card (allocation-plans style) --}}
@@ -8,12 +11,16 @@
             <div class="modern-card-header" style="background: #072a1e !important; background-image: none !important; color: #ffffff !important; border-bottom: 1px solid rgba(255, 255, 255, 0.15);">
                 <h5 class="modern-card-header-title text-white text-lg font-bold">
                     <i class="fas fa-calculator text-amber-400"></i>
-                    ဆရာကိုင် / ဆရာလမ်းညွှန် စာအုပ်များ ဖြန့်ဝေထုတ်ပေးသည့်စာရင်း
+                    @if ($yearLabel)
+                        {{ $yearLabel }} ပညာသင်နှစ်အတွက် ဆရာကိုင် / ဆရာလမ်းညွှန် စာအုပ်များ ဖြန့်ဝေထုတ်ပေးသည့်စာရင်း
+                    @else
+                        ဆရာကိုင် / ဆရာလမ်းညွှန် စာအုပ်များ ဖြန့်ဝေထုတ်ပေးသည့်စာရင်း
+                    @endif
                 </h5>
             </div>
 
             <div class="modern-card-body p-4 sm:p-6">
-                <form method="GET" action="{{ route('teacher-guide-issues.index') }}" class="m-0">
+                <form method="GET" action="{{ route('teacher-guide-issues.index') }}" id="tgIssueFilterForm" class="m-0">
 
                     {{-- Top: စာအုပ်ရှာဖွေရန် + actions --}}
                     <div class="flex flex-wrap items-end justify-between gap-3">
@@ -26,7 +33,7 @@
                                     </span>
                                     <input type="text" name="search" class="modern-input text-sm font-medium"
                                         style="padding-left: 2.25rem;"
-                                        value="{{ request('search') }}"
+                                        value="{{ $search ?? '' }}"
                                         placeholder="စာအုပ်ရှာရန်...">
                                 </div>
                             </div>
@@ -48,22 +55,42 @@
                                 <i class="fas fa-file-excel"></i>
                                 Excel ထုတ်ပါ
                             </button>
-                            <a href="{{ route('teacher-guide-issues.create') }}" class="btn-modern-primary">
-                                <i class="fas fa-plus"></i>
-                                ဖန်တီးပါ
-                            </a>
+                            @if ($canCreate ?? true)
+                                <a href="{{ route('teacher-guide-issues.create', array_filter([
+                                        'academic_year_id' => $yearId,
+                                        'grade_id' => $gradeId,
+                                        'guide_type' => $guideType,
+                                    ], fn ($v) => $v !== null && $v !== '')) }}"
+                                    class="btn-modern-primary">
+                                    <i class="fas fa-plus"></i>
+                                    ဖန်တီးပါ
+                                </a>
+                            @else
+                                <span class="btn-modern-primary"
+                                    style="opacity: 0.45; cursor: not-allowed; pointer-events: none;"
+                                    title="မရောက်သေးသောနှစ် — အချက်အလက် ထည့်မရပါ">
+                                    <i class="fas fa-plus"></i>
+                                    ဖန်တီးပါ
+                                </span>
+                            @endif
                         </div>
                     </div>
 
                     {{-- Bottom: ပညာသင်နှစ် / အတန်း / အမျိုးအစား --}}
                     <div class="flex flex-wrap items-end gap-3 mt-4 pt-3 border-t border-slate-100">
-                        <div style="flex: 2; min-width: 160px;">
-                            <label class="block text-sm font-extrabold mb-1.5" style="color: #105c3a;">ပညာသင်နှစ်</label>
-                            <select name="academic_year_id" class="modern-select text-sm font-medium">
-                                <option value="">ပညာသင်နှစ်ရွေးချယ်ပါ</option>
+                        <div style="flex: 2; min-width: 200px;">
+                            <label class="block text-sm font-extrabold mb-1.5" style="color: #105c3a; display: flex; align-items: center; gap: 8px; flex-wrap: nowrap;">
+                                <span>ပညာသင်နှစ်</span>
+                                @if ($selectedYear?->is_current)
+                                    <span class="badge-active" style="font-size: 10px; padding: 2px 8px; white-space: nowrap; line-height: 1.4;">
+                                        <i class="fas fa-star"></i> Current
+                                    </span>
+                                @endif
+                            </label>
+                            <select name="academic_year_id" id="filter_academic_year_id" class="modern-select text-sm font-medium">
                                 @foreach ($years as $year)
                                     <option value="{{ $year->id }}"
-                                        {{ request('academic_year_id') == $year->id ? 'selected' : '' }}>
+                                        {{ (string) $yearId === (string) $year->id ? 'selected' : '' }}>
                                         {{ $year->name }}
                                     </option>
                                 @endforeach
@@ -72,11 +99,11 @@
 
                         <div style="flex: 2; min-width: 160px;">
                             <label class="block text-sm font-extrabold mb-1.5" style="color: #105c3a;">အတန်း</label>
-                            <select name="grade_id" class="modern-select text-sm font-medium">
-                                <option value="">အတန်းရွေးချယ်ပါ</option>
+                            <select name="grade_id" id="filter_grade_id" class="modern-select text-sm font-medium">
+                                <option value="">အတန်းအားလုံး</option>
                                 @foreach ($grades as $grade)
                                     <option value="{{ $grade->id }}"
-                                        {{ request('grade_id') == $grade->id ? 'selected' : '' }}>
+                                        {{ (string) $gradeId === (string) $grade->id ? 'selected' : '' }}>
                                         {{ $grade->name }}
                                     </option>
                                 @endforeach
@@ -85,17 +112,38 @@
 
                         <div style="flex: 2; min-width: 160px;">
                             <label class="block text-sm font-extrabold mb-1.5" style="color: #105c3a;">အမျိုးအစား</label>
-                            <select name="guide_type" class="modern-select text-sm font-medium">
-                                <option value="">အမျိုးအစားရွေးချယ်ပါ</option>
-                                <option value="ဆရာကိုင်" {{ request('guide_type') === 'ဆရာကိုင်' ? 'selected' : '' }}>ဆရာကိုင်</option>
-                                <option value="ဆရာလမ်းညွှန်" {{ request('guide_type') === 'ဆရာလမ်းညွှန်' ? 'selected' : '' }}>ဆရာလမ်းညွှန်</option>
+                            <select name="guide_type" id="filter_guide_type" class="modern-select text-sm font-medium">
+                                <option value="">အမျိုးအစားအားလုံး</option>
+                                <option value="ဆရာကိုင်" {{ $guideType === 'ဆရာကိုင်' ? 'selected' : '' }}>ဆရာကိုင်</option>
+                                <option value="ဆရာလမ်းညွှန်" {{ $guideType === 'ဆရာလမ်းညွှန်' ? 'selected' : '' }}>ဆရာလမ်းညွှန်</option>
                             </select>
                         </div>
                     </div>
                 </form>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const form = document.getElementById('tgIssueFilterForm');
+                        if (!form) return;
+                        ['filter_academic_year_id', 'filter_grade_id', 'filter_guide_type'].forEach(function (id) {
+                            document.getElementById(id)?.addEventListener('change', function () {
+                                form.submit();
+                            });
+                        });
+                    });
+                </script>
             </div>
         </div>
 
+        @if ($issues->isEmpty())
+            <div class="modern-card mt-4">
+                <div class="modern-card-body p-5 text-center">
+                    <i class="fas fa-inbox text-3xl mb-3 block" style="color: #94a3b8;"></i>
+                    <p class="mb-0 font-medium text-base" style="color: #475569;">
+                        {{ $emptyMessage ?? 'အချက်အလက်မရှိပါ' }}
+                    </p>
+                </div>
+            </div>
+        @else
         {{-- Table Section with #072a1e dark green header & customized column widths --}}
         <div class="table-responsive mt-4">
             <table class="table table-bordered table-striped text-center align-middle issue-table">
@@ -116,7 +164,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($issues as $key => $issue)
+                    @foreach($issues as $key => $issue)
                         <tr>
                             <td class="font-mono text-slate-500">{{ $key + 1 }}</td>
                             <td class="whitespace-nowrap font-medium text-slate-800">{{ $issue->grade?->name }}</td>
@@ -153,16 +201,11 @@
                                 </div>
                             </td>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="{{ 7 + count($townships) * 3 }}" class="text-muted py-4 text-center">
-                                အချက်အလက် မရှိသေးပါ။
-                            </td>
-                        </tr>
-                    @endforelse
+                    @endforeach
                 </tbody>
             </table>
         </div>
+        @endif
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
@@ -187,7 +230,7 @@
             const endColumn = getColumnLetter(totalColumns);
 
             sheet.mergeCells(`A1:${endColumn}1`);
-            sheet.getCell('A1').value = 'ဆရာကိုင် / ဆရာလမ်းညွှန် စာအုပ်များ ဖြန့်ဝေထုတ်ပေးသည့်စာရင်း';
+            sheet.getCell('A1').value = @json(($yearLabel ? $yearLabel . ' ပညာသင်နှစ်အတွက် ' : '') . 'ဆရာကိုင် / ဆရာလမ်းညွှန် စာအုပ်များ ဖြန့်ဝေထုတ်ပေးသည့်စာရင်း');
             sheet.getCell('A1').font = { bold: true, size: 16 };
             sheet.getCell('A1').alignment = { horizontal: 'center', vertical: 'middle' };
             sheet.getRow(1).height = 28;

@@ -10,6 +10,14 @@ window.DerasForm = (function () {
         return Array.from((root || document).querySelectorAll(sel));
     }
 
+    /** Keep zero blank so placeholder="0" can show on number inputs. */
+    function displayNumber(value) {
+        if (value === null || value === undefined || value === '') return '';
+        var n = Number(value);
+        if (!isNaN(n) && n === 0) return '';
+        return value;
+    }
+
     async function fetchJson(url) {
         const res = await fetch(url, {
             headers: {
@@ -129,12 +137,12 @@ window.DerasForm = (function () {
                 const data = await fetchJson('/lookups/allocation-for-textbook?' + params.toString());
                 if (data.found) {
                     if (booksPerSet) {
-                        booksPerSet.value = data.books_per_set ?? '';
+                        booksPerSet.value = displayNumber(data.books_per_set ?? '');
                         booksPerSet.readOnly = true;
                         booksPerSet.classList.add('calc-input');
                     }
                     if (issuedQty) {
-                        issuedQty.value = data.student_count ?? '';
+                        issuedQty.value = displayNumber(data.student_count ?? '');
                         issuedQty.readOnly = true;
                         issuedQty.classList.add('calc-input');
                     }
@@ -177,7 +185,7 @@ window.DerasForm = (function () {
             try {
                 const data = await fetchJson('/lookups/previous-year-balance?' + params.toString());
                 if (data.found && typeof data.previous_balance === 'number') {
-                    balanceInput.value = data.previous_balance;
+                    balanceInput.value = displayNumber(data.previous_balance);
                 }
             } catch (e) {
                 console.error(e);
@@ -214,7 +222,7 @@ window.DerasForm = (function () {
             }
             try {
                 const data = await fetchJson('/lookups/school-count?' + params.toString());
-                countInput.value = data.found ? (data.school_count ?? 0) : 0;
+                countInput.value = data.found ? displayNumber(data.school_count ?? 0) : '';
             } catch (e) {
                 console.error(e);
             }
@@ -280,7 +288,7 @@ window.DerasForm = (function () {
             }
             try {
                 const data = await fetchJson('/lookups/school-supply-quantity?' + params.toString());
-                issuedInput.value = data.found ? (data.quantity ?? 0) : 0;
+                issuedInput.value = data.found ? displayNumber(data.quantity ?? 0) : '';
                 issuedInput.dispatchEvent(new Event('input', { bubbles: true }));
                 issuedInput.dispatchEvent(new Event('change', { bubbles: true }));
             } catch (e) {
@@ -352,12 +360,12 @@ window.DerasForm = (function () {
             });
             try {
                 const data = await fetchJson('/lookups/teacher-guide-receipt?' + params.toString());
-                if (kgInput) kgInput.value = data.found ? (data.kg_to_g12_quota ?? 0) : 0;
-                if (g1Input) g1Input.value = data.found ? (data.g1_to_g5_quota ?? 0) : 0;
+                if (kgInput) kgInput.value = data.found ? displayNumber(data.kg_to_g12_quota ?? 0) : '';
+                if (g1Input) g1Input.value = data.found ? displayNumber(data.g1_to_g5_quota ?? 0) : '';
                 if (totalInput) {
                     totalInput.value = data.found
-                        ? (data.total_quota ?? ((data.kg_to_g12_quota || 0) + (data.g1_to_g5_quota || 0)))
-                        : 0;
+                        ? displayNumber(data.total_quota ?? ((data.kg_to_g12_quota || 0) + (data.g1_to_g5_quota || 0)))
+                        : '';
                 }
                 if (kgInput) kgInput.dispatchEvent(new Event('input', { bubbles: true }));
             } catch (e) {
@@ -407,12 +415,12 @@ window.DerasForm = (function () {
                 if (!issuedEl || !packageEl || !looseEl) return;
                 const issued = parseInt(issuedEl.value || '0', 10) || 0;
                 if (unit <= 0) {
-                    packageEl.value = 0;
-                    looseEl.value = 0;
+                    packageEl.value = '';
+                    looseEl.value = '';
                     return;
                 }
-                packageEl.value = Math.floor(issued / unit);
-                looseEl.value = issued % unit;
+                packageEl.value = displayNumber(Math.floor(issued / unit));
+                looseEl.value = displayNumber(issued % unit);
             });
         }
 
@@ -454,7 +462,7 @@ window.DerasForm = (function () {
             try {
                 const data = await fetchJson('/lookups/teacher-guide-receipt?' + params.toString());
                 if (districtInput) {
-                    districtInput.value = data.found ? (data.remaining_total ?? 0) : 0;
+                    districtInput.value = data.found ? displayNumber(data.remaining_total ?? 0) : '';
                 }
 
                 const issuedByName = data.found ? (data.township_issued || {}) : {};
@@ -462,7 +470,7 @@ window.DerasForm = (function () {
                     const townshipId = townshipMap[name];
                     const issuedEl = document.getElementById('issued_' + townshipId);
                     if (issuedEl) {
-                        issuedEl.value = issuedByName[name] ?? 0;
+                        issuedEl.value = displayNumber(issuedByName[name] ?? 0);
                     }
                 });
                 recalcPackages();
@@ -541,10 +549,10 @@ window.DerasForm = (function () {
             try {
                 const data = await fetchJson('/lookups/teacher-guide-receipt?' + params.toString());
                 if (fiscalInput) {
-                    fiscalInput.value = data.found ? (data.total_quota ?? 0) : 0;
+                    fiscalInput.value = data.found ? displayNumber(data.total_quota ?? 0) : '';
                 }
                 if (distributedInput) {
-                    distributedInput.value = data.found ? (data.distributed_total ?? 0) : 0;
+                    distributedInput.value = data.found ? displayNumber(data.distributed_total ?? 0) : '';
                 }
                 onRecalc();
             } catch (e) {
@@ -573,6 +581,7 @@ window.DerasForm = (function () {
         wireTeacherGuideIssueForm: wireTeacherGuideIssueForm,
         wireTeacherGuideSummaryForm: wireTeacherGuideSummaryForm,
         wireGuideTypeField: wireGuideTypeField,
+        displayNumber: displayNumber,
         fillSelect: fillSelect,
         fetchJson: fetchJson,
     };

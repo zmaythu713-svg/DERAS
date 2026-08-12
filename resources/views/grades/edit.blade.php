@@ -68,7 +68,7 @@
                     <div class="row g-3 align-items-end mb-3">
                         <div class="col-md-8">
                             <label class="form-label"><i class="fas fa-tag me-1"></i> အတန်းအမည် <span class="text-danger">*</span></label>
-                            <input type="text" name="name" class="form-control" value="{{ old('name', $grade->name) }}" required>
+                            <input type="text" name="name" class="form-control" value="{{ old('name', $grade->name) }}" required data-allow-digits="1">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label"><i class="fas fa-toggle-on me-1"></i> အခြေအနေ</label>

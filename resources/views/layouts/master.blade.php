@@ -892,8 +892,8 @@
     <script src="{{ asset('admin_folder/vendor/jquery-easing/jquery.easing.min.js') }}"></script>
     <script src="{{ asset('admin_folder/js/sb-admin-2.min.js') }}"></script>
 
-    <script src="{{ asset('js/deras-form.js') }}"></script>
-    <script src="{{ asset('js/deras-validation.js') }}?v=10"></script>
+    <script src="{{ asset('js/deras-form.js') }}?v=2"></script>
+    <script src="{{ asset('js/deras-validation.js') }}?v=18"></script>
     <script>
         const Toast = Swal.mixin({
             toast: true,

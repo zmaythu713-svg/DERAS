@@ -131,7 +131,7 @@
             <option value="">-- ရွေးချယ်ပါ --</option>
             @foreach ($years as $year)
                 <option value="{{ $year->id }}"
-                    {{ old('academic_year_id', $teacherGuideIssue->academic_year_id ?? '') == $year->id ? 'selected' : '' }}>
+                    {{ (string) old('academic_year_id', isset($teacherGuideIssue) ? $teacherGuideIssue->academic_year_id : ($preselectedYearId ?? $currentYearId ?? '')) === (string) $year->id ? 'selected' : '' }}>
                     {{ $year->name }}
                 </option>
             @endforeach
@@ -149,7 +149,7 @@
             <option value="">-- ရွေးချယ်ပါ --</option>
             @foreach ($grades as $grade)
                 <option value="{{ $grade->id }}"
-                    {{ old('grade_id', $teacherGuideIssue->grade_id ?? '') == $grade->id ? 'selected' : '' }}>
+                    {{ (string) old('grade_id', isset($teacherGuideIssue) ? $teacherGuideIssue->grade_id : ($preselectedGradeId ?? '')) === (string) $grade->id ? 'selected' : '' }}>
                     {{ $grade->name }}
                 </option>
             @endforeach
@@ -164,12 +164,13 @@
             <i class="fas fa-tags me-1"></i>အမျိုးအစား <span class="text-danger">*</span>
         </label>
         <select name="guide_type" id="guide_type" class="form-select @error('guide_type') is-invalid @enderror" required>
+            @php $selectedGuideType = old('guide_type', isset($teacherGuideIssue) ? $teacherGuideIssue->guide_type : ($preselectedGuideType ?? 'ဆရာလမ်းညွှန်')); @endphp
             <option value="ဆရာလမ်းညွှန်"
-                {{ old('guide_type', $teacherGuideIssue->guide_type ?? 'ဆရာလမ်းညွှန်') == 'ဆရာလမ်းညွှန်' ? 'selected' : '' }}>
+                {{ $selectedGuideType == 'ဆရာလမ်းညွှန်' ? 'selected' : '' }}>
                 ဆရာလမ်းညွှန်
             </option>
             <option value="ဆရာကိုင်"
-                {{ old('guide_type', $teacherGuideIssue->guide_type ?? '') == 'ဆရာကိုင်' ? 'selected' : '' }}>
+                {{ $selectedGuideType == 'ဆရာကိုင်' ? 'selected' : '' }}>
                 ဆရာကိုင်
             </option>
         </select>
@@ -203,8 +204,8 @@
             <i class="fas fa-warehouse me-1"></i>ခရိုင်ရုံးလက်ကျန် <span class="text-danger">*</span>
         </label>
         <input type="number" name="district_unit" id="district_unit" class="form-control @error('district_unit') is-invalid @enderror"
-            value="{{ old('district_unit', $teacherGuideIssue->district_unit ?? '') }}"
-            required min="0" readonly
+            value="{{ \App\Support\FormValue::number(old('district_unit', $teacherGuideIssue->district_unit ?? null)) }}"
+            required min="0" readonly placeholder="0"
             style="background-color: #eff6ff; color: #1e40af; border-color: #bfdbfe; cursor: default; font-weight: 600;">
         @error('district_unit')
             <div class="invalid-feedback">{{ $message }}</div>
@@ -216,7 +217,7 @@
             <i class="fas fa-box me-1"></i>တစ်အိတ်ပါ Unit <span class="text-danger">*</span>
         </label>
         <input type="number" id="package_unit" name="package_unit" class="form-control @error('package_unit') is-invalid @enderror"
-            value="{{ old('package_unit', $teacherGuideIssue->package_unit ?? '') }}" placeholder="0" required min="0">
+            value="{{ old('package_unit', $teacherGuideIssue->package_unit ?? '') }}" placeholder="1" required min="1">
         @error('package_unit')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
@@ -262,8 +263,8 @@
                         <input type="number" id="issued_{{ $township->id }}"
                             name="township_values[{{ $township->id }}][issued_quantity]"
                             class="form-control text-center issued-input fw-bold" data-id="{{ $township->id }}"
-                            value="{{ old('township_values.' . $township->id . '.issued_quantity', $detail->issued_quantity ?? '') }}"
-                            min="0" required readonly
+                            value="{{ \App\Support\FormValue::number(old('township_values.' . $township->id . '.issued_quantity', $detail->issued_quantity ?? null)) }}"
+                            min="0" required readonly placeholder="0"
                             style="background-color: #eff6ff; color: #1e40af; border-color: #bfdbfe; cursor: default;">
                     </td>
                     <td>
@@ -271,16 +272,16 @@
                             name="township_values[{{ $township->id }}][full_package_count]"
                             class="form-control text-center fw-bold"
                             style="background-color: #fef3c7; color: #92400e; border-color: #fde68a;"
-                            value="{{ old('township_values.' . $township->id . '.full_package_count', $detail->full_package_count ?? '') }}"
-                            placeholder="0" readonly>
+                            value="{{ \App\Support\FormValue::number(old('township_values.' . $township->id . '.full_package_count', $detail->full_package_count ?? null)) }}"
+                            placeholder="0" min="0" readonly>
                     </td>
                     <td>
                         <input type="number" id="loose_{{ $township->id }}"
                             name="township_values[{{ $township->id }}][loose_book_count]"
                             class="form-control text-center fw-bold"
                             style="background-color: #d1fae5; color: #065f46; border-color: #a7f3d0;"
-                            value="{{ old('township_values.' . $township->id . '.loose_book_count', $detail->loose_book_count ?? '') }}"
-                            placeholder="0" readonly>
+                            value="{{ \App\Support\FormValue::number(old('township_values.' . $township->id . '.loose_book_count', $detail->loose_book_count ?? null)) }}"
+                            placeholder="0" min="0" readonly>
                     </td>
                 </tr>
             @endforeach

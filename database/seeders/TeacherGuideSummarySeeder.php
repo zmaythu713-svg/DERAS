@@ -14,9 +14,22 @@ class TeacherGuideSummarySeeder extends Seeder
     public function run(): void
     {
         $year = AcademicYear::firstOrCreate(
-            ['name' => '2024-2025'],
-            ['is_active' => true]
+            ['name' => '2025-2026'],
+            [
+                'is_active' => true,
+                'is_current' => true,
+                'start_year' => 2025,
+                'end_year' => 2026,
+                'status' => AcademicYear::STATUS_ACTIVE,
+            ]
         );
+
+        // Move any old 2024-2025 summary rows onto the current year.
+        $oldYearId = AcademicYear::where('name', '2024-2025')->value('id');
+        if ($oldYearId && (int) $oldYearId !== (int) $year->id) {
+            TeacherGuideSummary::where('academic_year_id', $oldYearId)
+                ->update(['academic_year_id' => $year->id]);
+        }
 
         $rows = [
             [

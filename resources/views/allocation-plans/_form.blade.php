@@ -210,8 +210,8 @@
             <option value="">ပညာသင်နှစ်ရွေးချယ်ပါ</option>
             @foreach ($years as $year)
                 <option value="{{ $year->id }}"
-                    {{ (string) old('academic_year_id', $plan?->academic_year_id ?? ($currentYearId ?? '')) === (string) $year->id ? 'selected' : '' }}>
-                    {{ $year->name }}{{ !empty($year->is_current) ? ' (Current)' : '' }}
+                    {{ (string) old('academic_year_id', $plan?->academic_year_id ?? ($preselectedYearId ?? $currentYearId ?? '')) === (string) $year->id ? 'selected' : '' }}>
+                    {{ $year->name }}
                 </option>
             @endforeach
         </select>
@@ -247,12 +247,14 @@
             class="form-select @error('book_name_id') is-invalid @enderror" required
             data-placeholder="ဘာသာရပ်အမည်ရွေးချယ်ပါ">
             <option value="">ဘာသာရပ်အမည်ရွေးချယ်ပါ</option>
-            @foreach ($bookNames as $book)
-                <option value="{{ $book->id }}"
-                    {{ (string) old('book_name_id', $plan?->book_name_id ?? '') === (string) $book->id ? 'selected' : '' }}>
-                    {{ $book->name }}
-                </option>
-            @endforeach
+            @php $selectedBookId = old('book_name_id', $plan?->book_name_id ?? ''); @endphp
+            @if ($selectedBookId)
+                @foreach ($bookNames as $book)
+                    @if ((string) $book->id === (string) $selectedBookId)
+                        <option value="{{ $book->id }}" selected>{{ $book->name }}</option>
+                    @endif
+                @endforeach
+            @endif
         </select>
         @error('book_name_id')
             <div class="invalid-feedback"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</div>
@@ -268,7 +270,7 @@
         </label>
         <input type="number" id="received_books" name="received_books" min="0"
             class="form-control @error('received_books') is-invalid @enderror"
-            value="{{ old('received_books', $plan?->received_books ?? '') }}" placeholder="0" required>
+            value="{{ \App\Support\FormValue::number(old('received_books', $plan?->received_books)) }}" placeholder="0" required>
         @error('received_books')
             <div class="invalid-feedback"><i class="fas fa-exclamation-circle me-1"></i>{{ $message }}</div>
         @enderror
@@ -341,8 +343,8 @@
                 </label>
                 <input type="number" id="{{ $fieldName }}" name="{{ $fieldName }}" min="0"
                     class="form-control @if(!empty($group['auto'])) calc-input @endif @error($fieldName) is-invalid @enderror"
-                    value="{{ old($fieldName, $detail?->{$fieldName} ?? '') }}"
-                    placeholder="{{ !empty($group['auto']) ? ($group['hint'] ?? '0') : '0' }}"
+                    value="{{ \App\Support\FormValue::number(old($fieldName, $detail?->{$fieldName})) }}"
+                    placeholder="0"
                     required
                     @if (!empty($group['auto']) && !$isEdit) readonly @endif>
                 @error($fieldName)
@@ -477,7 +479,7 @@
                     if (data.previous_balance[key] === undefined) return;
                     // On create always autofill; on edit only if empty
                     if (!isEdit || input.value === '' || Number(input.value) === 0) {
-                        input.value = data.previous_balance[key];
+                        input.value = DerasForm.displayNumber(data.previous_balance[key]);
                     }
                 });
             } catch (e) {

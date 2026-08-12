@@ -283,6 +283,8 @@
                                         value="{{ old('name') }}"
                                         placeholder="အမည် ထည့်ပါ"
                                         required
+                                        data-validate="name"
+                                        data-label="အမည်"
                                     >
                                     @error('name')
                                         <small class="text-danger d-block mt-1">{{ $message }}</small>

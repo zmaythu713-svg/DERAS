@@ -9,14 +9,30 @@ use App\Models\Textbook;
 use App\Models\Township;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class TextbookController extends Controller
 {
     public function index(Request $request)
     {
-        $yearId = $request->academic_year_id;
+        $years = AcademicYear::where('is_active', true)
+            ->orderBy('start_year')
+            ->orderBy('name')
+            ->get();
+
+        $currentYear = AcademicYear::current()->first();
+        $yearId = $request->filled('academic_year_id')
+            ? $request->academic_year_id
+            : $currentYear?->id;
+
         $townshipId = $request->township_id;
         $search = trim((string) $request->input('search', ''));
+
+        $selectedYear = $yearId
+            ? $years->firstWhere('id', (int) $yearId) ?? AcademicYear::find($yearId)
+            : null;
+
+        $canCreate = $selectedYear?->allowsDataEntry() ?? false;
 
         $query = Textbook::with(['year', 'township', 'grade', 'bookName']);
 
@@ -24,7 +40,7 @@ class TextbookController extends Controller
             $query->where('academic_year_id', $yearId);
         }
 
-        if ($townshipId) {
+        if ($request->filled('township_id')) {
             $query->where('township_id', $townshipId);
         }
 
@@ -40,10 +56,19 @@ class TextbookController extends Controller
             });
         }
 
-        $textbooks = $query->orderBy('township_id')->orderBy('id')->get();
+        if ($selectedYear?->isFuture()) {
+            $textbooks = collect();
+        } else {
+            $textbooks = $query
+                ->orderBy('township_id')
+                ->orderBy('id')
+                ->get();
+        }
 
-        $years = AcademicYear::where('is_active', true)->orderBy('name')->get();
-        $townships = Township::dropdownOptions();
+        $emptyMessage = 'အချက်အလက်မရှိပါ';
+        if ($selectedYear?->isFuture()) {
+            $emptyMessage = 'မရောက်သေးသောပညာသင်နှစ်ဖြစ်သဖြင့် အချက်အလက်ထည့်သွင်း၍မရနိုင်ပါ';
+        }
 
         $blocks = $textbooks->groupBy('township_id')->map(function ($items) {
             return [
@@ -63,59 +88,119 @@ class TextbookController extends Controller
             ];
         })->values()->toArray();
 
-        $maxRows = collect($blocks)->max(fn($block) => count($block['rows'])) ?? 0;
+        $maxRows = collect($blocks)->max(fn ($block) => count($block['rows'])) ?? 0;
 
-        return view('textbook.index', compact(
-            'blocks',
-            'maxRows',
-            'years',
-            'townships',
-            'yearId',
-            'townshipId',
-            'search'
-        ));
+        return view('textbook.index', [
+            'blocks' => $blocks,
+            'maxRows' => $maxRows,
+            'years' => $years,
+            'townships' => Township::dropdownOptions(),
+            'yearId' => $yearId,
+            'townshipId' => $townshipId,
+            'search' => $search,
+            'selectedYear' => $selectedYear,
+            'currentYear' => $currentYear,
+            'canCreate' => $canCreate,
+            'emptyMessage' => $emptyMessage,
+        ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        return view('textbook.create', [
-            'years' => AcademicYear::where('is_active', true)->orderBy('name')->get(),
-            'townships' => Township::dropdownOptions(),
-            'grades' => Grade::dropdownOptions(),
-            'bookNames' => BookName::where('is_active', true)->orderBy('name')->get(),
-        ]);
+        $data = $this->formData();
+
+        if ($request->filled('academic_year_id')) {
+            $year = AcademicYear::find($request->academic_year_id);
+            if ($year && !$year->allowsDataEntry()) {
+                return redirect()
+                    ->route('textbook.index', ['academic_year_id' => $year->id])
+                    ->with('error', 'မရောက်သေးသောပညာသင်နှစ်ဖြစ်သဖြင့် အချက်အလက်ထည့်သွင်း၍မရနိုင်ပါ');
+            }
+            $data['preselectedYearId'] = $request->academic_year_id;
+        }
+
+        if ($request->filled('township_id')) {
+            $data['preselectedTownshipId'] = $request->township_id;
+        }
+
+        return view('textbook.create', $data);
     }
 
     public function store(Request $request)
     {
+        $this->assertYearAllowsDataEntry($request->input('academic_year_id'));
+
         Textbook::create($this->validatedData($request));
 
-        return redirect()->route('textbook.index')->with('success', 'အောင်မြင်စွာဖန်တီးပြီးပါပြီ');
+        return redirect()
+            ->route('textbook.index', array_filter([
+                'academic_year_id' => $request->academic_year_id,
+                'township_id' => $request->township_id,
+            ]))
+            ->with('success', 'အောင်မြင်စွာဖန်တီးပြီးပါပြီ');
     }
 
     public function edit(Textbook $textbook)
     {
-        return view('textbook.edit', [
+        return view('textbook.edit', $this->formData() + [
             'textbook' => $textbook,
-            'years' => AcademicYear::where('is_active', true)->orderBy('name')->get(),
-            'townships' => Township::dropdownOptions(),
-            'grades' => Grade::dropdownOptions(),
-            'bookNames' => BookName::where('is_active', true)->orderBy('name')->get(),
         ]);
     }
 
     public function update(Request $request, Textbook $textbook)
     {
+        $this->assertYearAllowsDataEntry($request->input('academic_year_id'));
+
         $textbook->update($this->validatedData($request, $textbook));
 
-        return redirect()->route('textbook.index')->with('success', 'အောင်မြင်စွာပြင်ဆင်ပြီးပါပြီ');
+        return redirect()
+            ->route('textbook.index', array_filter([
+                'academic_year_id' => $request->academic_year_id,
+                'township_id' => $request->township_id,
+            ]))
+            ->with('success', 'အောင်မြင်စွာပြင်ဆင်ပြီးပါပြီ');
     }
 
     public function destroy(Textbook $textbook)
     {
+        $yearId = $textbook->academic_year_id;
+        $townshipId = $textbook->township_id;
         $textbook->delete();
 
-        return redirect()->route('textbook.index')->with('success', 'အောင်မြင်စွာဖျက်လိုက်ပါပြီ');
+        return redirect()
+            ->route('textbook.index', array_filter([
+                'academic_year_id' => $yearId,
+                'township_id' => $townshipId,
+            ]))
+            ->with('success', 'အောင်မြင်စွာဖျက်လိုက်ပါပြီ');
+    }
+
+    private function formData(): array
+    {
+        $years = AcademicYear::where('is_active', true)
+            ->orderByDesc('start_year')
+            ->orderBy('name')
+            ->get()
+            ->filter(fn (AcademicYear $year) => $year->allowsDataEntry())
+            ->values();
+
+        return [
+            'years' => $years,
+            'currentYearId' => AcademicYear::current()->value('id'),
+            'townships' => Township::dropdownOptions(),
+            'grades' => Grade::dropdownOptions(),
+            'bookNames' => BookName::where('is_active', true)->orderBy('name')->get(),
+        ];
+    }
+
+    private function assertYearAllowsDataEntry(mixed $academicYearId): void
+    {
+        $year = AcademicYear::find($academicYearId);
+        if (!$year || !$year->allowsDataEntry()) {
+            throw ValidationException::withMessages([
+                'academic_year_id' => 'မရောက်သေးသောပညာသင်နှစ်ဖြစ်သဖြင့် အချက်အလက်ထည့်သွင်း၍မရနိုင်ပါ',
+            ]);
+        }
     }
 
     private function validatedData(Request $request, ?Textbook $textbook = null): array
