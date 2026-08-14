@@ -1,7 +1,7 @@
 @php
     $plan = $plan ?? ($allocationPlan ?? null);
     $isEdit = $plan !== null;
-    $detail = $plan?->detail;
+    $detail = $plan?->detailCompat();
 
     $districts = [
         'myanaung' => 'မြန်အောင်',
@@ -396,12 +396,12 @@
     </div>
     <div class="row mb-4" style="row-gap: 1.2rem; column-gap: 0;">
         @foreach ([
-            ['label' => 'ယခင်နှစ်လက်ကျန်စာအုပ်ဖယ်ပြီး ကျောင်းသားဦးရေ စုစုပေါင်း', 'value' => $eligibleTotal],
-            ['label' => 'ခွဲတမ်းပေးရန် အုပ်အရေအတွက် စုစုပေါင်း',       'value' => $allocationTotal],
-            ['label' => 'ကျောင်းသားဦးရေ စုစုပေါင်း',                    'value' => $studentCountTotal],
-            ['label' => 'လက်ဆင့်ကမ်း စုစုပေါင်း',                       'value' => $transferableTotal],
-            ['label' => 'ယခင်နှစ်လက်ကျန် + ထုတ်ပေး + လက်ဆင့်ကမ်း စုစုပေါင်း',       'value' => $availableTotal],
-            ['label' => 'ကျောင်းသားအရ အပိုအလို စုစုပေါင်း',             'value' => $differenceTotal],
+            ['label' => 'ယခင်နှစ်လက်ကျန်စာအုပ်ဖယ်ပြီး ကျောင်းသားဦးရေ', 'value' => $eligibleTotal],
+            ['label' => 'ခွဲတမ်းပေးရန် အုပ်အရေအတွက်',       'value' => $allocationTotal],
+            ['label' => 'ကျောင်းသားဦးရေ',                    'value' => $studentCountTotal],
+            ['label' => 'လက်ဆင့်ကမ်း',                       'value' => $transferableTotal],
+            ['label' => 'ယခင်နှစ်လက်ကျန် + ထုတ်ပေး + လက်ဆင့်ကမ်း',       'value' => $availableTotal],
+            ['label' => 'ကျောင်းသားအရ အပိုအလို',             'value' => $differenceTotal],
         ] as $idx => $item)
             @php
                 $pos = $idx % 3;

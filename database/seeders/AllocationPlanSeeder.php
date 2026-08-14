@@ -229,68 +229,26 @@ class AllocationPlanSeeder extends Seeder
                         'book_name_id' => $book->id,
                         'received_books' => $receivedBooks ?? 0,
                         'books_per_package' => $booksPerPackage ?? 0,
-                        'ratio' => is_numeric($ratio) ? $ratio : 0,
-                        'eligible_students_total' => $eligibleTotal ?? 0,
-                        'allocated_books_total' => $allocatedTotal ?? 0,
-                        'student_count_total' => $studentTotal ?? 0,
-                        'transferable_books_total' => $transferableTotal ?? 0,
-                        'available_total' => $availableTotal ?? 0,
-                        'surplus_shortage_total' => $differenceTotal ?? 0,
                         'remark' => null,
                     ]
                 );
 
-                $plan->detail()->updateOrCreate(
-                    [
-                        'allocation_plan_id' => $plan->id
-                    ],
-                    [
-                        'myanaung_students' => $eligibleMyanaung ?? 0,
-                        'kyankhin_students' => $eligibleKyankhin ?? 0,
-                        'ingapu_students' => $eligibleIngapu ?? 0,
-
-                        'myanaung_allocation' => $allocatedMyanaung ?? 0,
-                        'kyankhin_allocation' => $allocatedKyankhin ?? 0,
-                        'ingapu_allocation' => $allocatedIngapu ?? 0,
-
-                        'myanaung_package' => $myanaungFullPackage ?? 0,
-                        'myanaung_loose' => $myanaungLoose ?? 0,
-
-                        'kyankhin_package' => $kyankhinFullPackage ?? 0,
-                        'kyankhin_loose' => $kyankhinLoose ?? 0,
-
-                        'ingapu_package' => $ingapuFullPackage ?? 0,
-                        'ingapu_loose' => $ingapuLoose ?? 0,
-
-                        'myanaung_previous' => $remainingMyanaung ?? 0,
-                        'kyankhin_previous' => $remainingKyankhin ?? 0,
-                        'ingapu_previous' => $remainingIngapu ?? 0,
-
-                        'myanaung_total_students' => $studentMyanaung ?? 0,
-                        'kyankhin_total_students' => $studentKyankhin ?? 0,
-                        'ingapu_total_students' => $studentIngapu ?? 0,
-
-                        // AB:AD
-                        'myanaung_transferable' => $transferableMyanaung ?? 0,
-                        'kyankhin_transferable' => $transferableKyankhin ?? 0,
-                        'ingapu_transferable' => $transferableIngapu ?? 0,
-
-                        'myanaung_final' => $availableMyanaung ?? 0,
-                        'kyankhin_final' => $availableKyankhin ?? 0,
-                        'ingapu_final' => $availableIngapu ?? 0,
-
-                        'myanaung_difference' => $differenceMyanaung ?? 0,
-                        'kyankhin_difference' => $differenceKyankhin ?? 0,
-                        'ingapu_difference' => $differenceIngapu ?? 0,
-
-                        'total_difference' => $differenceTotal ?? 0,
-                    ]
-                );
+                $plan->syncTownshipInputs([
+                    'myanaung_previous' => $remainingMyanaung ?? 0,
+                    'kyankhin_previous' => $remainingKyankhin ?? 0,
+                    'ingapu_previous' => $remainingIngapu ?? 0,
+                    'myanaung_total_students' => $studentMyanaung ?? 0,
+                    'kyankhin_total_students' => $studentKyankhin ?? 0,
+                    'ingapu_total_students' => $studentIngapu ?? 0,
+                    'myanaung_transferable' => $transferableMyanaung ?? 0,
+                    'kyankhin_transferable' => $transferableKyankhin ?? 0,
+                    'ingapu_transferable' => $transferableIngapu ?? 0,
+                ]);
             }
         });
 
         $sync = app(TextbookFromAllocationSync::class);
-        AllocationPlan::with('detail')
+        AllocationPlan::with(['townships.township'])
             ->where('academic_year_id', $academicYear->id)
             ->each(fn (AllocationPlan $plan) => $sync->sync($plan));
     }

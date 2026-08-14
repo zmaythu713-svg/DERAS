@@ -87,6 +87,13 @@
                         box-shadow: 0 4px 14px rgba(7, 42, 30, 0.35);
                         transform: translateY(-1px);
                     }
+                    .btn-save:disabled {
+                        background: #94a3b8 !important;
+                        box-shadow: none !important;
+                        cursor: not-allowed !important;
+                        transform: none !important;
+                        opacity: 0.75;
+                    }
 
                     /* ===== Form Footer ===== */
                     .tb-form-footer {
@@ -110,25 +117,31 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('profile.update') }}">
+                <form method="POST" action="{{ route('profile.update') }}" id="profileEditForm">
                     @csrf
                     @method('PUT')
 
                     <div class="mb-4">
                         <label class="form-label"><i class="fas fa-user me-1"></i> အမည် <span class="text-danger">*</span></label>
-                        <input type="text" name="name" class="form-control" value="{{ old('name', $user->name) }}" required placeholder="အမည် ထည့်သွင်းပါ" data-validate="name" data-label="အမည်">
+                        <input type="text" name="name" id="profile_name" class="form-control"
+                            value="{{ old('name', $user->name) }}"
+                            data-original="{{ $user->name }}"
+                            required placeholder="အမည် ထည့်သွင်းပါ" data-validate="name" data-label="အမည်">
                     </div>
 
                     <div class="mb-4">
                         <label class="form-label"><i class="fas fa-envelope me-1"></i> အီးမေးလ် <span class="text-danger">*</span></label>
-                        <input type="email" name="email" class="form-control" value="{{ old('email', $user->email) }}" required placeholder="အီးမေးလ် ထည့်သွင်းပါ">
+                        <input type="email" name="email" id="profile_email" class="form-control"
+                            value="{{ old('email', $user->email) }}"
+                            data-original="{{ $user->email }}"
+                            required placeholder="အီးမေးလ် ထည့်သွင်းပါ">
                     </div>
 
                     <div class="tb-form-footer">
                         <a href="{{ route('dashboard') }}" class="btn-back">
                             <i class="fas fa-arrow-left"></i> နောက်သို့
                         </a>
-                        <button type="submit" class="btn-save">
+                        <button type="submit" class="btn-save" id="profileSubmitBtn" disabled title="ပြောင်းလဲမှု မရှိသေးပါ">
                             <i class="fas fa-pen"></i> ပြင်ဆင်ရန်
                         </button>
                     </div>
@@ -136,4 +149,35 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const nameInput = document.getElementById('profile_name');
+            const emailInput = document.getElementById('profile_email');
+            const submitBtn = document.getElementById('profileSubmitBtn');
+            const form = document.getElementById('profileEditForm');
+            if (!nameInput || !emailInput || !submitBtn || !form) return;
+
+            const originalName = (nameInput.dataset.original || '').trim();
+            const originalEmail = (emailInput.dataset.original || '').trim();
+
+            function syncSubmitState() {
+                const changed =
+                    nameInput.value.trim() !== originalName ||
+                    emailInput.value.trim() !== originalEmail;
+                submitBtn.disabled = !changed;
+                submitBtn.title = changed ? 'ပြင်ဆင်ရန်' : 'ပြောင်းလဲမှု မရှိသေးပါ';
+            }
+
+            nameInput.addEventListener('input', syncSubmitState);
+            emailInput.addEventListener('input', syncSubmitState);
+            syncSubmitState();
+
+            form.addEventListener('submit', function (e) {
+                if (submitBtn.disabled) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
 @endsection

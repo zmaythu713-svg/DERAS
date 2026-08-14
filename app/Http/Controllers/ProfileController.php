@@ -29,6 +29,14 @@ class ProfileController extends Controller
             ],
         ]);
 
+        $unchanged = trim($data['name']) === trim((string) $user->name)
+            && trim($data['email']) === trim((string) $user->email);
+
+        if ($unchanged) {
+            return redirect()->route('profile.edit')
+                ->with('error', 'ပြောင်းလဲမှု မရှိပါ');
+        }
+
         $user->update($data);
 
         return redirect()->route('profile.edit')

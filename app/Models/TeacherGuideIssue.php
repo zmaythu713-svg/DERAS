@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class TeacherGuideIssue extends Model
 {
     protected $fillable = [
+        'teacher_guide_id',
         'academic_year_id','grade_id','book_name_id','group_no','group_title',
         'guide_type','sequence_no','district_unit','package_unit','remark',
     ];
@@ -18,6 +19,7 @@ class TeacherGuideIssue extends Model
         'district_unit' => 'integer','package_unit' => 'integer',
     ];
 
+    public function teacherGuide(): BelongsTo { return $this->belongsTo(TeacherGuide::class); }
     public function academicYear(): BelongsTo { return $this->belongsTo(AcademicYear::class); }
     public function grade(): BelongsTo { return $this->belongsTo(Grade::class); }
     public function bookName(): BelongsTo { return $this->belongsTo(BookName::class); }

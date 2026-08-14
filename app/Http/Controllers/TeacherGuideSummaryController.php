@@ -122,8 +122,6 @@ class TeacherGuideSummaryController extends Controller
             $data['sequence_no'] = (TeacherGuideSummary::max('sequence_no') ?? 0) + 1;
         }
 
-        $data = $this->calculateTotals($data);
-
         TeacherGuideSummary::create($data);
 
         return redirect()
@@ -148,8 +146,6 @@ class TeacherGuideSummaryController extends Controller
         $this->assertYearAllowsDataEntry($request->input('academic_year_id'));
 
         $data = $this->validatedData($request, $teacherGuideSummary);
-        $data = $this->calculateTotals($data);
-
         $teacherGuideSummary->update($data);
 
         return redirect()
@@ -239,6 +235,8 @@ class TeacherGuideSummaryController extends Controller
         $data['group_title'] = $quota?->group_title
             ?? ($gradeName . "\n(" . $data['guide_type'] . ')');
 
+        $data['teacher_guide_id'] = $quota?->id;
+
         if ($quota) {
             $data['group_no'] = $quota->group_no;
             $data['sequence_no'] = $quota->sequence_no;
@@ -247,15 +245,4 @@ class TeacherGuideSummaryController extends Controller
         return $data;
     }
 
-    private function calculateTotals(array $data): array
-    {
-        $previous = (int) ($data['previous_balance'] ?? 0);
-        $quota = (int) ($data['fiscal_year_quota'] ?? 0);
-        $distributed = (int) ($data['distributed_books'] ?? 0);
-
-        $data['total_books'] = $previous + $quota;
-        $data['remaining_books'] = $data['total_books'] - $distributed;
-
-        return $data;
-    }
 }

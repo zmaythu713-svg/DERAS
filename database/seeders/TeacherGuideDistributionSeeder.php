@@ -3484,31 +3484,7 @@ class TeacherGuideDistributionSeeder extends Seeder
                 $g1G5Kyankhin = (int) ($row['g1_g5_kyankhin_qty'] ?? 0);
                 $g1G5Ingapu = (int) ($row['g1_g5_ingapu_qty'] ?? 0);
 
-                $totalQuota = $row['total_quota'] !== null
-                    ? (int) $row['total_quota']
-                    : $kgToG12Quota + $g1ToG5Quota;
-
-                $totalMyanaung = $row['total_myanaung_qty'] !== null
-                    ? (int) $row['total_myanaung_qty']
-                    : $kgG12Myanaung + $g1G5Myanaung;
-
-                $totalKyankhin = $row['total_kyankhin_qty'] !== null
-                    ? (int) $row['total_kyankhin_qty']
-                    : $kgG12Kyankhin + $g1G5Kyankhin;
-
-                $totalIngapu = $row['total_ingapu_qty'] !== null
-                    ? (int) $row['total_ingapu_qty']
-                    : $kgG12Ingapu + $g1G5Ingapu;
-
-                $distributedTotal = $row['distributed_total'] !== null
-                    ? (int) $row['distributed_total']
-                    : $totalMyanaung + $totalKyankhin + $totalIngapu;
-
-                $remainingTotal = $row['remaining_total'] !== null
-                    ? (int) $row['remaining_total']
-                    : $totalQuota - $distributedTotal;
-
-                TeacherGuide::updateOrCreate(
+                $guide = TeacherGuide::updateOrCreate(
                     [
                         'academic_year_id' => $year->id,
                         'grade_id' => $grade->id,
@@ -3522,25 +3498,19 @@ class TeacherGuideDistributionSeeder extends Seeder
 
                         'kg_to_g12_quota' => $kgToG12Quota,
                         'g1_to_g5_quota' => $g1ToG5Quota,
-                        'total_quota' => $totalQuota,
 
-                        'kg_g12_myanaung_qty' => $kgG12Myanaung,
-                        'kg_g12_kyankhin_qty' => $kgG12Kyankhin,
-                        'kg_g12_ingapu_qty' => $kgG12Ingapu,
-
-                        'g1_g5_myanaung_qty' => $g1G5Myanaung,
-                        'g1_g5_kyankhin_qty' => $g1G5Kyankhin,
-                        'g1_g5_ingapu_qty' => $g1G5Ingapu,
-
-                        'total_myanaung_qty' => $totalMyanaung,
-                        'total_kyankhin_qty' => $totalKyankhin,
-                        'total_ingapu_qty' => $totalIngapu,
-
-                        'distributed_total' => $distributedTotal,
-                        'remaining_total' => $remainingTotal,
                         'remark' => $row['remark'] ?? null,
                     ]
                 );
+
+                $guide->syncTownshipQtys([
+                    'kg_g12_myanaung_qty' => $kgG12Myanaung,
+                    'kg_g12_kyankhin_qty' => $kgG12Kyankhin,
+                    'kg_g12_ingapu_qty' => $kgG12Ingapu,
+                    'g1_g5_myanaung_qty' => $g1G5Myanaung,
+                    'g1_g5_kyankhin_qty' => $g1G5Kyankhin,
+                    'g1_g5_ingapu_qty' => $g1G5Ingapu,
+                ]);
             }
         });
     }

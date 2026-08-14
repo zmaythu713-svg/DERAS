@@ -230,8 +230,6 @@ class TeacherGuideIssueSeeder extends Seeder
                         'township_id' => $townships[$townshipName]->id,
                     ], [
                         'issued_quantity' => $quantity,
-                        'full_package_count' => $packages,
-                        'loose_book_count' => $loose,
                     ]);
                 }
             }

@@ -269,7 +269,6 @@
                     </td>
                     <td>
                         <input type="number" id="package_{{ $township->id }}"
-                            name="township_values[{{ $township->id }}][full_package_count]"
                             class="form-control text-center fw-bold"
                             style="background-color: #fef3c7; color: #92400e; border-color: #fde68a;"
                             value="{{ \App\Support\FormValue::number(old('township_values.' . $township->id . '.full_package_count', $detail->full_package_count ?? null)) }}"
@@ -277,7 +276,6 @@
                     </td>
                     <td>
                         <input type="number" id="loose_{{ $township->id }}"
-                            name="township_values[{{ $township->id }}][loose_book_count]"
                             class="form-control text-center fw-bold"
                             style="background-color: #d1fae5; color: #065f46; border-color: #a7f3d0;"
                             value="{{ \App\Support\FormValue::number(old('township_values.' . $township->id . '.loose_book_count', $detail->loose_book_count ?? null)) }}"

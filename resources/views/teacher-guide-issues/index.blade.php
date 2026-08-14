@@ -1,4 +1,4 @@
-@extends('layouts.master')
+﻿@extends('layouts.master')
 
 @section('content')
     @php
@@ -190,7 +190,7 @@
                                 <div class="inline-flex items-center gap-1.5">
                                     <a href="{{ route('teacher-guide-issues.edit', $issue) }}"
                                         class="btn-modern-warning" title="ပြင်ဆင်ပါ"><i class="fas fa-pen"></i></a>
-                                    @if (auth()->user()?->role === 'super')
+                                    @if (auth()->user()?->canDeleteRecords())
                                         <form action="{{ route('teacher-guide-issues.destroy', $issue) }}" method="POST"
                                             class="d-inline m-0">
                                             @csrf

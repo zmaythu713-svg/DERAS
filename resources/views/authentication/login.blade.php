@@ -310,11 +310,6 @@
                         </div>
 
                         <button type="submit" class="btn btn-login">ဝင်ရောက်မည်</button>
-
-                        <div class="login-link-row">
-                            အကောင့်မရှိသေးဘူးလား?
-                            <a href="{{ route('register') }}">အကောင့်ဖွင့်မည်</a>
-                        </div>
                     </form>
                 </div>
             </div>

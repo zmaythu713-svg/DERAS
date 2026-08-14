@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AllocationPlan;
 use App\Models\Quota;
+use App\Models\QuotaLine;
 use App\Models\Textbook;
 use App\Models\Township;
 
@@ -11,7 +12,7 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $plans = AllocationPlan::with('detail')
+        $plans = AllocationPlan::with(['townships.township'])
             ->get();
 
         $totalQuotaBooks = $this->calculateTotalAllocationBooks($plans);
@@ -55,7 +56,7 @@ class DashboardController extends Controller
 
     private function calculateQuotaStudents()
     {
-        return Quota::sum('distribution_total') ?? 0;
+        return (int) QuotaLine::query()->sum('quantity');
     }
 
     private function calculateTotalAllocationBooks($plans)
@@ -77,12 +78,7 @@ class DashboardController extends Controller
     private function calculateTotalStudents()
     {
         // ကျောင်းသားကတ် = donut chart (မူလ/အလယ်/အထက်/စက်စိုက်မွေး) နဲ့ တူညီစေရန်
-        return (int) (
-            (Quota::sum('primary_total') ?? 0)
-            + (Quota::sum('middle_total') ?? 0)
-            + (Quota::sum('high_total') ?? 0)
-            + (Quota::sum('agriculture') ?? 0)
-        );
+        return (int) QuotaLine::query()->sum('quantity');
     }
 
     private function pieChart()
@@ -140,7 +136,7 @@ class DashboardController extends Controller
         ];
 
         // Grade duplicate မဖြစ်အောင် ID ယူ
-        $plans = AllocationPlan::with('detail')
+        $plans = AllocationPlan::with(['townships.township'])
             ->whereIn('id', function ($query) {
 
                 $query->selectRaw('MIN(id)')
@@ -155,24 +151,27 @@ class DashboardController extends Controller
             if ($township == 'မြန်အောင်') {
 
                 $studentTotal = $plans->sum(function ($plan) {
+                    $detail = $plan->detailCompat();
 
-                    return $plan->detail
-                        ? $plan->detail->myanaung_total_students
+                    return $detail
+                        ? $detail->myanaung_total_students
                         : 0;
                 });
             } elseif ($township == 'ကြံခင်း') {
                 $studentTotal = $plans->sum(function ($plan) {
+                    $detail = $plan->detailCompat();
 
-                    return $plan->detail
-                        ? $plan->detail->kyankhin_total_students
+                    return $detail
+                        ? $detail->kyankhin_total_students
                         : 0;
                 });
             } else {
 
                 $studentTotal = $plans->sum(function ($plan) {
+                    $detail = $plan->detailCompat();
 
-                    return $plan->detail
-                        ? $plan->detail->ingapu_total_students
+                    return $detail
+                        ? $detail->ingapu_total_students
                         : 0;
                 });
             }
@@ -216,12 +215,10 @@ class DashboardController extends Controller
 
     private function quotaDonutChart()
     {
-        $quotas = Quota::all();
-
-        $primaryTotal = (int) $quotas->sum('primary_total');
-        $middleTotal = (int) $quotas->sum('middle_total');
-        $highTotal = (int) $quotas->sum('high_total');
-        $agriTotal = (int) $quotas->sum('agriculture');
+        $primaryTotal = (int) QuotaLine::where('school_level', 'primary')->sum('quantity');
+        $middleTotal = (int) QuotaLine::where('school_level', 'middle')->sum('quantity');
+        $highTotal = (int) QuotaLine::where('school_level', 'high')->sum('quantity');
+        $agriTotal = (int) QuotaLine::where('school_level', 'agriculture')->sum('quantity');
 
         return [
             'labels' => [
@@ -253,7 +250,7 @@ class DashboardController extends Controller
         $distributionTotal = [];
 
         // Grade duplicate မဖြစ်အောင် ID ယူ
-        $plans = AllocationPlan::with('detail')
+        $plans = AllocationPlan::with(['townships.township'])
             ->whereIn('id', function ($query) {
                 $query->selectRaw('MIN(id)')
                     ->from('allocation_plans')
@@ -263,16 +260,16 @@ class DashboardController extends Controller
 
         foreach ($townships as $township) {
             $labels[] = $township->name;
-            $quota = Quota::where('township_id', $township->id)->first();
+            $quota = Quota::with('lines')->where('township_id', $township->id)->first();
             $val = $quota ? (int) $quota->distribution_total : 0;
 
             if ($val === 0) {
                 if ($township->name == 'မြန်အောင်') {
-                    $val = (int) $plans->sum(fn($p) => $p->detail ? $p->detail->myanaung_total_students : 0);
+                    $val = (int) $plans->sum(fn ($p) => ($d = $p->detailCompat()) ? $d->myanaung_total_students : 0);
                 } elseif ($township->name == 'ကြံခင်း') {
-                    $val = (int) $plans->sum(fn($p) => $p->detail ? $p->detail->kyankhin_total_students : 0);
+                    $val = (int) $plans->sum(fn ($p) => ($d = $p->detailCompat()) ? $d->kyankhin_total_students : 0);
                 } else {
-                    $val = (int) $plans->sum(fn($p) => $p->detail ? $p->detail->ingapu_total_students : 0);
+                    $val = (int) $plans->sum(fn ($p) => ($d = $p->detailCompat()) ? $d->ingapu_total_students : 0);
                 }
             }
 

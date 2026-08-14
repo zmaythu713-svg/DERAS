@@ -87,13 +87,14 @@ class AcademicYearRollover
             ->get()
             ->keyBy('name');
 
-        $plans = AllocationPlan::with('detail')
+        $plans = AllocationPlan::with(['townships.township'])
             ->where('academic_year_id', $from->id)
             ->get();
 
         if ($plans->isNotEmpty()) {
             foreach ($plans as $plan) {
-                if (!$plan->detail) {
+                $compat = $plan->detailCompat();
+                if (!$compat) {
                     continue;
                 }
 
@@ -105,8 +106,8 @@ class AcademicYearRollover
 
                     // Ending leftover for next year:
                     // prefer positive difference (surplus), else keep previous remaining stock concept.
-                    $difference = (int) ($plan->detail->{"{$key}_difference"} ?? 0);
-                    $previous = (int) ($plan->detail->{"{$key}_previous"} ?? 0);
+                    $difference = (int) ($compat->{"{$key}_difference"} ?? 0);
+                    $previous = (int) ($compat->{"{$key}_previous"} ?? 0);
                     $balance = $difference > 0 ? $difference : max(0, $previous);
 
                     PreviousYearBalance::updateOrCreate(

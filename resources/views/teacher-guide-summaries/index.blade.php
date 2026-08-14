@@ -1,4 +1,4 @@
-@extends('layouts.master')
+﻿@extends('layouts.master')
 
 @section('content')
     @php
@@ -181,7 +181,7 @@
                                         class="btn-modern-warning" title="ပြင်ဆင်ပါ">
                                         <i class="fas fa-pen"></i>
                                     </a>
-                                    @if (auth()->user()?->role === 'super')
+                                    @if (auth()->user()?->canDeleteRecords())
                                         <form method="POST" action="{{ route('teacher-guide-summaries.destroy', $row->id) }}" class="d-inline m-0">
                                             @csrf
                                             @method('DELETE')

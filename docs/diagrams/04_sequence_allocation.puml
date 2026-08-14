@@ -1,0 +1,40 @@
+@startuml DERAS_Sequence_Allocation
+!theme plain
+title DERAS — Sequence: Create Allocation Plan\n(Textbook path)
+
+actor Admin
+participant "Browser" as UI
+participant "AllocationPlanController" as Ctrl
+participant "AllocationCalculator" as Calc
+participant "AllocationPlan" as Plan
+participant "allocation_plan_townships" as APT
+participant "TextbookFromAllocationSync" as Sync
+database "MySQL" as DB
+
+Admin -> UI : Open Allocation Plan Create
+UI -> Ctrl : GET /allocation-plans/create
+Ctrl --> UI : Form (year, grade, book, townships)
+
+Admin -> UI : Submit form
+UI -> Ctrl : POST /allocation-plans\n(previous, total_students, transferable…)
+Ctrl -> Ctrl : assertYearAllowsDataEntry()
+Ctrl -> Ctrl : validate request
+
+Ctrl -> Calc : compute(validated)
+Calc --> Ctrl : plan fields + township inputs
+
+Ctrl -> DB : BEGIN transaction
+Ctrl -> Plan : create(plan base fields)
+Plan -> DB : INSERT allocation_plans
+Ctrl -> Plan : syncTownshipInputs(townships)
+Plan -> APT : updateOrCreate per township
+APT -> DB : INSERT allocation_plan_townships × 3
+
+Ctrl -> Sync : sync(plan)
+Sync -> DB : upsert textbooks from plan
+
+Ctrl -> DB : COMMIT
+Ctrl --> UI : Redirect index + success
+UI --> Admin : List shows computed totals\n(via accessors / detailCompat)
+
+@enduml

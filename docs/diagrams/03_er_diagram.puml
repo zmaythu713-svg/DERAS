@@ -1,0 +1,246 @@
+@startuml DERAS_ER
+!theme plain
+title DERAS — ER Diagram (Normalized Core)
+hide circle
+skinparam linetype ortho
+
+entity "users" as users {
+  * id : bigint <<PK>>
+  --
+  name : string
+  email : string <<UQ>>
+  role : string
+  password : string
+}
+
+entity "academic_years" as years {
+  * id : bigint <<PK>>
+  --
+  name : string
+  start_year : int
+  end_year : int
+  is_current : bool
+  is_active : bool
+}
+
+entity "townships" as towns {
+  * id : bigint <<PK>>
+  --
+  name : string
+  is_active : bool
+}
+
+entity "grades" as grades {
+  * id : bigint <<PK>>
+  --
+  name : string
+  is_active : bool
+}
+
+entity "book_names" as books {
+  * id : bigint <<PK>>
+  --
+  name : string
+  is_active : bool
+}
+
+entity "categories" as cats {
+  * id : bigint <<PK>>
+  --
+  name : string
+  slug : string
+}
+
+entity "grade_book_names" as gbn {
+  * id : bigint <<PK>>
+  --
+  * grade_id : FK
+  * book_name_id : FK
+  * category_id : FK
+}
+
+entity "quotas" as quotas {
+  * id : bigint <<PK>>
+  --
+  * academic_year_id : FK
+  * township_id : FK
+  primary_public / monk / private
+  middle_public / monk / private
+  high_public / monk / private
+  agriculture
+}
+
+entity "allocation_plans" as plans {
+  * id : bigint <<PK>>
+  --
+  * academic_year_id : FK
+  * grade_id : FK
+  * book_name_id : FK
+  sequence_no
+  received_books
+  books_per_package
+  remark
+}
+
+entity "allocation_plan_townships" as apt {
+  * id : bigint <<PK>>
+  --
+  * allocation_plan_id : FK
+  * township_id : FK
+  previous
+  total_students
+  transferable
+}
+
+entity "textbooks" as tb {
+  * id : bigint <<PK>>
+  --
+  * academic_year_id : FK
+  * township_id : FK
+  * grade_id : FK
+  * book_name_id : FK
+  books_per_set
+  student_count
+}
+
+entity "stocks" as stocks {
+  * id : bigint <<PK>>
+  --
+  * academic_year_id : FK
+  * township_id : FK
+  * grade_id : FK
+  * book_name_id : FK
+  previous_balance
+  transferred
+  enrolled_need
+  required_qty
+}
+
+entity "teacher_guides" as tg {
+  * id : bigint <<PK>>
+  --
+  * academic_year_id : FK
+  * grade_id : FK
+  * book_name_id : FK
+  guide_type
+  group_no / group_title / sequence_no
+  kg_to_g12_quota
+  g1_to_g5_quota
+}
+
+entity "teacher_guide_township_allocations" as tgta {
+  * id : bigint <<PK>>
+  --
+  * teacher_guide_id : FK
+  * township_id : FK
+  kg_g12_qty
+  g1_g5_qty
+}
+
+entity "teacher_guide_issues" as tgi {
+  * id : bigint <<PK>>
+  --
+  * academic_year_id : FK
+  * grade_id : FK
+  * book_name_id : FK
+  guide_type
+  district_unit
+  package_unit
+}
+
+entity "teacher_guide_issue_townships" as tgit {
+  * id : bigint <<PK>>
+  --
+  * teacher_guide_issue_id : FK
+  * township_id : FK
+  issued_quantity
+}
+
+entity "teacher_guide_summaries" as tgs {
+  * id : bigint <<PK>>
+  --
+  * academic_year_id : FK
+  * grade_id : FK
+  * book_name_id : FK
+  guide_type
+  previous_balance
+  fiscal_year_quota
+  distributed_books
+}
+
+entity "school_supply_items" as ssi {
+  * id : bigint <<PK>>
+  --
+  name
+  rate
+}
+
+entity "school_supply_allocations" as ssa {
+  * id : bigint <<PK>>
+  --
+  * academic_year_id : FK
+  * grade_id : FK
+  township_id : FK
+  * school_supply_item_id : FK
+  school_count
+  quantity
+}
+
+entity "supply_items" as si {
+  * id : bigint <<PK>>
+  --
+  name
+}
+
+entity "supply_details" as sd {
+  * id : bigint <<PK>>
+  --
+  * academic_year_id : FK
+  * township_id : FK
+  * grade_id : FK
+  * supply_item_id : FK
+  unit
+  issued_total
+}
+
+entity "company_contacts" as cc {
+  * id : bigint <<PK>>
+  --
+  company_name
+  lot
+  responsible_name
+  phone
+  is_active
+}
+
+years ||--o{ quotas
+towns ||--o{ quotas
+years ||--o{ plans
+grades ||--o{ plans
+books ||--o{ plans
+plans ||--|{ apt
+towns ||--o{ apt
+
+years ||--o{ tb
+towns ||--o{ tb
+grades ||--o{ gbn
+books ||--o{ gbn
+cats ||--o{ gbn
+
+years ||--o{ tg
+grades ||--o{ tg
+books ||--o{ tg
+tg ||--|{ tgta
+towns ||--o{ tgta
+
+years ||--o{ tgi
+tgi ||--|{ tgit
+towns ||--o{ tgit
+
+years ||--o{ tgs
+years ||--o{ ssa
+ssi ||--o{ ssa
+years ||--o{ sd
+si ||--o{ sd
+
+@enduml

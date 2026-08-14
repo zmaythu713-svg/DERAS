@@ -30,7 +30,7 @@
         display: grid;
         grid-template-columns: 1fr;
         gap: 6px;
-        max-height: 280px;
+        max-height: 420px;
         overflow-y: auto;
         padding-right: 2px;
     }

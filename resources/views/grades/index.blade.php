@@ -1,21 +1,12 @@
-@extends('layouts.master')
+﻿@extends('layouts.master')
 
 @section('content')
-    @php
-        $categoryOrder = ['textbook', 'teacher_handbook', 'teacher_guide'];
-        $orderedCategories = collect($categoryOrder)
-            ->map(fn ($slug) => $categories->firstWhere('slug', $slug))
-            ->filter();
-
-
-    @endphp
-
     <div class="app-page-container">
 
         <div class="modern-card">
             <div class="modern-card-header" style="background: #072a1e !important; background-image: none !important; color: #ffffff !important; border-bottom: 1px solid rgba(255, 255, 255, 0.15);">
                 <h5 class="modern-card-header-title text-white text-lg font-bold">
-                    <i class="fas fa-graduation-cap text-amber-400"></i>
+                    <i class="fas fa-layer-group text-amber-400"></i>
                     အတန်းများ စာရင်း
                 </h5>
             </div>
@@ -30,7 +21,7 @@
                                     <i class="fas fa-search" style="color: #16a34a;"></i>
                                 </span>
                                 <input type="text" name="search" class="modern-input text-sm font-medium" style="padding-left: 2.25rem;"
-                                    placeholder="အတန်းများရှာဖွေရန်..." value="{{ request('search') }}">
+                                    placeholder="အတန်းရှာဖွေရန်..." value="{{ request('search') }}">
                             </div>
                         </div>
 
@@ -56,48 +47,23 @@
         </div>
 
         <div class="modern-table-container mt-4">
-            <table class="modern-table" style="min-width: 1100px;">
+            <table class="modern-table">
                 <thead style="background-color: #072a1e; color: #ffffff;">
                     <tr>
-                        <th style="width: 50px;">စဉ်</th>
-                        <th style="width: 110px;">အတန်းအမည်</th>
-                        @foreach ($orderedCategories as $category)
-                            <th>{{ $category->name_mm }}</th>
-                        @endforeach
-                        <th style="width: 130px;">အခြေအနေ</th>
-                        <th style="width: 140px;">လုပ်ဆောင်ချက်</th>
+                        <th style="width: 80px;">စဉ်</th>
+                        <th>အတန်းအမည်</th>
+                        <th style="width: 160px;">အခြေအနေ</th>
+                        <th style="width: 180px;">လုပ်ဆောင်ချက်</th>
                     </tr>
                 </thead>
 
                 <tbody>
-                    @forelse($grades as $key => $grade)
-                        @php
-                            $grouped = $grade->bookNames->groupBy(fn ($s) => (int) $s->pivot->category_id);
-                        @endphp
+                    @forelse ($grades as $key => $grade)
                         <tr>
                             <td class="font-mono text-slate-500">{{ $key + 1 }}</td>
-                            <td class="font-semibold text-slate-800 text-center">{{ $grade->name }}</td>
-
-                            @foreach ($orderedCategories as $category)
-                                @php
-                                    $subjects = ($grouped[$category->id] ?? collect())->unique('id')->values();
-                                @endphp
-                                <td class="text-left align-top" style="padding: 10px 14px;">
-                                    @if ($subjects->isNotEmpty())
-                                        <ul style="margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:4px;">
-                                            @foreach ($subjects as $subject)
-                                                <li style="display:flex; align-items:baseline; gap:6px; font-size:13px; color:#1e293b; line-height:1.5;">
-                                                    <span style="color:#16a34a; font-size:10px; flex-shrink:0;">●</span>
-                                                    <span>{{ $subject->name }}</span>
-                                                </li>
-                                            @endforeach
-                                        </ul>
-                                    @else
-                                        <span style="color:#94a3b8; font-size:18px; display:block; text-align:center;">—</span>
-                                    @endif
-                                </td>
-                            @endforeach
-
+                            <td class="font-semibold text-slate-800 text-center">
+                                {{ $grade->name }}
+                            </td>
                             <td>
                                 @if ($grade->is_active)
                                     <span class="badge-active">
@@ -117,7 +83,7 @@
                                         <i class="fas fa-pen"></i>
                                     </a>
 
-                                    @if (auth()->user()?->role === 'super')
+                                    @if (auth()->user()?->canDeleteRecords())
                                         <form action="{{ route('grades.destroy', $grade->id) }}" method="POST"
                                             class="d-inline m-0">
                                             @csrf
@@ -132,7 +98,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ 4 + $orderedCategories->count() }}" class="text-slate-400 py-8 text-center font-medium">
+                            <td colspan="4" class="text-slate-400 py-8 text-center font-medium">
                                 <i class="fas fa-inbox text-3xl mb-2 block text-slate-300"></i>
                                 အချက်အလက် မရှိသေးပါ။
                             </td>

@@ -1,0 +1,102 @@
+@startuml DERAS_UseCase
+!theme plain
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+title DERAS — Use Case Diagram\n(District Education Resource Allocation System)
+
+left to right direction
+
+actor "Admin" as Admin
+actor "Super Admin" as Super
+
+rectangle "DERAS System" {
+  usecase "Login / Logout" as UC_Auth
+  usecase "View Dashboard" as UC_Dash
+  usecase "Manage Profile / Password" as UC_Profile
+
+  package "Master Data" {
+    usecase "Manage Academic Years" as UC_Year
+    usecase "Rollover Academic Year" as UC_Rollover
+    usecase "Manage Townships" as UC_Town
+    usecase "Manage Grades & Subjects" as UC_Grade
+    usecase "Manage Book Names" as UC_Book
+    usecase "Manage Company Contacts" as UC_Company
+    usecase "Manage Admin Users" as UC_Users
+  }
+
+  package "Textbook Allocation" {
+    usecase "Manage Student Quota" as UC_Quota
+    usecase "Create Allocation Plan" as UC_Alloc
+    usecase "Manage Textbook Issues" as UC_TB
+    usecase "Manage Stock Balance" as UC_Stock
+  }
+
+  package "School Supplies" {
+    usecase "Manage School Supply Allocations" as UC_SS
+    usecase "Manage Supply Details" as UC_SD
+  }
+
+  package "Teacher Guides" {
+    usecase "Record Guide Receipt Quota" as UC_TG_Recv
+    usecase "Distribute Guide Quota to Townships" as UC_TG_Dist
+    usecase "Issue Guides to Townships" as UC_TG_Issue
+    usecase "Teacher Guide Summary" as UC_TG_Sum
+  }
+}
+
+Admin --> UC_Auth
+Admin --> UC_Dash
+Admin --> UC_Profile
+Admin --> UC_Year
+Admin --> UC_Town
+Admin --> UC_Grade
+Admin --> UC_Book
+Admin --> UC_Company
+Admin --> UC_Quota
+Admin --> UC_Alloc
+Admin --> UC_TB
+Admin --> UC_Stock
+Admin --> UC_SS
+Admin --> UC_SD
+Admin --> UC_TG_Recv
+Admin --> UC_TG_Dist
+Admin --> UC_TG_Issue
+Admin --> UC_TG_Sum
+
+Super --> UC_Auth
+Super --> UC_Dash
+Super --> UC_Users
+Super --> UC_Rollover
+Super --> UC_Year
+Super --> UC_Town
+Super --> UC_Grade
+Super --> UC_Book
+Super --> UC_Company
+Super --> UC_Quota
+Super --> UC_Alloc
+Super --> UC_TB
+Super --> UC_Stock
+Super --> UC_SS
+Super --> UC_SD
+Super --> UC_TG_Recv
+Super --> UC_TG_Dist
+Super --> UC_TG_Issue
+Super --> UC_TG_Sum
+
+UC_Rollover ..> UC_Year : «include»
+UC_Alloc ..> UC_Quota : «include»
+UC_TB ..> UC_Alloc : «include»
+UC_TG_Dist ..> UC_TG_Recv : «include»
+UC_TG_Issue ..> UC_TG_Dist : «include»
+UC_TG_Sum ..> UC_TG_Recv : «include»
+UC_TG_Sum ..> UC_TG_Dist : «include»
+UC_Users ..> UC_Auth : «extend»
+
+note right of Super
+  Super-only:
+  - Admin user CRUD
+  - Academic year rollover
+  - Destroy sensitive master data
+end note
+
+@enduml

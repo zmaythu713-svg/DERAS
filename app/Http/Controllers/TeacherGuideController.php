@@ -207,7 +207,6 @@ class TeacherGuideController extends Controller
                 'guide_type' => 'required|in:ဆရာကိုင်,ဆရာလမ်းညွှန်',
                 'kg_to_g12_quota' => 'nullable|integer|min:0',
                 'g1_to_g5_quota' => 'nullable|integer|min:0',
-                'total_quota' => 'nullable|integer|min:0',
                 'remark' => 'nullable|string|max:255',
             ],
             [

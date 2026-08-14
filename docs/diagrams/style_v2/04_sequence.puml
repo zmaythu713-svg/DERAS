@@ -1,0 +1,34 @@
+@startuml
+skinparam shadowing false
+skinparam monochrome true
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam sequenceArrowThickness 1.2
+skinparam ParticipantPadding 12
+skinparam BoxPadding 8
+
+title Figure 4: Sequence Diagram — Create Allocation Plan
+
+actor Admin
+participant "Login / UI" as UI
+participant "AllocationPlan\nController" as Ctrl
+participant "Allocation\nCalculator" as Calc
+database "Database" as DB
+
+Admin -> UI : Open Create Form
+Admin -> UI : Enter year, grade, book,\nreceived books, township data
+UI -> Ctrl : POST /allocation-plans
+Ctrl -> Ctrl : Check login / role
+Ctrl -> Ctrl : Validate input
+Ctrl -> Ctrl : Check academic year\nallows data entry
+Ctrl -> Calc : compute()
+Calc --> Ctrl : plan + township values
+Ctrl -> DB : BEGIN
+Ctrl -> DB : INSERT allocation_plans
+Ctrl -> DB : INSERT allocation_plan_townships\n(Myanaung, Kyankhin, Ingapu)
+Ctrl -> DB : Sync textbooks
+Ctrl -> DB : COMMIT
+Ctrl --> UI : Redirect with success
+UI --> Admin : Show Allocation Plan list
+
+@enduml

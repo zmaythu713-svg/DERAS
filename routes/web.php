@@ -7,6 +7,7 @@ use App\Http\Controllers\BookNameController;
 use App\Http\Controllers\CompanyContactController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GradeController;
+use App\Http\Controllers\GradeSubjectController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QuotaController;
 use App\Http\Controllers\ResourceLookupController;
@@ -38,25 +39,38 @@ Route::middleware('auth')->group(function () {
             ->name('password.update');
     });
 
+    // Super / users.manage only
     Route::resource('admin-users', AdminUserController::class)
-        ->middlewareFor(
-            ['create', 'store', 'edit', 'update', 'destroy'],
-            'role:super'
-        );
+        ->middleware('permission:users.manage');
 
     Route::resource('townships', TownshipController::class)
-        ->middlewareFor('destroy', 'role:super');
+        ->middlewareFor('destroy', 'permission:records.delete');
 
     Route::resource('academic-years', AcademicYearController::class)
-        ->middlewareFor('destroy', 'role:super');
+        ->middlewareFor('destroy', 'permission:records.delete');
     Route::post('/academic-years/rollover', [AcademicYearController::class, 'rollover'])
         ->name('academic-years.rollover')
-        ->middleware('role:super');
+        ->middleware('permission:academic_years.rollover');
 
     Route::resource('grades', GradeController::class)
-        ->middlewareFor('destroy', 'role:super');
+        ->except(['show'])
+        ->middlewareFor('destroy', 'permission:records.delete');
     Route::get('/grades/{grade}/subjects', [GradeController::class, 'getSubjects'])
         ->name('grades.subjects');
+
+    Route::get('/grade-subjects', [GradeSubjectController::class, 'index'])
+        ->name('grade-subjects.index');
+    Route::get('/grade-subjects/create', [GradeSubjectController::class, 'create'])
+        ->name('grade-subjects.create');
+    Route::post('/grade-subjects', [GradeSubjectController::class, 'store'])
+        ->name('grade-subjects.store');
+    Route::get('/grade-subjects/{grade}/edit', [GradeSubjectController::class, 'edit'])
+        ->name('grade-subjects.edit');
+    Route::put('/grade-subjects/{grade}', [GradeSubjectController::class, 'update'])
+        ->name('grade-subjects.update');
+    Route::delete('/grade-subjects/{grade}', [GradeSubjectController::class, 'destroy'])
+        ->name('grade-subjects.destroy')
+        ->middleware('permission:records.delete');
 
     Route::prefix('lookups')->name('lookups.')->group(function () {
         Route::get('/categories', [ResourceLookupController::class, 'categories'])
@@ -74,52 +88,52 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::resource('book-names', BookNameController::class)
-        ->middlewareFor('destroy', 'role:super');
+        ->middlewareFor('destroy', 'permission:records.delete');
 
     Route::resource('textbook', TextbookController::class)
-        ->middlewareFor('destroy', 'role:super');
+        ->middlewareFor('destroy', 'permission:records.delete');
 
     Route::resource('stocks', StockController::class)
-        ->middlewareFor('destroy', 'role:super');
+        ->middlewareFor('destroy', 'permission:records.delete');
 
     Route::resource('quota', QuotaController::class)
-        ->middlewareFor('destroy', 'role:super');
+        ->middlewareFor('destroy', 'permission:records.delete');
 
     Route::resource('teacher-guides', TeacherGuideController::class)
-        ->middlewareFor('destroy', 'role:super');
+        ->middlewareFor('destroy', 'permission:records.delete');
 
     Route::resource('company-contacts', CompanyContactController::class)
-        ->middlewareFor('destroy', 'role:super');
+        ->middlewareFor('destroy', 'permission:records.delete');
 
     Route::resource('school-supplies', SchoolSupplyController::class)
-        ->middlewareFor('destroy', 'role:super');
+        ->middlewareFor('destroy', 'permission:records.delete');
 
     Route::resource('supply-details', SupplyDetailController::class)
-        ->middlewareFor('destroy', 'role:super');
+        ->middlewareFor('destroy', 'permission:records.delete');
 
     Route::resource(
         'teacher-guide-distributions',
         TeacherGuideDistributionController::class
     )
         ->except(['show'])
-        ->middlewareFor('destroy', 'role:super');
+        ->middlewareFor('destroy', 'permission:records.delete');
 
     Route::resource(
         'teacher-guide-issues',
         TeacherGuideIssueController::class
     )
-        ->middlewareFor('destroy', 'role:super');
+        ->middlewareFor('destroy', 'permission:records.delete');
 
     Route::resource(
         'teacher-guide-summaries',
         TeacherGuideSummaryController::class
     )
         ->except(['show'])
-        ->middlewareFor('destroy', 'role:super');
+        ->middlewareFor('destroy', 'permission:records.delete');
 
     Route::resource(
         'allocation-plans',
         AllocationPlanController::class
     )
-        ->middlewareFor('destroy', 'role:super');
+        ->middlewareFor('destroy', 'permission:records.delete');
 });

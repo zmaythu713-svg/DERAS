@@ -220,22 +220,22 @@
 
 <div class="row mb-4">
     <div class="col-md-4">
-        <label class="form-label"><i class="fas fa-calculator me-1"></i>KG to G-12 ခရိုင်ရရှိခွဲတမ်း</label>
+        <label class="form-label"><i class="fas fa-calculator me-1"></i>KG to G-12</label>
         <input type="number" id="kg_to_g12_quota" name="kg_to_g12_quota" class="form-control calc-blue-input"
             value="{{ \App\Support\FormValue::number(old('kg_to_g12_quota', $teacherGuide->kg_to_g12_quota ?? null)) }}"
             min="0" readonly placeholder="0">
     </div>
 
     <div class="col-md-4">
-        <label class="form-label"><i class="fas fa-calculator me-1"></i>G-1 to G-5 ခရိုင်ရရှိခွဲတမ်း</label>
+        <label class="form-label"><i class="fas fa-calculator me-1"></i>G-1 to G-5</label>
         <input type="number" id="g1_to_g5_quota" name="g1_to_g5_quota" class="form-control calc-blue-input"
             value="{{ \App\Support\FormValue::number(old('g1_to_g5_quota', $teacherGuide->g1_to_g5_quota ?? null)) }}"
             min="0" readonly placeholder="0">
     </div>
 
     <div class="col-md-4">
-        <label class="form-label"><i class="fas fa-plus-circle me-1"></i>၂ မျိုးပေါင်း ခရိုင်ရရှိခွဲတမ်း</label>
-        <input type="number" id="total_quota" name="total_quota" class="form-control fw-bold"
+        <label class="form-label"><i class="fas fa-plus-circle me-1"></i>၂ မျိုးပေါင်း</label>
+        <input type="number" id="total_quota" class="form-control fw-bold"
             style="background-color: #f0faf4; color: #105c3a; border-color: #aad6bc;"
             value="{{ \App\Support\FormValue::number(old('total_quota', $teacherGuide->total_quota ?? null)) }}"
             placeholder="0" min="0" readonly>
@@ -317,33 +317,33 @@
 
 <div class="row mb-4">
     <div class="col-md-4">
-        <label class="form-label"><i class="fas fa-poll me-1"></i>မြန်အောင် ပေါင်း</label>
-        <input type="number" id="total_myanaung_qty" name="total_myanaung_qty" class="form-control"
+        <label class="form-label"><i class="fas fa-poll me-1"></i>မြန်အောင်</label>
+        <input type="number" id="total_myanaung_qty" class="form-control"
             value="{{ \App\Support\FormValue::number(old('total_myanaung_qty', $teacherGuide->total_myanaung_qty ?? null)) }}" min="0" readonly placeholder="0">
     </div>
 
     <div class="col-md-4">
-        <label class="form-label"><i class="fas fa-poll me-1"></i>ကြံခင်း ပေါင်း</label>
-        <input type="number" id="total_kyankhin_qty" name="total_kyankhin_qty" class="form-control"
+        <label class="form-label"><i class="fas fa-poll me-1"></i>ကြံခင်း</label>
+        <input type="number" id="total_kyankhin_qty" class="form-control"
             value="{{ \App\Support\FormValue::number(old('total_kyankhin_qty', $teacherGuide->total_kyankhin_qty ?? null)) }}" min="0" readonly placeholder="0">
     </div>
 
     <div class="col-md-4">
-        <label class="form-label"><i class="fas fa-poll me-1"></i>အင်္ဂပူ ပေါင်း</label>
-        <input type="number" id="total_ingapu_qty" name="total_ingapu_qty" class="form-control"
+        <label class="form-label"><i class="fas fa-poll me-1"></i>အင်္ဂပူ</label>
+        <input type="number" id="total_ingapu_qty" class="form-control"
             value="{{ \App\Support\FormValue::number(old('total_ingapu_qty', $teacherGuide->total_ingapu_qty ?? null)) }}" min="0" readonly placeholder="0">
     </div>
 
     <div class="col-md-6 mt-3">
-        <label class="form-label"><i class="fas fa-truck-loading me-1"></i>ဖြန့်ဝေမှု စုစုပေါင်း</label>
-        <input type="number" id="distributed_total" name="distributed_total" class="form-control fw-bold"
+        <label class="form-label"><i class="fas fa-truck-loading me-1"></i>ဖြန့်ဝေမှု</label>
+        <input type="number" id="distributed_total" class="form-control fw-bold"
             style="background-color: #f0faf4; color: #105c3a;"
             value="{{ \App\Support\FormValue::number(old('distributed_total', $teacherGuide->distributed_total ?? null)) }}" min="0" readonly placeholder="0">
     </div>
 
     <div class="col-md-6 mt-3">
         <label class="form-label"><i class="fas fa-warehouse me-1"></i>ခရိုင်ရုံးလက်ကျန်</label>
-        <input type="number" id="remaining_total" name="remaining_total" class="form-control fw-bold"
+        <input type="number" id="remaining_total" class="form-control fw-bold"
             style="background-color: #fff9e6; color: #b45309;"
             value="{{ \App\Support\FormValue::number(old('remaining_total', $teacherGuide->remaining_total ?? null)) }}" min="0" readonly placeholder="0">
     </div>

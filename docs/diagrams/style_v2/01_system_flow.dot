@@ -1,0 +1,119 @@
+digraph DERAS_System_Flow {
+  graph [
+    rankdir=TB
+    bgcolor="white"
+    fontname="Arial"
+    fontsize=14
+    labelloc="t"
+    label="Figure 1: System Flow Diagram for DERAS"
+    pad=0.4
+    nodesep=0.35
+    ranksep=0.45
+  ];
+  node [fontname="Arial", fontsize=12, color="black"];
+  edge [fontname="Arial", fontsize=11, color="black"];
+
+  start [label="Start", shape=oval, style=solid];
+  login [label="Login", shape=box];
+  check [label="Check Email\nand Password", shape=diamond, width=2.2, height=1.1];
+  dash [label="View Dashboard", shape=box];
+
+  m1  [label="Manage Academic Years", shape=box];
+  m2  [label="Manage Townships", shape=box];
+  m3  [label="Manage Grades / Subjects", shape=box];
+  m4  [label="Manage Book Names", shape=box];
+  m5  [label="Manage Student Quota", shape=box];
+  m6  [label="Manage Allocation Plans", shape=box];
+  m7  [label="Manage Textbooks", shape=box];
+  m8  [label="Manage Stocks", shape=box];
+  m9  [label="Manage School Supplies", shape=box];
+  m10 [label="Manage Supply Details", shape=box];
+  m11 [label="Manage Teacher Guide Receipt", shape=box];
+  m12 [label="Manage Teacher Guide Distribution", shape=box];
+  m13 [label="Manage Teacher Guide Issues", shape=box];
+  m14 [label="Manage Teacher Guide Summaries", shape=box];
+  m15 [label="Manage Company Contacts", shape=box];
+  m16 [label="Manage Admin Users\n(Super only)", shape=box];
+  m17 [label="Manage Profile / Password", shape=box];
+  logout [label="Logout", shape=box];
+  stop [label="Stop", shape=oval];
+
+  // left spine helpers (invisible)
+  j1 [shape=point, width=0.01, height=0.01];
+  j2 [shape=point, width=0.01, height=0.01];
+  j3 [shape=point, width=0.01, height=0.01];
+  j4 [shape=point, width=0.01, height=0.01];
+  j5 [shape=point, width=0.01, height=0.01];
+  j6 [shape=point, width=0.01, height=0.01];
+  j7 [shape=point, width=0.01, height=0.01];
+  j8 [shape=point, width=0.01, height=0.01];
+  j9 [shape=point, width=0.01, height=0.01];
+  j10 [shape=point, width=0.01, height=0.01];
+  j11 [shape=point, width=0.01, height=0.01];
+  j12 [shape=point, width=0.01, height=0.01];
+  j13 [shape=point, width=0.01, height=0.01];
+  j14 [shape=point, width=0.01, height=0.01];
+  j15 [shape=point, width=0.01, height=0.01];
+  j16 [shape=point, width=0.01, height=0.01];
+  j17 [shape=point, width=0.01, height=0.01];
+  jend [shape=point, width=0.01, height=0.01];
+
+  start -> login -> check;
+  check -> login [xlabel="No", constraint=false];
+  check -> j1 [xlabel="Yes"];
+
+  j1 -> dash;  dash -> j2;
+  j1 -> m1;    m1 -> j2;
+  j2 -> m2;    m2 -> j3;
+  j2 -> j3 [style=invis];
+  j3 -> m3;    m3 -> j4;
+  j3 -> j4 [style=invis];
+  j4 -> m4;    m4 -> j5;
+  j4 -> j5 [style=invis];
+  j5 -> m5;    m5 -> j6;
+  j5 -> j6 [style=invis];
+  j6 -> m6;    m6 -> j7;
+  j6 -> j7 [style=invis];
+  j7 -> m7;    m7 -> j8;
+  j7 -> j8 [style=invis];
+  j8 -> m8;    m8 -> j9;
+  j8 -> j9 [style=invis];
+  j9 -> m9;    m9 -> j10;
+  j9 -> j10 [style=invis];
+  j10 -> m10;  m10 -> j11;
+  j10 -> j11 [style=invis];
+  j11 -> m11;  m11 -> j12;
+  j11 -> j12 [style=invis];
+  j12 -> m12;  m12 -> j13;
+  j12 -> j13 [style=invis];
+  j13 -> m13;  m13 -> j14;
+  j13 -> j14 [style=invis];
+  j14 -> m14;  m14 -> j15;
+  j14 -> j15 [style=invis];
+  j15 -> m15;  m15 -> j16;
+  j15 -> j16 [style=invis];
+  j16 -> m16;  m16 -> j17;
+  j16 -> j17 [style=invis];
+  j17 -> m17;  m17 -> jend;
+  j17 -> jend [style=invis];
+  jend -> logout -> stop;
+
+  // Keep modules aligned
+  { rank=same; j1; dash; m1 }
+  { rank=same; j2; m2 }
+  { rank=same; j3; m3 }
+  { rank=same; j4; m4 }
+  { rank=same; j5; m5 }
+  { rank=same; j6; m6 }
+  { rank=same; j7; m7 }
+  { rank=same; j8; m8 }
+  { rank=same; j9; m9 }
+  { rank=same; j10; m10 }
+  { rank=same; j11; m11 }
+  { rank=same; j12; m12 }
+  { rank=same; j13; m13 }
+  { rank=same; j14; m14 }
+  { rank=same; j15; m15 }
+  { rank=same; j16; m16 }
+  { rank=same; j17; m17 }
+}

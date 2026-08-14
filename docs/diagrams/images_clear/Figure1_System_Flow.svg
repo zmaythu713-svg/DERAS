@@ -1,0 +1,199 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="1780" viewBox="0 0 1180 1780">
+  <rect width="1180" height="1780" fill="#ffffff"/>
+  <text x="590" y="34" text-anchor="middle" font-family="Arial" font-size="20" font-weight="bold">Figure 1: System Flow Diagram for DERAS</text>
+
+  <defs>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#000"/>
+    </marker>
+  </defs>
+
+  <!-- ========== LEFT SPINE (like sample) ========== -->
+  <!-- Start -->
+  <ellipse cx="260" cy="70" rx="50" ry="20" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="260" y="75" text-anchor="middle" font-family="Arial" font-size="14">Start</text>
+  <line x1="260" y1="90" x2="260" y2="115" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- User -->
+  <rect x="185" y="115" width="150" height="36" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="260" y="138" text-anchor="middle" font-family="Arial" font-size="14">User</text>
+  <line x1="260" y1="151" x2="260" y2="175" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Home Page -->
+  <rect x="185" y="175" width="150" height="36" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="260" y="198" text-anchor="middle" font-family="Arial" font-size="14">Home Page</text>
+
+  <!-- Home -> Login -->
+  <line x1="260" y1="211" x2="260" y2="245" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Login -->
+  <rect x="185" y="245" width="150" height="36" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="260" y="268" text-anchor="middle" font-family="Arial" font-size="14">Login</text>
+  <line x1="260" y1="281" x2="260" y2="315" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Decision -->
+  <path d="M260,315 L350,370 L260,425 L170,370 Z" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="260" y="363" text-anchor="middle" font-family="Arial" font-size="12">Check Email</text>
+  <text x="260" y="381" text-anchor="middle" font-family="Arial" font-size="12">and Password</text>
+
+  <!-- No loop -->
+  <text x="152" y="365" text-anchor="end" font-family="Arial" font-size="13">No</text>
+  <path d="M170,370 L110,370 L110,263 L185,263" fill="none" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Yes to right comb -->
+  <text x="365" y="365" font-family="Arial" font-size="13">Yes</text>
+  <line x1="350" y1="370" x2="450" y2="370" stroke="#000" stroke-width="1.5"/>
+  <line x1="450" y1="370" x2="450" y2="460" stroke="#000" stroke-width="1.5"/>
+
+  <!-- ========== RIGHT COMB ========== -->
+  <!-- left bus 450 | modules 500-790 | export 820-970 | collector 1040 -->
+  <line x1="450" y1="460" x2="1040" y2="460" stroke="#000" stroke-width="1.5"/>
+  <line x1="450" y1="460" x2="450" y2="1580" stroke="#000" stroke-width="1.5"/>
+  <line x1="1040" y1="460" x2="1040" y2="1580" stroke="#000" stroke-width="1.5"/>
+
+  <g font-family="Arial" font-size="13" fill="#000">
+    <!-- helper rows: yMid = 490 + i*60 -->
+
+    <line x1="450" y1="490" x2="500" y2="490" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="500" y="470" width="290" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="645" y="495" text-anchor="middle">View Dashboard</text>
+    <line x1="790" y1="490" x2="1040" y2="490" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <line x1="450" y1="550" x2="500" y2="550" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="500" y="530" width="290" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="645" y="555" text-anchor="middle">Manage Academic Years</text>
+    <line x1="790" y1="550" x2="1040" y2="550" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <line x1="450" y1="610" x2="500" y2="610" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="500" y="590" width="290" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="645" y="615" text-anchor="middle">Manage Townships</text>
+    <line x1="790" y1="610" x2="1040" y2="610" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <line x1="450" y1="670" x2="500" y2="670" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="500" y="650" width="290" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="645" y="675" text-anchor="middle">Manage Grades / Subjects</text>
+    <line x1="790" y1="670" x2="1040" y2="670" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <line x1="450" y1="730" x2="500" y2="730" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="500" y="710" width="290" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="645" y="735" text-anchor="middle">Manage Book Names</text>
+    <line x1="790" y1="730" x2="1040" y2="730" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- Quota + Export XLSX -->
+    <line x1="450" y1="790" x2="500" y2="790" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="500" y="770" width="290" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="645" y="795" text-anchor="middle">Manage Student Quota</text>
+    <line x1="790" y1="790" x2="820" y2="790" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="820" y="770" width="150" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="895" y="795" text-anchor="middle">Export XLSX</text>
+    <line x1="970" y1="790" x2="1040" y2="790" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- Allocation + Export -->
+    <line x1="450" y1="850" x2="500" y2="850" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="500" y="830" width="290" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="645" y="855" text-anchor="middle">Manage Allocation Plans</text>
+    <line x1="790" y1="850" x2="820" y2="850" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="820" y="830" width="150" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="895" y="855" text-anchor="middle">Export XLSX</text>
+    <line x1="970" y1="850" x2="1040" y2="850" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- Textbooks + Export -->
+    <line x1="450" y1="910" x2="500" y2="910" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="500" y="890" width="290" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="645" y="915" text-anchor="middle">Manage Textbooks</text>
+    <line x1="790" y1="910" x2="820" y2="910" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="820" y="890" width="150" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="895" y="915" text-anchor="middle">Export XLSX</text>
+    <line x1="970" y1="910" x2="1040" y2="910" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- Stocks + Export -->
+    <line x1="450" y1="970" x2="500" y2="970" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="500" y="950" width="290" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="645" y="975" text-anchor="middle">Manage Stocks</text>
+    <line x1="790" y1="970" x2="820" y2="970" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="820" y="950" width="150" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="895" y="975" text-anchor="middle">Export XLSX</text>
+    <line x1="970" y1="970" x2="1040" y2="970" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- School Supplies + Export -->
+    <line x1="450" y1="1030" x2="500" y2="1030" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="500" y="1010" width="290" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="645" y="1035" text-anchor="middle">Manage School Supplies</text>
+    <line x1="790" y1="1030" x2="820" y2="1030" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="820" y="1010" width="150" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="895" y="1035" text-anchor="middle">Export XLSX</text>
+    <line x1="970" y1="1030" x2="1040" y2="1030" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- Supply Details + Export -->
+    <line x1="450" y1="1090" x2="500" y2="1090" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="500" y="1070" width="290" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="645" y="1095" text-anchor="middle">Manage Supply Details</text>
+    <line x1="790" y1="1090" x2="820" y2="1090" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="820" y="1070" width="150" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="895" y="1095" text-anchor="middle">Export XLSX</text>
+    <line x1="970" y1="1090" x2="1040" y2="1090" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- TG Receipt + Export -->
+    <line x1="450" y1="1150" x2="500" y2="1150" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="500" y="1130" width="290" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="645" y="1155" text-anchor="middle">Manage Teacher Guide Receipt</text>
+    <line x1="790" y1="1150" x2="820" y2="1150" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="820" y="1130" width="150" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="895" y="1155" text-anchor="middle">Export XLSX</text>
+    <line x1="970" y1="1150" x2="1040" y2="1150" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- TG Distribution + Export -->
+    <line x1="450" y1="1210" x2="500" y2="1210" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="500" y="1190" width="290" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="645" y="1215" text-anchor="middle">Manage Teacher Guide Distribution</text>
+    <line x1="790" y1="1210" x2="820" y2="1210" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="820" y="1190" width="150" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="895" y="1215" text-anchor="middle">Export XLSX</text>
+    <line x1="970" y1="1210" x2="1040" y2="1210" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- TG Issues + Export -->
+    <line x1="450" y1="1270" x2="500" y2="1270" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="500" y="1250" width="290" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="645" y="1275" text-anchor="middle">Manage Teacher Guide Issues</text>
+    <line x1="790" y1="1270" x2="820" y2="1270" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="820" y="1250" width="150" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="895" y="1275" text-anchor="middle">Export XLSX</text>
+    <line x1="970" y1="1270" x2="1040" y2="1270" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- TG Summaries + Export -->
+    <line x1="450" y1="1330" x2="500" y2="1330" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="500" y="1310" width="290" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="645" y="1335" text-anchor="middle">Manage Teacher Guide Summaries</text>
+    <line x1="790" y1="1330" x2="820" y2="1330" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="820" y="1310" width="150" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="895" y="1335" text-anchor="middle">Export XLSX</text>
+    <line x1="970" y1="1330" x2="1040" y2="1330" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <line x1="450" y1="1390" x2="500" y2="1390" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="500" y="1370" width="290" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="645" y="1395" text-anchor="middle">Manage Company Contacts</text>
+    <line x1="790" y1="1390" x2="1040" y2="1390" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <line x1="450" y1="1450" x2="500" y2="1450" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="500" y="1430" width="290" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="645" y="1455" text-anchor="middle">Manage Admin Users (Super)</text>
+    <line x1="790" y1="1450" x2="1040" y2="1450" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <line x1="450" y1="1510" x2="500" y2="1510" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="500" y="1490" width="290" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="645" y="1515" text-anchor="middle">Manage Profile</text>
+    <line x1="790" y1="1510" x2="1040" y2="1510" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <line x1="450" y1="1570" x2="500" y2="1570" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <rect x="500" y="1550" width="290" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="645" y="1575" text-anchor="middle">Logout</text>
+    <line x1="790" y1="1570" x2="1040" y2="1570" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+  </g>
+
+  <!-- Collector -> Stop -->
+  <line x1="1040" y1="1580" x2="1040" y2="1650" stroke="#000" stroke-width="1.5"/>
+  <line x1="1040" y1="1650" x2="645" y2="1650" stroke="#000" stroke-width="1.5"/>
+  <line x1="645" y1="1650" x2="645" y2="1685" stroke="#000" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <ellipse cx="645" cy="1715" rx="50" ry="20" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="645" y="1720" text-anchor="middle" font-family="Arial" font-size="14">Stop</text>
+</svg>

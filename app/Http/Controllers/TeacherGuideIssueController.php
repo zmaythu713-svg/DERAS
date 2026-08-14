@@ -39,7 +39,13 @@ class TeacherGuideIssueController extends Controller
 
         $canCreate = $selectedYear?->allowsDataEntry() ?? false;
 
-        $query = TeacherGuideIssue::with(['academicYear', 'grade', 'bookName', 'townshipIssues.township']);
+        $query = TeacherGuideIssue::with([
+            'academicYear',
+            'grade',
+            'bookName',
+            'townshipIssues.township',
+            'townshipIssues.issue',
+        ]);
 
         if ($yearId) {
             $query->where('academic_year_id', $yearId);
@@ -150,7 +156,7 @@ class TeacherGuideIssueController extends Controller
 
     public function edit(TeacherGuideIssue $teacherGuideIssue): View
     {
-        $teacherGuideIssue->load(['townshipIssues', 'bookName']);
+        $teacherGuideIssue->load(['townshipIssues.issue', 'bookName']);
 
         return view('teacher-guide-issues.edit', $this->formData($teacherGuideIssue->academic_year_id) + [
             'teacherGuideIssue' => $teacherGuideIssue,
@@ -239,8 +245,6 @@ class TeacherGuideIssueController extends Controller
             'remark' => 'nullable|string|max:1000',
             'township_values' => 'required|array',
             'township_values.*.issued_quantity' => 'nullable|integer|min:0',
-            'township_values.*.full_package_count' => 'nullable|integer|min:0',
-            'township_values.*.loose_book_count' => 'nullable|integer|min:0',
         ]);
 
         $quota = TeacherGuide::query()
@@ -251,6 +255,7 @@ class TeacherGuideIssueController extends Controller
             ->orderByDesc('id')
             ->first();
 
+        $validated['teacher_guide_id'] = $quota?->id;
         $validated['district_unit'] = $quota
             ? (int) ($quota->remaining_total ?? 0)
             : (int) ($validated['district_unit'] ?? 0);
@@ -264,26 +269,23 @@ class TeacherGuideIssueController extends Controller
             $validated['sequence_no'] = $quota->sequence_no;
         }
 
-        $issuedByTownshipName = [
+        // Prefer submitted township quantities; fall back to guide distribution totals.
+        $defaultByTownshipName = [
             'မြန်အောင်' => (int) ($quota?->total_myanaung_qty ?? 0),
             'ကြံခင်း' => (int) ($quota?->total_kyankhin_qty ?? 0),
             'အင်္ဂပူ' => (int) ($quota?->total_ingapu_qty ?? 0),
         ];
 
-        $packageUnit = (int) ($validated['package_unit'] ?? 0);
         $townships = [];
 
         foreach (Township::dropdownOptions() as $township) {
-            $issued = $issuedByTownshipName[$township->name]
-                ?? (int) ($validated['township_values'][$township->id]['issued_quantity'] ?? 0);
-
-            $packages = $packageUnit > 0 ? intdiv($issued, $packageUnit) : 0;
-            $loose = $packageUnit > 0 ? $issued % $packageUnit : 0;
+            $submitted = $validated['township_values'][$township->id]['issued_quantity'] ?? null;
+            $issued = $submitted !== null && $submitted !== ''
+                ? (int) $submitted
+                : (int) ($defaultByTownshipName[$township->name] ?? 0);
 
             $townships[$township->id] = [
                 'issued_quantity' => $issued,
-                'full_package_count' => $packages,
-                'loose_book_count' => $loose,
             ];
         }
 

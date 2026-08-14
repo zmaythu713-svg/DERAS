@@ -1,0 +1,49 @@
+@startuml DERAS_Sequence_TeacherGuide
+!theme plain
+title DERAS — Sequence: Teacher Guide Receipt → Distribute → Issue
+
+actor Admin
+participant "UI" as UI
+participant "TeacherGuideController" as Recv
+participant "TeacherGuideDistributionController" as Dist
+participant "TeacherGuideIssueController" as Issue
+participant "TeacherGuide" as TG
+participant "TownshipAllocations" as Alloc
+participant "TeacherGuideIssue" as TGI
+database "DB" as DB
+
+== 1. Receipt (လက်ခံခွဲတမ်း) ==
+Admin -> UI : Create Teacher Guide receipt
+UI -> Recv : POST /teacher-guides
+Recv -> TG : create(kg_to_g12_quota, g1_to_g5_quota, …)
+TG -> DB : INSERT teacher_guides
+Recv --> UI : OK
+
+== 2. Distribute to townships ==
+Admin -> UI : Create Distribution
+UI -> Dist : POST /teacher-guide-distributions
+Dist -> TG : find/updateOrCreate receipt row
+Dist -> TG : syncTownshipQtys(kg_g12_*, g1_g5_*)
+TG -> Alloc : updateOrCreate per township
+Alloc -> DB : INSERT teacher_guide_township_allocations
+note right of Dist
+  total_quota, distributed_total,
+  remaining_total = accessors (not stored)
+end note
+Dist --> UI : OK
+
+== 3. Issue to townships ==
+Admin -> UI : Create Issue
+UI -> Issue : POST /teacher-guide-issues
+Issue -> TG : lookup remaining_total &\ntownship totals
+Issue -> TGI : create(issue + package_unit)
+TGI -> DB : INSERT teacher_guide_issues
+Issue -> TGI : townshipIssues issued_quantity
+TGI -> DB : INSERT teacher_guide_issue_townships
+note right of Issue
+  full_package_count / loose_book_count
+  computed from package_unit
+end note
+Issue --> UI : OK
+
+@enduml

@@ -1,0 +1,543 @@
+{
+  "_type": "Project",
+  "_id": "PRJ_DERAS",
+  "name": "DERAS",
+  "ownedElements": [
+    {
+      "_type": "UMLModel",
+      "_id": "MDL_UC",
+      "name": "1. Use Case Model",
+      "ownedElements": [
+        {
+          "_type": "UMLActor",
+          "_id": "ACT_ADMIN",
+          "name": "Admin"
+        },
+        {
+          "_type": "UMLActor",
+          "_id": "ACT_SUPER",
+          "name": "Super Admin"
+        },
+        {
+          "_type": "UMLUseCase",
+          "_id": "UC_LOGIN",
+          "name": "Login / Logout"
+        },
+        {
+          "_type": "UMLUseCase",
+          "_id": "UC_DASH",
+          "name": "View Dashboard"
+        },
+        {
+          "_type": "UMLUseCase",
+          "_id": "UC_PROFILE",
+          "name": "Manage Profile / Password"
+        },
+        {
+          "_type": "UMLUseCase",
+          "_id": "UC_YEAR",
+          "name": "Manage Academic Years"
+        },
+        {
+          "_type": "UMLUseCase",
+          "_id": "UC_ROLLOVER",
+          "name": "Rollover Academic Year"
+        },
+        {
+          "_type": "UMLUseCase",
+          "_id": "UC_TOWN",
+          "name": "Manage Townships"
+        },
+        {
+          "_type": "UMLUseCase",
+          "_id": "UC_GRADE",
+          "name": "Manage Grades & Subjects"
+        },
+        {
+          "_type": "UMLUseCase",
+          "_id": "UC_BOOK",
+          "name": "Manage Book Names"
+        },
+        {
+          "_type": "UMLUseCase",
+          "_id": "UC_COMPANY",
+          "name": "Manage Company Contacts"
+        },
+        {
+          "_type": "UMLUseCase",
+          "_id": "UC_USERS",
+          "name": "Manage Admin Users"
+        },
+        {
+          "_type": "UMLUseCase",
+          "_id": "UC_QUOTA",
+          "name": "Manage Student Quota"
+        },
+        {
+          "_type": "UMLUseCase",
+          "_id": "UC_ALLOC",
+          "name": "Create Allocation Plan"
+        },
+        {
+          "_type": "UMLUseCase",
+          "_id": "UC_TB",
+          "name": "Manage Textbook Issues"
+        },
+        {
+          "_type": "UMLUseCase",
+          "_id": "UC_STOCK",
+          "name": "Manage Stock Balance"
+        },
+        {
+          "_type": "UMLUseCase",
+          "_id": "UC_SS",
+          "name": "Manage School Supply Allocations"
+        },
+        {
+          "_type": "UMLUseCase",
+          "_id": "UC_SD",
+          "name": "Manage Supply Details"
+        },
+        {
+          "_type": "UMLUseCase",
+          "_id": "UC_TG_RECV",
+          "name": "Record Guide Receipt Quota"
+        },
+        {
+          "_type": "UMLUseCase",
+          "_id": "UC_TG_DIST",
+          "name": "Distribute Guide Quota to Townships"
+        },
+        {
+          "_type": "UMLUseCase",
+          "_id": "UC_TG_ISSUE",
+          "name": "Issue Guides to Townships"
+        },
+        {
+          "_type": "UMLUseCase",
+          "_id": "UC_TG_SUM",
+          "name": "Teacher Guide Summary"
+        },
+        {
+          "_type": "UMLAssociation",
+          "_id": "ASC_A1",
+          "end1": { "_type": "UMLAssociationEnd", "_id": "AE_A1A", "reference": { "$ref": "ACT_ADMIN" } },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "AE_A1B", "reference": { "$ref": "UC_LOGIN" } }
+        },
+        {
+          "_type": "UMLAssociation",
+          "_id": "ASC_A2",
+          "end1": { "_type": "UMLAssociationEnd", "_id": "AE_A2A", "reference": { "$ref": "ACT_ADMIN" } },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "AE_A2B", "reference": { "$ref": "UC_ALLOC" } }
+        },
+        {
+          "_type": "UMLAssociation",
+          "_id": "ASC_A3",
+          "end1": { "_type": "UMLAssociationEnd", "_id": "AE_A3A", "reference": { "$ref": "ACT_ADMIN" } },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "AE_A3B", "reference": { "$ref": "UC_TG_DIST" } }
+        },
+        {
+          "_type": "UMLAssociation",
+          "_id": "ASC_S1",
+          "end1": { "_type": "UMLAssociationEnd", "_id": "AE_S1A", "reference": { "$ref": "ACT_SUPER" } },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "AE_S1B", "reference": { "$ref": "UC_USERS" } }
+        },
+        {
+          "_type": "UMLAssociation",
+          "_id": "ASC_S2",
+          "end1": { "_type": "UMLAssociationEnd", "_id": "AE_S2A", "reference": { "$ref": "ACT_SUPER" } },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "AE_S2B", "reference": { "$ref": "UC_ROLLOVER" } }
+        },
+        {
+          "_type": "UMLInclude",
+          "_id": "INC1",
+          "source": { "$ref": "UC_ALLOC" },
+          "target": { "$ref": "UC_QUOTA" }
+        },
+        {
+          "_type": "UMLInclude",
+          "_id": "INC2",
+          "source": { "$ref": "UC_TG_DIST" },
+          "target": { "$ref": "UC_TG_RECV" }
+        },
+        {
+          "_type": "UMLInclude",
+          "_id": "INC3",
+          "source": { "$ref": "UC_TG_ISSUE" },
+          "target": { "$ref": "UC_TG_DIST" }
+        },
+        {
+          "_type": "UMLUseCaseDiagram",
+          "_id": "DGM_UC",
+          "name": "DERAS Use Case Diagram",
+          "ownedViews": []
+        }
+      ]
+    },
+    {
+      "_type": "UMLModel",
+      "_id": "MDL_FLOW",
+      "name": "2. System Flow (Activity)",
+      "ownedElements": [
+        {
+          "_type": "UMLActivity",
+          "_id": "ACTV_MAIN",
+          "name": "Resource Allocation Pipeline",
+          "ownedElements": [
+            { "_type": "UMLInitialNode", "_id": "AN_START", "name": "Start" },
+            { "_type": "UMLAction", "_id": "AN_LOGIN", "name": "Login" },
+            { "_type": "UMLAction", "_id": "AN_MASTER", "name": "Setup Master Data (Year/Township/Grade/Book)" },
+            { "_type": "UMLAction", "_id": "AN_QUOTA", "name": "Enter Student Quota by Township" },
+            { "_type": "UMLAction", "_id": "AN_ALLOC", "name": "Create Allocation Plan" },
+            { "_type": "UMLAction", "_id": "AN_CALC", "name": "Calculate Ratio & Township Shares" },
+            { "_type": "UMLAction", "_id": "AN_TB", "name": "Sync Textbook / Stock" },
+            { "_type": "UMLAction", "_id": "AN_SS", "name": "School Supply Allocation & Details" },
+            { "_type": "UMLAction", "_id": "AN_TG1", "name": "Teacher Guide Receipt" },
+            { "_type": "UMLAction", "_id": "AN_TG2", "name": "Distribute to Townships" },
+            { "_type": "UMLAction", "_id": "AN_TG3", "name": "Issue & Summary" },
+            { "_type": "UMLAction", "_id": "AN_DASH", "name": "Review Dashboard" },
+            { "_type": "UMLActivityFinalNode", "_id": "AN_END", "name": "End" },
+            {
+              "_type": "UMLControlFlow",
+              "_id": "CF1",
+              "source": { "$ref": "AN_START" },
+              "target": { "$ref": "AN_LOGIN" }
+            },
+            {
+              "_type": "UMLControlFlow",
+              "_id": "CF2",
+              "source": { "$ref": "AN_LOGIN" },
+              "target": { "$ref": "AN_MASTER" }
+            },
+            {
+              "_type": "UMLControlFlow",
+              "_id": "CF3",
+              "source": { "$ref": "AN_MASTER" },
+              "target": { "$ref": "AN_QUOTA" }
+            },
+            {
+              "_type": "UMLControlFlow",
+              "_id": "CF4",
+              "source": { "$ref": "AN_QUOTA" },
+              "target": { "$ref": "AN_ALLOC" }
+            },
+            {
+              "_type": "UMLControlFlow",
+              "_id": "CF5",
+              "source": { "$ref": "AN_ALLOC" },
+              "target": { "$ref": "AN_CALC" }
+            },
+            {
+              "_type": "UMLControlFlow",
+              "_id": "CF6",
+              "source": { "$ref": "AN_CALC" },
+              "target": { "$ref": "AN_TB" }
+            },
+            {
+              "_type": "UMLControlFlow",
+              "_id": "CF7",
+              "source": { "$ref": "AN_TB" },
+              "target": { "$ref": "AN_SS" }
+            },
+            {
+              "_type": "UMLControlFlow",
+              "_id": "CF8",
+              "source": { "$ref": "AN_SS" },
+              "target": { "$ref": "AN_TG1" }
+            },
+            {
+              "_type": "UMLControlFlow",
+              "_id": "CF9",
+              "source": { "$ref": "AN_TG1" },
+              "target": { "$ref": "AN_TG2" }
+            },
+            {
+              "_type": "UMLControlFlow",
+              "_id": "CF10",
+              "source": { "$ref": "AN_TG2" },
+              "target": { "$ref": "AN_TG3" }
+            },
+            {
+              "_type": "UMLControlFlow",
+              "_id": "CF11",
+              "source": { "$ref": "AN_TG3" },
+              "target": { "$ref": "AN_DASH" }
+            },
+            {
+              "_type": "UMLControlFlow",
+              "_id": "CF12",
+              "source": { "$ref": "AN_DASH" },
+              "target": { "$ref": "AN_END" }
+            },
+            {
+              "_type": "UMLActivityDiagram",
+              "_id": "DGM_FLOW",
+              "name": "DERAS System Flow",
+              "ownedViews": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "_type": "UMLModel",
+      "_id": "MDL_ER",
+      "name": "3. ER Model (as Class Diagram)",
+      "ownedElements": [
+        {
+          "_type": "UMLClass",
+          "_id": "CL_USER",
+          "name": "User",
+          "attributes": [
+            { "_type": "UMLAttribute", "_id": "AT_U1", "name": "id", "type": "bigint", "isID": true },
+            { "_type": "UMLAttribute", "_id": "AT_U2", "name": "name", "type": "string" },
+            { "_type": "UMLAttribute", "_id": "AT_U3", "name": "email", "type": "string" },
+            { "_type": "UMLAttribute", "_id": "AT_U4", "name": "role", "type": "string" }
+          ]
+        },
+        {
+          "_type": "UMLClass",
+          "_id": "CL_YEAR",
+          "name": "AcademicYear",
+          "attributes": [
+            { "_type": "UMLAttribute", "_id": "AT_Y1", "name": "id", "type": "bigint", "isID": true },
+            { "_type": "UMLAttribute", "_id": "AT_Y2", "name": "name", "type": "string" },
+            { "_type": "UMLAttribute", "_id": "AT_Y3", "name": "is_current", "type": "boolean" }
+          ]
+        },
+        {
+          "_type": "UMLClass",
+          "_id": "CL_TOWN",
+          "name": "Township",
+          "attributes": [
+            { "_type": "UMLAttribute", "_id": "AT_T1", "name": "id", "type": "bigint", "isID": true },
+            { "_type": "UMLAttribute", "_id": "AT_T2", "name": "name", "type": "string" }
+          ]
+        },
+        {
+          "_type": "UMLClass",
+          "_id": "CL_GRADE",
+          "name": "Grade",
+          "attributes": [
+            { "_type": "UMLAttribute", "_id": "AT_G1", "name": "id", "type": "bigint", "isID": true },
+            { "_type": "UMLAttribute", "_id": "AT_G2", "name": "name", "type": "string" }
+          ]
+        },
+        {
+          "_type": "UMLClass",
+          "_id": "CL_BOOK",
+          "name": "BookName",
+          "attributes": [
+            { "_type": "UMLAttribute", "_id": "AT_B1", "name": "id", "type": "bigint", "isID": true },
+            { "_type": "UMLAttribute", "_id": "AT_B2", "name": "name", "type": "string" }
+          ]
+        },
+        {
+          "_type": "UMLClass",
+          "_id": "CL_QUOTA",
+          "name": "Quota",
+          "attributes": [
+            { "_type": "UMLAttribute", "_id": "AT_Q1", "name": "id", "type": "bigint", "isID": true },
+            { "_type": "UMLAttribute", "_id": "AT_Q2", "name": "primary_public", "type": "int" },
+            { "_type": "UMLAttribute", "_id": "AT_Q3", "name": "agriculture", "type": "int" }
+          ]
+        },
+        {
+          "_type": "UMLClass",
+          "_id": "CL_PLAN",
+          "name": "AllocationPlan",
+          "attributes": [
+            { "_type": "UMLAttribute", "_id": "AT_P1", "name": "id", "type": "bigint", "isID": true },
+            { "_type": "UMLAttribute", "_id": "AT_P2", "name": "received_books", "type": "int" },
+            { "_type": "UMLAttribute", "_id": "AT_P3", "name": "books_per_package", "type": "int" }
+          ]
+        },
+        {
+          "_type": "UMLClass",
+          "_id": "CL_APT",
+          "name": "AllocationPlanTownship",
+          "attributes": [
+            { "_type": "UMLAttribute", "_id": "AT_APT1", "name": "id", "type": "bigint", "isID": true },
+            { "_type": "UMLAttribute", "_id": "AT_APT2", "name": "previous", "type": "int" },
+            { "_type": "UMLAttribute", "_id": "AT_APT3", "name": "total_students", "type": "int" },
+            { "_type": "UMLAttribute", "_id": "AT_APT4", "name": "transferable", "type": "int" }
+          ]
+        },
+        {
+          "_type": "UMLClass",
+          "_id": "CL_TG",
+          "name": "TeacherGuide",
+          "attributes": [
+            { "_type": "UMLAttribute", "_id": "AT_TG1", "name": "id", "type": "bigint", "isID": true },
+            { "_type": "UMLAttribute", "_id": "AT_TG2", "name": "guide_type", "type": "string" },
+            { "_type": "UMLAttribute", "_id": "AT_TG3", "name": "kg_to_g12_quota", "type": "int" },
+            { "_type": "UMLAttribute", "_id": "AT_TG4", "name": "g1_to_g5_quota", "type": "int" }
+          ]
+        },
+        {
+          "_type": "UMLClass",
+          "_id": "CL_TGTA",
+          "name": "TeacherGuideTownshipAllocation",
+          "attributes": [
+            { "_type": "UMLAttribute", "_id": "AT_TGTA1", "name": "id", "type": "bigint", "isID": true },
+            { "_type": "UMLAttribute", "_id": "AT_TGTA2", "name": "kg_g12_qty", "type": "int" },
+            { "_type": "UMLAttribute", "_id": "AT_TGTA3", "name": "g1_g5_qty", "type": "int" }
+          ]
+        },
+        {
+          "_type": "UMLClass",
+          "_id": "CL_TGI",
+          "name": "TeacherGuideIssue",
+          "attributes": [
+            { "_type": "UMLAttribute", "_id": "AT_TGI1", "name": "id", "type": "bigint", "isID": true },
+            { "_type": "UMLAttribute", "_id": "AT_TGI2", "name": "package_unit", "type": "int" },
+            { "_type": "UMLAttribute", "_id": "AT_TGI3", "name": "district_unit", "type": "int" }
+          ]
+        },
+        {
+          "_type": "UMLClass",
+          "_id": "CL_TGIT",
+          "name": "TeacherGuideIssueTownship",
+          "attributes": [
+            { "_type": "UMLAttribute", "_id": "AT_TGIT1", "name": "id", "type": "bigint", "isID": true },
+            { "_type": "UMLAttribute", "_id": "AT_TGIT2", "name": "issued_quantity", "type": "int" }
+          ]
+        },
+        {
+          "_type": "UMLAssociation",
+          "_id": "REL1",
+          "name": "has",
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R1A", "reference": { "$ref": "CL_YEAR" }, "multiplicity": "1" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R1B", "reference": { "$ref": "CL_QUOTA" }, "multiplicity": "0..*" }
+        },
+        {
+          "_type": "UMLAssociation",
+          "_id": "REL2",
+          "name": "for",
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R2A", "reference": { "$ref": "CL_TOWN" }, "multiplicity": "1" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R2B", "reference": { "$ref": "CL_QUOTA" }, "multiplicity": "0..*" }
+        },
+        {
+          "_type": "UMLAssociation",
+          "_id": "REL3",
+          "name": "owns",
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R3A", "reference": { "$ref": "CL_PLAN" }, "multiplicity": "1", "aggregation": "composite" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R3B", "reference": { "$ref": "CL_APT" }, "multiplicity": "1..*" }
+        },
+        {
+          "_type": "UMLAssociation",
+          "_id": "REL4",
+          "name": "distributes",
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R4A", "reference": { "$ref": "CL_TG" }, "multiplicity": "1", "aggregation": "composite" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R4B", "reference": { "$ref": "CL_TGTA" }, "multiplicity": "0..*" }
+        },
+        {
+          "_type": "UMLAssociation",
+          "_id": "REL5",
+          "name": "issues",
+          "end1": { "_type": "UMLAssociationEnd", "_id": "R5A", "reference": { "$ref": "CL_TGI" }, "multiplicity": "1", "aggregation": "composite" },
+          "end2": { "_type": "UMLAssociationEnd", "_id": "R5B", "reference": { "$ref": "CL_TGIT" }, "multiplicity": "1..*" }
+        },
+        {
+          "_type": "UMLClassDiagram",
+          "_id": "DGM_ER",
+          "name": "DERAS ER Diagram",
+          "ownedViews": []
+        }
+      ]
+    },
+    {
+      "_type": "UMLModel",
+      "_id": "MDL_SEQ",
+      "name": "4. Sequence Model",
+      "ownedElements": [
+        {
+          "_type": "UMLCollaboration",
+          "_id": "COL_ALLOC",
+          "name": "CreateAllocationPlan",
+          "ownedElements": [
+            {
+              "_type": "UMLInteraction",
+              "_id": "INT_ALLOC",
+              "name": "Interaction",
+              "participants": [
+                { "_type": "UMLLifeline", "_id": "LF_ADMIN", "name": "Admin", "represent": { "$ref": "ACT_ADMIN" } },
+                { "_type": "UMLLifeline", "_id": "LF_UI", "name": "Browser" },
+                { "_type": "UMLLifeline", "_id": "LF_CTRL", "name": "AllocationPlanController" },
+                { "_type": "UMLLifeline", "_id": "LF_CALC", "name": "AllocationCalculator" },
+                { "_type": "UMLLifeline", "_id": "LF_PLAN", "name": "AllocationPlan" },
+                { "_type": "UMLLifeline", "_id": "LF_DB", "name": "MySQL" }
+              ],
+              "messages": [
+                {
+                  "_type": "UMLMessage",
+                  "_id": "MSG1",
+                  "name": "Submit create form",
+                  "source": { "$ref": "LF_ADMIN" },
+                  "target": { "$ref": "LF_UI" },
+                  "messageSort": "synchCall"
+                },
+                {
+                  "_type": "UMLMessage",
+                  "_id": "MSG2",
+                  "name": "POST /allocation-plans",
+                  "source": { "$ref": "LF_UI" },
+                  "target": { "$ref": "LF_CTRL" },
+                  "messageSort": "synchCall"
+                },
+                {
+                  "_type": "UMLMessage",
+                  "_id": "MSG3",
+                  "name": "validate + assertYear",
+                  "source": { "$ref": "LF_CTRL" },
+                  "target": { "$ref": "LF_CTRL" },
+                  "messageSort": "synchCall"
+                },
+                {
+                  "_type": "UMLMessage",
+                  "_id": "MSG4",
+                  "name": "compute(validated)",
+                  "source": { "$ref": "LF_CTRL" },
+                  "target": { "$ref": "LF_CALC" },
+                  "messageSort": "synchCall"
+                },
+                {
+                  "_type": "UMLMessage",
+                  "_id": "MSG5",
+                  "name": "create plan + syncTownshipInputs",
+                  "source": { "$ref": "LF_CTRL" },
+                  "target": { "$ref": "LF_PLAN" },
+                  "messageSort": "synchCall"
+                },
+                {
+                  "_type": "UMLMessage",
+                  "_id": "MSG6",
+                  "name": "INSERT plans & townships",
+                  "source": { "$ref": "LF_PLAN" },
+                  "target": { "$ref": "LF_DB" },
+                  "messageSort": "synchCall"
+                },
+                {
+                  "_type": "UMLMessage",
+                  "_id": "MSG7",
+                  "name": "Redirect success",
+                  "source": { "$ref": "LF_CTRL" },
+                  "target": { "$ref": "LF_UI" },
+                  "messageSort": "synchCall"
+                }
+              ],
+              "ownedElements": [
+                {
+                  "_type": "UMLSequenceDiagram",
+                  "_id": "DGM_SEQ",
+                  "name": "Create Allocation Plan Sequence",
+                  "ownedViews": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

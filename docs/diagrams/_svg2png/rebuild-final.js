@@ -1,0 +1,460 @@
+const fs = require('fs');
+const path = require('path');
+const { Resvg } = require('@resvg/resvg-js');
+
+const outDir = path.join(__dirname, '..', 'images_final');
+
+function save(name, svg) {
+  const svgPath = path.join(outDir, name + '.svg');
+  const pngPath = path.join(outDir, name + '.png');
+  fs.writeFileSync(svgPath, svg, 'utf8');
+  const resvg = new Resvg(Buffer.from(svg), {
+    fitTo: { mode: 'width', value: 1600 },
+    background: 'white',
+  });
+  fs.writeFileSync(pngPath, resvg.render().asPng());
+  console.log('OK', name, 'svg+png');
+}
+
+const flow = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="2100" viewBox="0 0 1100 2100">
+  <rect width="1100" height="2100" fill="#ffffff"/>
+  <text x="550" y="36" text-anchor="middle" font-family="Arial" font-size="20" font-weight="bold">Figure 1: System Flow Diagram for DERAS</text>
+  <defs>
+    <marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#000"/>
+    </marker>
+  </defs>
+
+  <ellipse cx="200" cy="80" rx="48" ry="18" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="200" y="85" text-anchor="middle" font-family="Arial" font-size="14">Start</text>
+  <line x1="200" y1="98" x2="200" y2="120" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <rect x="130" y="120" width="140" height="34" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="200" y="142" text-anchor="middle" font-family="Arial" font-size="14">User</text>
+  <line x1="200" y1="154" x2="200" y2="176" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <rect x="130" y="176" width="140" height="34" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="200" y="198" text-anchor="middle" font-family="Arial" font-size="14">Home Page</text>
+  <line x1="200" y1="210" x2="200" y2="232" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <rect x="130" y="232" width="140" height="34" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="200" y="254" text-anchor="middle" font-family="Arial" font-size="14">Login</text>
+  <line x1="200" y1="266" x2="200" y2="300" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <path d="M200,300 L275,350 L200,400 L125,350 Z" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="200" y="345" text-anchor="middle" font-family="Arial" font-size="12">Check Email</text>
+  <text x="200" y="362" text-anchor="middle" font-family="Arial" font-size="12">and Password</text>
+
+  <text x="112" y="346" text-anchor="end" font-family="Arial" font-size="12">No</text>
+  <path d="M125,350 L70,350 L70,249 L130,249" fill="none" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <text x="290" y="346" font-family="Arial" font-size="12">Yes</text>
+  <line x1="275" y1="350" x2="380" y2="350" stroke="#000" stroke-width="1.5"/>
+  <line x1="380" y1="350" x2="380" y2="440" stroke="#000" stroke-width="1.5"/>
+
+  <line x1="380" y1="440" x2="980" y2="440" stroke="#000" stroke-width="1.5"/>
+  <line x1="380" y1="440" x2="380" y2="1900" stroke="#000" stroke-width="1.5"/>
+  <line x1="980" y1="440" x2="980" y2="1900" stroke="#000" stroke-width="1.5"/>
+
+  <g font-family="Arial" font-size="13" fill="#000">
+    <line x1="380" y1="470" x2="420" y2="470" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+    <rect x="420" y="450" width="320" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="580" y="475" text-anchor="middle">View Dashboard</text>
+    <line x1="740" y1="470" x2="980" y2="470" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+
+    <line x1="380" y1="540" x2="420" y2="540" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+    <rect x="420" y="520" width="320" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="580" y="545" text-anchor="middle">Manage Academic Years</text>
+    <line x1="740" y1="540" x2="980" y2="540" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+
+    <line x1="380" y1="610" x2="420" y2="610" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+    <rect x="420" y="590" width="320" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="580" y="615" text-anchor="middle">Manage Townships</text>
+    <line x1="740" y1="610" x2="980" y2="610" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+
+    <line x1="380" y1="680" x2="420" y2="680" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+    <rect x="420" y="660" width="320" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="580" y="685" text-anchor="middle">Manage Grades</text>
+    <line x1="740" y1="680" x2="980" y2="680" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+
+    <line x1="380" y1="750" x2="420" y2="750" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+    <rect x="420" y="730" width="320" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="580" y="755" text-anchor="middle">Manage Book Names</text>
+    <line x1="740" y1="750" x2="980" y2="750" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+
+    <line x1="380" y1="820" x2="420" y2="820" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+    <rect x="420" y="800" width="320" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="580" y="825" text-anchor="middle">Manage Grade–Subjects</text>
+    <line x1="740" y1="820" x2="980" y2="820" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+
+    <line x1="380" y1="890" x2="420" y2="890" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+    <rect x="420" y="870" width="320" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="580" y="895" text-anchor="middle">Manage Student Quota</text>
+    <line x1="740" y1="890" x2="770" y2="890" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+    <rect x="770" y="870" width="130" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="835" y="895" text-anchor="middle">Export XLSX</text>
+    <line x1="900" y1="890" x2="980" y2="890" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+
+    <line x1="380" y1="960" x2="420" y2="960" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+    <rect x="420" y="940" width="320" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="580" y="965" text-anchor="middle">Manage Allocation Plans</text>
+    <line x1="740" y1="960" x2="770" y2="960" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+    <rect x="770" y="940" width="130" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="835" y="965" text-anchor="middle">Export XLSX</text>
+    <line x1="900" y1="960" x2="980" y2="960" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+
+    <line x1="380" y1="1030" x2="420" y2="1030" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+    <rect x="420" y="1010" width="320" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="580" y="1035" text-anchor="middle">Manage Textbooks</text>
+    <line x1="740" y1="1030" x2="770" y2="1030" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+    <rect x="770" y="1010" width="130" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="835" y="1035" text-anchor="middle">Export XLSX</text>
+    <line x1="900" y1="1030" x2="980" y2="1030" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+
+    <line x1="380" y1="1100" x2="420" y2="1100" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+    <rect x="420" y="1080" width="320" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="580" y="1105" text-anchor="middle">Manage Stocks</text>
+    <line x1="740" y1="1100" x2="770" y2="1100" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+    <rect x="770" y="1080" width="130" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="835" y="1105" text-anchor="middle">Export XLSX</text>
+    <line x1="900" y1="1100" x2="980" y2="1100" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+
+    <line x1="380" y1="1170" x2="420" y2="1170" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+    <rect x="420" y="1150" width="320" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="580" y="1175" text-anchor="middle">Manage School Supplies</text>
+    <line x1="740" y1="1170" x2="770" y2="1170" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+    <rect x="770" y="1150" width="130" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="835" y="1175" text-anchor="middle">Export XLSX</text>
+    <line x1="900" y1="1170" x2="980" y2="1170" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+
+    <line x1="380" y1="1240" x2="420" y2="1240" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+    <rect x="420" y="1220" width="320" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="580" y="1245" text-anchor="middle">Manage Supply Details</text>
+    <line x1="740" y1="1240" x2="770" y2="1240" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+    <rect x="770" y="1220" width="130" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="835" y="1245" text-anchor="middle">Export XLSX</text>
+    <line x1="900" y1="1240" x2="980" y2="1240" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+
+    <line x1="380" y1="1310" x2="420" y2="1310" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+    <rect x="420" y="1290" width="320" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="580" y="1315" text-anchor="middle">Teacher Guide Receipt</text>
+    <line x1="740" y1="1310" x2="770" y2="1310" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+    <rect x="770" y="1290" width="130" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="835" y="1315" text-anchor="middle">Export XLSX</text>
+    <line x1="900" y1="1310" x2="980" y2="1310" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+
+    <line x1="380" y1="1380" x2="420" y2="1380" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+    <rect x="420" y="1360" width="320" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="580" y="1385" text-anchor="middle">Teacher Guide Distribution</text>
+    <line x1="740" y1="1380" x2="770" y2="1380" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+    <rect x="770" y="1360" width="130" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="835" y="1385" text-anchor="middle">Export XLSX</text>
+    <line x1="900" y1="1380" x2="980" y2="1380" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+
+    <line x1="380" y1="1450" x2="420" y2="1450" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+    <rect x="420" y="1430" width="320" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="580" y="1455" text-anchor="middle">Teacher Guide Issues</text>
+    <line x1="740" y1="1450" x2="770" y2="1450" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+    <rect x="770" y="1430" width="130" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="835" y="1455" text-anchor="middle">Export XLSX</text>
+    <line x1="900" y1="1450" x2="980" y2="1450" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+
+    <line x1="380" y1="1520" x2="420" y2="1520" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+    <rect x="420" y="1500" width="320" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="580" y="1525" text-anchor="middle">Teacher Guide Summaries</text>
+    <line x1="740" y1="1520" x2="770" y2="1520" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+    <rect x="770" y="1500" width="130" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="835" y="1525" text-anchor="middle">Export XLSX</text>
+    <line x1="900" y1="1520" x2="980" y2="1520" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+
+    <line x1="380" y1="1590" x2="420" y2="1590" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+    <rect x="420" y="1570" width="320" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="580" y="1595" text-anchor="middle">Manage Company Contacts</text>
+    <line x1="740" y1="1590" x2="980" y2="1590" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+
+    <line x1="380" y1="1660" x2="420" y2="1660" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+    <rect x="420" y="1640" width="320" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="580" y="1665" text-anchor="middle">Manage Admin Users (Super)</text>
+    <line x1="740" y1="1660" x2="980" y2="1660" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+
+    <line x1="380" y1="1730" x2="420" y2="1730" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+    <rect x="420" y="1710" width="320" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="580" y="1735" text-anchor="middle">Manage Profile</text>
+    <line x1="740" y1="1730" x2="980" y2="1730" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+
+    <line x1="380" y1="1800" x2="420" y2="1800" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+    <rect x="420" y="1780" width="320" height="40" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <text x="580" y="1805" text-anchor="middle">Logout</text>
+    <line x1="740" y1="1800" x2="980" y2="1800" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+  </g>
+
+  <line x1="980" y1="1900" x2="980" y2="1960" stroke="#000" stroke-width="1.5"/>
+  <line x1="980" y1="1960" x2="580" y2="1960" stroke="#000" stroke-width="1.5"/>
+  <line x1="580" y1="1960" x2="580" y2="1990" stroke="#000" stroke-width="1.5" marker-end="url(#a)"/>
+  <ellipse cx="580" cy="2015" rx="48" ry="18" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="580" y="2020" text-anchor="middle" font-family="Arial" font-size="14">Stop</text>
+  <text x="550" y="2075" text-anchor="middle" font-family="Arial" font-size="11" fill="#444">Note: modules are parallel menu actions. Allocation Plan syncs Textbooks. Stocks are entered manually.</text>
+</svg>`;
+
+// Clean ER: 3 isolated zones — relationships stay inside each zone (no spiderweb)
+const er = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1220" viewBox="0 0 1400 1220">
+  <rect width="1400" height="1220" fill="#ffffff"/>
+  <text x="700" y="30" text-anchor="middle" font-family="Arial" font-size="20" font-weight="bold">Figure 3: ER Diagram for DERAS</text>
+  <text x="700" y="50" text-anchor="middle" font-family="Arial" font-size="11" fill="#555">Normalized schema — zones keep relationship lines from overlapping</text>
+
+  <!-- ========== Masters ========== -->
+  <ellipse cx="70" cy="90" rx="20" ry="11" fill="#fff" stroke="#000"/>
+  <text x="70" y="94" text-anchor="middle" font-family="Arial" font-size="10" text-decoration="underline">id</text>
+  <ellipse cx="125" cy="78" rx="30" ry="11" fill="#fff" stroke="#000"/>
+  <text x="125" y="82" text-anchor="middle" font-family="Arial" font-size="10">name</text>
+  <ellipse cx="195" cy="90" rx="38" ry="11" fill="#fff" stroke="#000"/>
+  <text x="195" y="94" text-anchor="middle" font-family="Arial" font-size="10">is_current</text>
+  <line x1="95" y1="122" x2="78" y2="101" stroke="#000"/>
+  <line x1="130" y1="122" x2="128" y2="89" stroke="#000"/>
+  <line x1="170" y1="122" x2="185" y2="101" stroke="#000"/>
+  <rect x="80" y="122" width="115" height="30" fill="#fff" stroke="#000" stroke-width="1.6"/>
+  <text x="137" y="142" text-anchor="middle" font-family="Arial" font-size="12">academic_year</text>
+
+  <ellipse cx="310" cy="90" rx="18" ry="11" fill="#fff" stroke="#000"/>
+  <text x="310" y="94" text-anchor="middle" font-family="Arial" font-size="10" text-decoration="underline">id</text>
+  <ellipse cx="365" cy="78" rx="28" ry="11" fill="#fff" stroke="#000"/>
+  <text x="365" y="82" text-anchor="middle" font-family="Arial" font-size="10">name</text>
+  <line x1="325" y1="122" x2="315" y2="101" stroke="#000"/>
+  <line x1="355" y1="122" x2="360" y2="89" stroke="#000"/>
+  <rect x="300" y="122" width="95" height="30" fill="#fff" stroke="#000" stroke-width="1.6"/>
+  <text x="347" y="142" text-anchor="middle" font-family="Arial" font-size="12">township</text>
+
+  <ellipse cx="500" cy="90" rx="18" ry="11" fill="#fff" stroke="#000"/>
+  <text x="500" y="94" text-anchor="middle" font-family="Arial" font-size="10" text-decoration="underline">id</text>
+  <ellipse cx="555" cy="78" rx="28" ry="11" fill="#fff" stroke="#000"/>
+  <text x="555" y="82" text-anchor="middle" font-family="Arial" font-size="10">name</text>
+  <line x1="515" y1="122" x2="505" y2="101" stroke="#000"/>
+  <line x1="545" y1="122" x2="550" y2="89" stroke="#000"/>
+  <rect x="490" y="122" width="85" height="30" fill="#fff" stroke="#000" stroke-width="1.6"/>
+  <text x="532" y="142" text-anchor="middle" font-family="Arial" font-size="12">grade</text>
+
+  <ellipse cx="680" cy="90" rx="18" ry="11" fill="#fff" stroke="#000"/>
+  <text x="680" y="94" text-anchor="middle" font-family="Arial" font-size="10" text-decoration="underline">id</text>
+  <ellipse cx="740" cy="78" rx="28" ry="11" fill="#fff" stroke="#000"/>
+  <text x="740" y="82" text-anchor="middle" font-family="Arial" font-size="10">name</text>
+  <line x1="695" y1="122" x2="685" y2="101" stroke="#000"/>
+  <line x1="730" y1="122" x2="735" y2="89" stroke="#000"/>
+  <rect x="670" y="122" width="95" height="30" fill="#fff" stroke="#000" stroke-width="1.6"/>
+  <text x="717" y="142" text-anchor="middle" font-family="Arial" font-size="12">book_name</text>
+
+  <ellipse cx="920" cy="90" rx="18" ry="11" fill="#fff" stroke="#000"/>
+  <text x="920" y="94" text-anchor="middle" font-family="Arial" font-size="10" text-decoration="underline">id</text>
+  <ellipse cx="970" cy="78" rx="24" ry="11" fill="#fff" stroke="#000"/>
+  <text x="970" y="82" text-anchor="middle" font-family="Arial" font-size="10">slug</text>
+  <line x1="935" y1="122" x2="925" y2="101" stroke="#000"/>
+  <line x1="960" y1="122" x2="965" y2="89" stroke="#000"/>
+  <rect x="905" y="122" width="75" height="30" fill="#fff" stroke="#000" stroke-width="1.6"/>
+  <text x="942" y="142" text-anchor="middle" font-family="Arial" font-size="12">role</text>
+
+  <path d="M1010,137 L1024,147 L1010,157 L996,147 Z" fill="#fff" stroke="#000"/>
+  <text x="1010" y="151" text-anchor="middle" font-family="Arial" font-size="10">Has</text>
+  <line x1="980" y1="137" x2="996" y2="147" stroke="#000"/><text x="982" y="132" font-family="Arial" font-size="11">1</text>
+  <line x1="1024" y1="147" x2="1060" y2="137" stroke="#000"/><text x="1035" y="132" font-family="Arial" font-size="11">M</text>
+
+  <ellipse cx="1110" cy="90" rx="18" ry="11" fill="#fff" stroke="#000"/>
+  <text x="1110" y="94" text-anchor="middle" font-family="Arial" font-size="10" text-decoration="underline">id</text>
+  <ellipse cx="1165" cy="78" rx="28" ry="11" fill="#fff" stroke="#000"/>
+  <text x="1165" y="82" text-anchor="middle" font-family="Arial" font-size="10">email</text>
+  <line x1="1125" y1="122" x2="1115" y2="101" stroke="#000"/>
+  <line x1="1155" y1="122" x2="1160" y2="89" stroke="#000"/>
+  <rect x="1085" y="122" width="85" height="30" fill="#fff" stroke="#000" stroke-width="1.6"/>
+  <text x="1127" y="142" text-anchor="middle" font-family="Arial" font-size="12">user</text>
+
+  <!-- ========== ZONE 1 Quota ========== -->
+  <rect x="40" y="180" width="400" height="280" fill="#f8fafc" stroke="#64748b" rx="6"/>
+  <text x="55" y="202" font-family="Arial" font-size="12" font-weight="bold">1. Student Quota</text>
+
+  <rect x="90" y="240" width="80" height="28" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="130" y="259" text-anchor="middle" font-family="Arial" font-size="12">quota</text>
+
+  <path d="M137,185 L150,198 L137,211 L124,198 Z" fill="#fff" stroke="#000"/>
+  <text x="137" y="202" text-anchor="middle" font-family="Arial" font-size="10">Has</text>
+  <line x1="137" y1="152" x2="137" y2="185" stroke="#000"/><text x="145" y="170" font-family="Arial" font-size="11">1</text>
+  <line x1="137" y1="211" x2="130" y2="240" stroke="#000"/><text x="145" y="230" font-family="Arial" font-size="11">M</text>
+
+  <path d="M250,240 L263,253 L250,266 L237,253 Z" fill="#fff" stroke="#000"/>
+  <text x="250" y="257" text-anchor="middle" font-family="Arial" font-size="10">Has</text>
+  <line x1="347" y1="152" x2="347" y2="253" stroke="#000"/>
+  <line x1="347" y1="253" x2="263" y2="253" stroke="#000"/><text x="300" y="245" font-family="Arial" font-size="11">1</text>
+  <line x1="237" y1="253" x2="170" y2="254" stroke="#000"/><text x="195" y="245" font-family="Arial" font-size="11">M</text>
+
+  <ellipse cx="100" cy="330" rx="40" ry="11" fill="#fff" stroke="#000"/>
+  <text x="100" y="334" text-anchor="middle" font-family="Arial" font-size="10">school_level</text>
+  <ellipse cx="200" cy="315" rx="38" ry="11" fill="#fff" stroke="#000"/>
+  <text x="200" y="319" text-anchor="middle" font-family="Arial" font-size="10">ownership</text>
+  <ellipse cx="295" cy="330" rx="34" ry="11" fill="#fff" stroke="#000"/>
+  <text x="295" y="334" text-anchor="middle" font-family="Arial" font-size="10">quantity</text>
+  <line x1="145" y1="370" x2="120" y2="340" stroke="#000"/>
+  <line x1="200" y1="370" x2="200" y2="326" stroke="#000"/>
+  <line x1="250" y1="370" x2="275" y2="340" stroke="#000"/>
+  <rect x="130" y="370" width="140" height="28" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="200" y="389" text-anchor="middle" font-family="Arial" font-size="12">quota_line</text>
+
+  <path d="M130,295 L143,308 L130,321 L117,308 Z" fill="#fff" stroke="#000"/>
+  <text x="130" y="312" text-anchor="middle" font-family="Arial" font-size="10">Has</text>
+  <line x1="130" y1="268" x2="130" y2="295" stroke="#000"/><text x="138" y="284" font-family="Arial" font-size="11">1</text>
+  <line x1="130" y1="321" x2="200" y2="370" stroke="#000"/><text x="150" y="350" font-family="Arial" font-size="11">M</text>
+
+  <text x="240" y="430" text-anchor="middle" font-family="Arial" font-size="10" fill="#555">unique(academic_year_id, township_id)</text>
+
+  <!-- ========== ZONE 2 Allocation ========== -->
+  <rect x="470" y="180" width="720" height="280" fill="#f8fafc" stroke="#64748b" rx="6"/>
+  <text x="485" y="202" font-family="Arial" font-size="12" font-weight="bold">2. Allocation Plan → Textbook / Stock</text>
+
+  <ellipse cx="600" cy="250" rx="46" ry="11" fill="#fff" stroke="#000"/>
+  <text x="600" y="254" text-anchor="middle" font-family="Arial" font-size="10">received_books</text>
+  <ellipse cx="725" cy="238" rx="52" ry="11" fill="#fff" stroke="#000"/>
+  <text x="725" y="242" text-anchor="middle" font-family="Arial" font-size="10">books_per_package</text>
+  <ellipse cx="850" cy="250" rx="40" ry="11" fill="#fff" stroke="#000"/>
+  <text x="850" y="254" text-anchor="middle" font-family="Arial" font-size="10">sequence_no</text>
+  <line x1="655" y1="290" x2="625" y2="261" stroke="#000"/>
+  <line x1="725" y1="290" x2="725" y2="249" stroke="#000"/>
+  <line x1="795" y1="290" x2="830" y2="261" stroke="#000"/>
+  <rect x="640" y="290" width="170" height="28" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="725" y="309" text-anchor="middle" font-family="Arial" font-size="12">allocation_plan</text>
+  <text x="725" y="335" text-anchor="middle" font-family="Arial" font-size="9" fill="#555">FK: academic_year, grade, book_name</text>
+
+  <ellipse cx="1000" cy="250" rx="34" ry="11" fill="#fff" stroke="#000"/>
+  <text x="1000" y="254" text-anchor="middle" font-family="Arial" font-size="10">previous</text>
+  <ellipse cx="1095" cy="238" rx="46" ry="11" fill="#fff" stroke="#000"/>
+  <text x="1095" y="242" text-anchor="middle" font-family="Arial" font-size="10">total_students</text>
+  <ellipse cx="1200" cy="250" rx="40" ry="11" fill="#fff" stroke="#000"/>
+  <text x="1200" y="254" text-anchor="middle" font-family="Arial" font-size="10">transferable</text>
+  <line x1="1030" y1="290" x2="1015" y2="261" stroke="#000"/>
+  <line x1="1095" y1="290" x2="1095" y2="249" stroke="#000"/>
+  <line x1="1160" y1="290" x2="1180" y2="261" stroke="#000"/>
+  <rect x="1000" y="290" width="210" height="28" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="1105" y="309" text-anchor="middle" font-family="Arial" font-size="11">allocation_plan_township</text>
+  <text x="1105" y="335" text-anchor="middle" font-family="Arial" font-size="9" fill="#555">FK: allocation_plan, township</text>
+
+  <path d="M890,304 L903,317 L890,330 L877,317 Z" fill="#fff" stroke="#000"/>
+  <text x="890" y="321" text-anchor="middle" font-family="Arial" font-size="10">Has</text>
+  <line x1="810" y1="304" x2="877" y2="317" stroke="#000"/><text x="835" y="300" font-family="Arial" font-size="11">1</text>
+  <line x1="903" y1="317" x2="1000" y2="304" stroke="#000"/><text x="940" y="300" font-family="Arial" font-size="11">M</text>
+
+  <ellipse cx="660" cy="380" rx="44" ry="11" fill="#fff" stroke="#000"/>
+  <text x="660" y="384" text-anchor="middle" font-family="Arial" font-size="10">books_per_set</text>
+  <ellipse cx="770" cy="368" rx="44" ry="11" fill="#fff" stroke="#000"/>
+  <text x="770" y="372" text-anchor="middle" font-family="Arial" font-size="10">student_count</text>
+  <line x1="690" y1="415" x2="675" y2="391" stroke="#000"/>
+  <line x1="755" y1="415" x2="760" y2="379" stroke="#000"/>
+  <rect x="665" y="415" width="115" height="28" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="722" y="434" text-anchor="middle" font-family="Arial" font-size="12">textbook</text>
+
+  <path d="M725,350 L738,363 L725,376 L712,363 Z" fill="#fff" stroke="#000"/>
+  <text x="725" y="367" text-anchor="middle" font-family="Arial" font-size="9">Syncs</text>
+  <line x1="725" y1="318" x2="725" y2="350" stroke="#000"/><text x="733" y="336" font-family="Arial" font-size="11">1</text>
+  <line x1="725" y1="376" x2="722" y2="415" stroke="#000"/><text x="715" y="400" font-family="Arial" font-size="11">M</text>
+  <text x="800" y="434" font-family="Arial" font-size="9" fill="#555">(no FK)</text>
+
+  <ellipse cx="1000" cy="380" rx="38" ry="11" fill="#fff" stroke="#000"/>
+  <text x="1000" y="384" text-anchor="middle" font-family="Arial" font-size="10">remaining</text>
+  <line x1="1000" y1="415" x2="1000" y2="391" stroke="#000"/>
+  <rect x="945" y="415" width="110" height="28" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="1000" y="434" text-anchor="middle" font-family="Arial" font-size="12">stock</text>
+  <text x="1000" y="448" text-anchor="middle" font-family="Arial" font-size="9" fill="#555">manual / parallel</text>
+
+  <!-- ========== ZONE 3 Teacher Guide ========== -->
+  <rect x="40" y="490" width="1150" height="520" fill="#f8fafc" stroke="#64748b" rx="6"/>
+  <text x="55" y="512" font-family="Arial" font-size="12" font-weight="bold">3. Teacher Guide family</text>
+
+  <!-- Row A: teacher_guide → TGA -->
+  <ellipse cx="130" cy="560" rx="36" ry="11" fill="#fff" stroke="#000"/>
+  <text x="130" y="564" text-anchor="middle" font-family="Arial" font-size="10">guide_type</text>
+  <ellipse cx="240" cy="548" rx="50" ry="11" fill="#fff" stroke="#000"/>
+  <text x="240" y="552" text-anchor="middle" font-family="Arial" font-size="10">kg_to_g12_quota</text>
+  <ellipse cx="365" cy="560" rx="46" ry="11" fill="#fff" stroke="#000"/>
+  <text x="365" y="564" text-anchor="middle" font-family="Arial" font-size="10">g1_to_g5_quota</text>
+  <line x1="170" y1="600" x2="150" y2="571" stroke="#000"/>
+  <line x1="240" y1="600" x2="240" y2="559" stroke="#000"/>
+  <line x1="310" y1="600" x2="340" y2="571" stroke="#000"/>
+  <rect x="155" y="600" width="170" height="28" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="240" y="619" text-anchor="middle" font-family="Arial" font-size="12">teacher_guide</text>
+  <text x="240" y="645" text-anchor="middle" font-family="Arial" font-size="9" fill="#555">FK: academic_year, grade, book_name · receipt header</text>
+
+  <ellipse cx="560" cy="560" rx="40" ry="11" fill="#fff" stroke="#000"/>
+  <text x="560" y="564" text-anchor="middle" font-family="Arial" font-size="10">kg_g12_qty</text>
+  <ellipse cx="665" cy="548" rx="38" ry="11" fill="#fff" stroke="#000"/>
+  <text x="665" y="552" text-anchor="middle" font-family="Arial" font-size="10">g1_g5_qty</text>
+  <line x1="590" y1="600" x2="575" y2="571" stroke="#000"/>
+  <line x1="655" y1="600" x2="660" y2="559" stroke="#000"/>
+  <rect x="500" y="600" width="250" height="28" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="625" y="619" text-anchor="middle" font-family="Arial" font-size="11">teacher_guide_township_allocation</text>
+  <text x="625" y="645" text-anchor="middle" font-family="Arial" font-size="9" fill="#555">FK: teacher_guide, township</text>
+
+  <path d="M390,614 L403,627 L390,640 L377,627 Z" fill="#fff" stroke="#000"/>
+  <text x="390" y="631" text-anchor="middle" font-family="Arial" font-size="9">Distributes</text>
+  <line x1="325" y1="614" x2="377" y2="627" stroke="#000"/><text x="340" y="608" font-family="Arial" font-size="11">1</text>
+  <line x1="403" y1="627" x2="500" y2="614" stroke="#000"/><text x="440" y="608" font-family="Arial" font-size="11">M</text>
+
+  <!-- Row B: issue → issue_township -->
+  <ellipse cx="160" cy="720" rx="42" ry="11" fill="#fff" stroke="#000"/>
+  <text x="160" y="724" text-anchor="middle" font-family="Arial" font-size="10">district_unit</text>
+  <ellipse cx="280" cy="708" rx="44" ry="11" fill="#fff" stroke="#000"/>
+  <text x="280" y="712" text-anchor="middle" font-family="Arial" font-size="10">package_unit</text>
+  <line x1="190" y1="760" x2="175" y2="731" stroke="#000"/>
+  <line x1="260" y1="760" x2="270" y2="719" stroke="#000"/>
+  <rect x="155" y="760" width="190" height="28" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="250" y="779" text-anchor="middle" font-family="Arial" font-size="12">teacher_guide_issue</text>
+  <text x="250" y="805" text-anchor="middle" font-family="Arial" font-size="9" fill="#555">FK: teacher_guide_id</text>
+
+  <path d="M240,680 L253,693 L240,706 L227,693 Z" fill="#fff" stroke="#000"/>
+  <text x="240" y="697" text-anchor="middle" font-family="Arial" font-size="10">Has</text>
+  <line x1="240" y1="628" x2="240" y2="680" stroke="#000"/><text x="248" y="656" font-family="Arial" font-size="11">1</text>
+  <line x1="240" y1="706" x2="250" y2="760" stroke="#000"/><text x="235" y="738" font-family="Arial" font-size="11">M</text>
+
+  <ellipse cx="580" cy="720" rx="50" ry="11" fill="#fff" stroke="#000"/>
+  <text x="580" y="724" text-anchor="middle" font-family="Arial" font-size="10">issued_quantity</text>
+  <line x1="580" y1="760" x2="580" y2="731" stroke="#000"/>
+  <rect x="450" y="760" width="260" height="28" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="580" y="779" text-anchor="middle" font-family="Arial" font-size="11">teacher_guide_issue_township</text>
+  <text x="580" y="805" text-anchor="middle" font-family="Arial" font-size="9" fill="#555">FK: issue, township</text>
+
+  <path d="M390,774 L403,787 L390,800 L377,787 Z" fill="#fff" stroke="#000"/>
+  <text x="390" y="791" text-anchor="middle" font-family="Arial" font-size="10">Issues</text>
+  <line x1="345" y1="774" x2="377" y2="787" stroke="#000"/><text x="350" y="768" font-family="Arial" font-size="11">1</text>
+  <line x1="403" y1="787" x2="450" y2="774" stroke="#000"/><text x="415" y="768" font-family="Arial" font-size="11">M</text>
+
+  <!-- Row C: summary alone on right of row B -->
+  <ellipse cx="900" cy="720" rx="50" ry="11" fill="#fff" stroke="#000"/>
+  <text x="900" y="724" text-anchor="middle" font-family="Arial" font-size="10">fiscal_year_quota</text>
+  <ellipse cx="1045" cy="720" rx="50" ry="11" fill="#fff" stroke="#000"/>
+  <text x="1045" y="724" text-anchor="middle" font-family="Arial" font-size="10">distributed_books</text>
+  <line x1="930" y1="760" x2="920" y2="731" stroke="#000"/>
+  <line x1="1015" y1="760" x2="1030" y2="731" stroke="#000"/>
+  <rect x="880" y="760" width="210" height="28" fill="#fff" stroke="#000" stroke-width="1.5"/>
+  <text x="985" y="779" text-anchor="middle" font-family="Arial" font-size="12">teacher_guide_summary</text>
+  <text x="985" y="805" text-anchor="middle" font-family="Arial" font-size="9" fill="#555">FK: teacher_guide_id</text>
+
+  <path d="M800,700 L813,713 L800,726 L787,713 Z" fill="#fff" stroke="#000"/>
+  <text x="800" y="717" text-anchor="middle" font-family="Arial" font-size="10">Has</text>
+  <!-- from teacher_guide right edge across clear row at y=660 then down - stays above issue attrs -->
+  <line x1="325" y1="614" x2="325" y2="660" stroke="#000"/>
+  <line x1="325" y1="660" x2="800" y2="660" stroke="#000"/>
+  <line x1="800" y1="660" x2="800" y2="700" stroke="#000"/><text x="550" y="652" font-family="Arial" font-size="11">1</text>
+  <line x1="813" y1="713" x2="880" y2="774" stroke="#000"/><text x="840" y="730" font-family="Arial" font-size="11">M</text>
+
+  <!-- Legend -->
+  <rect x="1220" y="490" width="150" height="200" fill="#fff" stroke="#000"/>
+  <text x="1295" y="520" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold">Legend</text>
+  <rect x="1240" y="545" width="45" height="20" fill="#fff" stroke="#000"/>
+  <text x="1295" y="560" font-family="Arial" font-size="11">Entity</text>
+  <ellipse cx="1262" cy="590" rx="22" ry="10" fill="#fff" stroke="#000"/>
+  <text x="1295" y="594" font-family="Arial" font-size="11">Attribute</text>
+  <path d="M1250,620 L1265,630 L1250,640 L1235,630 Z" fill="#fff" stroke="#000"/>
+  <text x="1295" y="635" font-family="Arial" font-size="11">Rel.</text>
+  <text x="1240" y="670" font-family="Arial" font-size="11">1 / M</text>
+
+  <text x="700" y="1050" text-anchor="middle" font-family="Arial" font-size="11" fill="#444">Master FKs are labeled under each entity (no long cross-zone lines).</text>
+  <text x="700" y="1070" text-anchor="middle" font-family="Arial" font-size="11" fill="#444">Zone 1 = quota_lines · Zone 2 = allocation townships + textbook sync · Zone 3 = TG receipt → distribution → issue → summary</text>
+</svg>`;
+
+save('Figure1_System_Flow', flow);
+save('Figure3_ER_Diagram', er);

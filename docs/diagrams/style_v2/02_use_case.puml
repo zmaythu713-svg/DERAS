@@ -1,0 +1,81 @@
+@startuml
+skinparam shadowing false
+skinparam monochrome true
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+skinparam handwritten false
+skinparam packageStyle rectangle
+skinparam nodesep 40
+skinparam ranksep 30
+
+title Figure 2: Use Case Diagram for DERAS
+
+left to right direction
+
+actor Admin
+actor "Super Admin" as Super
+
+rectangle "DERAS System" {
+  usecase "Login" as UC01
+  usecase "View Dashboard" as UC02
+  usecase "Manage Academic Years" as UC03
+  usecase "Manage Townships" as UC04
+  usecase "Manage Grades / Subjects" as UC05
+  usecase "Manage Book Names" as UC06
+  usecase "Manage Student Quota" as UC07
+  usecase "Manage Allocation Plans" as UC08
+  usecase "Manage Textbooks" as UC09
+  usecase "Manage Stocks" as UC10
+  usecase "Manage School Supplies" as UC11
+  usecase "Manage Supply Details" as UC12
+  usecase "Manage Teacher Guide Receipt" as UC13
+  usecase "Manage Teacher Guide Distribution" as UC14
+  usecase "Manage Teacher Guide Issues" as UC15
+  usecase "Manage Teacher Guide Summaries" as UC16
+  usecase "Manage Company Contacts" as UC17
+  usecase "Manage Profile" as UC18
+  usecase "Logout" as UC19
+
+  usecase "Calculate Township Allocation" as UC22
+  usecase "Sync Textbook from Plan" as UC23
+  usecase "Rollover Academic Year" as UC20
+  usecase "Manage Admin Users" as UC21
+}
+
+Admin --> UC01
+Admin --> UC02
+Admin --> UC03
+Admin --> UC04
+Admin --> UC05
+Admin --> UC06
+Admin --> UC07
+Admin --> UC08
+Admin --> UC09
+Admin --> UC10
+Admin --> UC11
+Admin --> UC12
+Admin --> UC13
+Admin --> UC14
+Admin --> UC15
+Admin --> UC16
+Admin --> UC17
+Admin --> UC18
+Admin --> UC19
+
+Super --> UC20
+Super --> UC21
+Super --> UC03
+Super --> UC08
+Super --> UC14
+Super --> UC19
+
+UC08 ..> UC22 : <<include>>
+UC08 ..> UC23 : <<include>>
+UC09 ..> UC08 : <<include>>
+UC14 ..> UC13 : <<include>>
+UC15 ..> UC14 : <<include>>
+UC16 ..> UC13 : <<include>>
+UC16 ..> UC14 : <<include>>
+UC20 ..> UC03 : <<include>>
+
+@enduml

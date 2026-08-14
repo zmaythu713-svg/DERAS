@@ -1,0 +1,139 @@
+graph DERAS_ER {
+  layout=neato;
+  graph [
+    bgcolor="white"
+    fontname="Arial"
+    fontsize=18
+    labelloc="t"
+    label="Figure 3: ER Diagram for DERAS"
+    pad=0.5
+  ];
+  node [fontname="Arial", fontsize=12, color="black"];
+  edge [fontname="Arial", fontsize=11, color="black", len=1.2];
+
+  // ===== Entities with fixed positions (clear like sample) =====
+  node [shape=box, style=solid, width=1.8, height=0.5];
+  AY  [label="academic_year", pos="1.5,7!"];
+  SM  [label="township", pos="6.5,7!"];
+  GR  [label="grade", pos="1.5,4!"];
+  BN  [label="book_name", pos="6.5,4!"];
+  QT  [label="quota", pos="4,9!"];
+  AP  [label="allocation_plan", pos="4,5.5!"];
+  APT [label="allocation_plan_township", pos="9,5.5!"];
+  TB  [label="textbook", pos="4,2.5!"];
+  TG  [label="teacher_guide", pos="1.5,1!"];
+  TGA [label="teacher_guide_township_allocation", pos="6.5,1!"];
+  TGI [label="teacher_guide_issue", pos="1.5,-1.5!"];
+  TGIT[label="teacher_guide_issue_township", pos="6.5,-1.5!"];
+
+  // ===== Diamonds =====
+  node [shape=diamond, style=solid, width=1.0, height=0.65, fixedsize=true];
+  H1 [label="Has", pos="4,8!"];
+  H2 [label="Has", pos="4,6.5!"];
+  H3 [label="Has", pos="6.8,5.5!"];
+  P1 [label="Produces", pos="4,4!"];
+  H4 [label="Has", pos="1.5,2.5!"];
+  D1 [label="Distributes", pos="4,1!"];
+  H5 [label="Has", pos="1.5,-0.3!"];
+  I1 [label="Issues", pos="4,-1.5!"];
+
+  // ===== Attributes =====
+  node [shape=ellipse, style=solid, fontsize=10, width=0.9, height=0.35];
+
+  // academic_year
+  ay_id [label="id", pos="0.2,7.6!"];
+  ay_nm [label="name", pos="0.2,7!"];
+  ay_cu [label="is_current", pos="0.2,6.4!"];
+  AY -- ay_id; AY -- ay_nm; AY -- ay_cu;
+
+  // township
+  tw_id [label="id", pos="7.8,7.6!"];
+  tw_nm [label="name", pos="7.8,6.4!"];
+  SM -- tw_id; SM -- tw_nm;
+
+  // grade / book
+  gr_id [label="id", pos="0.2,4.5!"];
+  gr_nm [label="name", pos="0.2,3.5!"];
+  GR -- gr_id; GR -- gr_nm;
+  bn_id [label="id", pos="7.8,4.5!"];
+  bn_nm [label="name", pos="7.8,3.5!"];
+  BN -- bn_id; BN -- bn_nm;
+
+  // quota
+  q1 [label="primary_public", pos="2.7,9.7!"];
+  q2 [label="middle_public", pos="4,9.9!"];
+  q3 [label="high_public", pos="5.3,9.7!"];
+  q4 [label="agriculture", pos="5.5,8.5!"];
+  QT -- q1; QT -- q2; QT -- q3; QT -- q4;
+
+  // allocation_plan
+  a1 [label="received_books", pos="2.5,5.9!"];
+  a2 [label="books_per_package", pos="2.4,5.1!"];
+  a3 [label="sequence_no", pos="5.5,5.9!"];
+  AP -- a1; AP -- a2; AP -- a3;
+
+  // allocation_plan_township
+  p1 [label="previous", pos="10.4,6.1!"];
+  p2 [label="total_students", pos="10.5,5.5!"];
+  p3 [label="transferable", pos="10.4,4.9!"];
+  APT -- p1; APT -- p2; APT -- p3;
+
+  // textbook
+  t1 [label="books_per_set", pos="2.6,2.1!"];
+  t2 [label="student_count", pos="5.4,2.1!"];
+  TB -- t1; TB -- t2;
+
+  // teacher_guide
+  g1 [label="guide_type", pos="0.1,1.5!"];
+  g2 [label="kg_to_g12_quota", pos="0.0,1!"];
+  g3 [label="g1_to_g5_quota", pos="0.1,0.5!"];
+  TG -- g1; TG -- g2; TG -- g3;
+
+  // tg township allocation
+  d1 [label="kg_g12_qty", pos="8.2,1.4!"];
+  d2 [label="g1_g5_qty", pos="8.2,0.6!"];
+  TGA -- d1; TGA -- d2;
+
+  // issue
+  i1 [label="district_unit", pos="0.1,-1.1!"];
+  i2 [label="package_unit", pos="0.1,-1.9!"];
+  TGI -- i1; TGI -- i2;
+
+  j1 [label="issued_quantity", pos="8.3,-1.5!"];
+  TGIT -- j1;
+
+  // ===== Relationships =====
+  AY -- H1 [xlabel="1"];
+  SM -- H1 [xlabel="1"];
+  H1 -- QT [xlabel="M"];
+
+  AY -- H2 [xlabel="1"];
+  GR -- H2 [xlabel="1"];
+  BN -- H2 [xlabel="1"];
+  H2 -- AP [xlabel="M"];
+
+  AP -- H3 [xlabel="1"];
+  SM -- H3 [xlabel="1"];
+  H3 -- APT [xlabel="M"];
+
+  AP -- P1 [xlabel="1"];
+  P1 -- TB [xlabel="M"];
+
+  AY -- H4 [xlabel="1"];
+  GR -- H4 [xlabel="1"];
+  BN -- H4 [xlabel="1"];
+  H4 -- TG [xlabel="M"];
+
+  TG -- D1 [xlabel="1"];
+  SM -- D1 [xlabel="1"];
+  D1 -- TGA [xlabel="M"];
+
+  AY -- H5 [xlabel="1"];
+  GR -- H5 [xlabel="1"];
+  BN -- H5 [xlabel="1"];
+  H5 -- TGI [xlabel="M"];
+
+  TGI -- I1 [xlabel="1"];
+  SM -- I1 [xlabel="1"];
+  I1 -- TGIT [xlabel="M"];
+}

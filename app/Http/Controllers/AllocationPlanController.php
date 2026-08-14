@@ -36,7 +36,7 @@ class AllocationPlanController extends Controller
             'academicYear',
             'grade',
             'bookName',
-            'detail',
+            'townships.township',
         ]);
 
         if ($yearId) {
@@ -231,17 +231,19 @@ class AllocationPlanController extends Controller
 
             $sequenceNo = ((int) $lastSequenceNo) + 1;
 
-            $plan = AllocationPlan::create(array_merge($computed['plan'], [
+            $plan = AllocationPlan::create([
                 'academic_year_id' => $validated['academic_year_id'],
                 'grade_id' => $validated['grade_id'],
                 'book_name_id' => $validated['book_name_id'],
                 'sequence_no' => $sequenceNo,
+                'received_books' => $validated['received_books'],
+                'books_per_package' => $validated['books_per_package'],
                 'remark' => $validated['remark'] ?? null,
-            ]));
+            ]);
 
-            $plan->detail()->create($computed['detail']);
+            $plan->syncTownshipInputs($computed['townships']);
 
-            app(TextbookFromAllocationSync::class)->sync($plan->fresh('detail'));
+            app(TextbookFromAllocationSync::class)->sync($plan->fresh('townships.township'));
         });
 
         return redirect()
@@ -254,7 +256,7 @@ class AllocationPlanController extends Controller
 
     public function edit(AllocationPlan $allocationPlan)
     {
-        $allocationPlan->load('detail');
+        $allocationPlan->load(['townships.township']);
 
         return view(
             'allocation-plans.edit',
@@ -390,23 +392,18 @@ class AllocationPlanController extends Controller
         ) {
             $computed = app(AllocationCalculator::class)->compute($validated);
 
-            $allocationPlan->update(array_merge($computed['plan'], [
+            $allocationPlan->update([
                 'academic_year_id' => $validated['academic_year_id'],
                 'grade_id' => $validated['grade_id'],
                 'book_name_id' => $validated['book_name_id'],
+                'received_books' => $validated['received_books'],
+                'books_per_package' => $validated['books_per_package'],
                 'remark' => $validated['remark'] ?? null,
-            ]));
+            ]);
 
-            $allocationPlan
-                ->detail()
-                ->updateOrCreate(
-                    [
-                        'allocation_plan_id' => $allocationPlan->id,
-                    ],
-                    $computed['detail']
-                );
+            $allocationPlan->syncTownshipInputs($computed['townships']);
 
-            app(TextbookFromAllocationSync::class)->sync($allocationPlan->fresh('detail'));
+            app(TextbookFromAllocationSync::class)->sync($allocationPlan->fresh('townships.township'));
         });
 
         return redirect()
@@ -419,13 +416,16 @@ class AllocationPlanController extends Controller
 
     public function destroy(AllocationPlan $allocationPlan)
     {
-        $allocationPlan->delete();
+        DB::transaction(function () use ($allocationPlan) {
+            app(TextbookFromAllocationSync::class)->removeForPlan($allocationPlan);
+            $allocationPlan->delete();
+        });
 
         return redirect()
             ->route('allocation-plans.index')
             ->with(
                 'success',
-                'အောင်မြင်စွာဖျက်ပြီးပါပြီ'
+                'အောင်မြင်စွာဖျက်ပြီးပါပြီ (ပုံမှန်ဖြန့်ဝေစာရင်းမှလည်း ဖယ်ရှားပြီးပါပြီ)'
             );
     }
 

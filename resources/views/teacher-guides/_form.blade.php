@@ -210,8 +210,6 @@
                 style="background-color: #f0faf4; color: #105c3a; border-color: #aad6bc;"
                 value="{{ \App\Support\FormValue::number(old('total_quota', ($teacherGuide->kg_to_g12_quota ?? 0) + ($teacherGuide->g1_to_g5_quota ?? 0))) }}"
                 disabled placeholder="0">
-            <input type="hidden" id="total_quota" name="total_quota"
-                value="{{ old('total_quota', ($teacherGuide->kg_to_g12_quota ?? 0) + ($teacherGuide->g1_to_g5_quota ?? 0)) }}">
         </div>
 
         <div class="col-md-4 ps-md-3">
@@ -223,8 +221,6 @@
                 placeholder="မှတ်ချက်ရှိပါက ဖြည့်သွင်းပါ...">
         </div>
     @else
-        <input type="hidden" id="total_quota" name="total_quota" value="{{ old('total_quota', 0) }}">
-
         <div class="col-md-8 px-md-2">
             <label class="form-label">
                 <i class="fas fa-comment-alt me-1"></i>မှတ်ချက်
@@ -283,15 +279,12 @@
 
         const kgToG12Input = document.getElementById('kg_to_g12_quota');
         const g1ToG5Input = document.getElementById('g1_to_g5_quota');
-        const totalHiddenInput = document.getElementById('total_quota');
         const totalDisplayInput = document.getElementById('total_quota_display');
 
         function calculateTotalQuota() {
             const kgToG12 = parseInt(kgToG12Input.value, 10) || 0;
             const g1ToG5 = parseInt(g1ToG5Input.value, 10) || 0;
             const total = kgToG12 + g1ToG5;
-
-            totalHiddenInput.value = total;
 
             if (totalDisplayInput) {
                 totalDisplayInput.value = (window.DerasForm?.displayNumber || function (v) {

@@ -387,6 +387,7 @@
 
                     <tbody>
                         @foreach ($plans as $key => $plan)
+                            @php $detail = $plan->detailCompat(); @endphp
                             <tr>
                                 <td>
                                     {{ $key + 1 }}
@@ -412,15 +413,15 @@
                                 <td>
                                     @php
                                         $eligibleStudents =
-                                            ($plan->detail->myanaung_total_students ?? 0) -
-                                            (($plan->detail->myanaung_previous ?? 0) +
-                                                ($plan->detail->myanaung_transferable ?? 0)) +
-                                            (($plan->detail->kyankhin_total_students ?? 0) -
-                                                (($plan->detail->kyankhin_previous ?? 0) +
-                                                    ($plan->detail->kyankhin_transferable ?? 0))) +
-                                            (($plan->detail->ingapu_total_students ?? 0) -
-                                                (($plan->detail->ingapu_previous ?? 0) +
-                                                    ($plan->detail->ingapu_transferable ?? 0)));
+                                            ($detail->myanaung_total_students ?? 0) -
+                                            (($detail->myanaung_previous ?? 0) +
+                                                ($detail->myanaung_transferable ?? 0)) +
+                                            (($detail->kyankhin_total_students ?? 0) -
+                                                (($detail->kyankhin_previous ?? 0) +
+                                                    ($detail->kyankhin_transferable ?? 0))) +
+                                            (($detail->ingapu_total_students ?? 0) -
+                                                (($detail->ingapu_previous ?? 0) +
+                                                    ($detail->ingapu_transferable ?? 0)));
                                     @endphp
 
                                     {{ $eligibleStudents > 0 ? number_format(($plan->received_books ?? 0) / $eligibleStudents, 2) : 0 }}
@@ -429,52 +430,52 @@
                                 {{-- ယခင်နှစ်လက်ကျန်စာအုပ်ဖယ်ပြီးကျောင်းသားဦးရေ = ကျောင်းသားဦးရေ - (ယခင်နှစ်လက်ကျန်စာအုပ် + လက်ဆင့်ကမ်းအသုံးပြုနိုင်) --}}
                                 <td>
                                     {{ number_format(
-                                        ($plan->detail->myanaung_total_students ?? 0) -
-                                            (($plan->detail->myanaung_previous ?? 0) + ($plan->detail->myanaung_transferable ?? 0)),
+                                        ($detail->myanaung_total_students ?? 0) -
+                                            (($detail->myanaung_previous ?? 0) + ($detail->myanaung_transferable ?? 0)),
                                     ) }}
                                 </td>
 
                                 <td>
                                     {{ number_format(
-                                        ($plan->detail->kyankhin_total_students ?? 0) -
-                                            (($plan->detail->kyankhin_previous ?? 0) + ($plan->detail->kyankhin_transferable ?? 0)),
+                                        ($detail->kyankhin_total_students ?? 0) -
+                                            (($detail->kyankhin_previous ?? 0) + ($detail->kyankhin_transferable ?? 0)),
                                     ) }}
                                 </td>
 
                                 <td>
                                     {{ number_format(
-                                        ($plan->detail->ingapu_total_students ?? 0) -
-                                            (($plan->detail->ingapu_previous ?? 0) + ($plan->detail->ingapu_transferable ?? 0)),
+                                        ($detail->ingapu_total_students ?? 0) -
+                                            (($detail->ingapu_previous ?? 0) + ($detail->ingapu_transferable ?? 0)),
                                     ) }}
                                 </td>
 
                                 <td>
                                     {{ number_format(
-                                        ($plan->detail->myanaung_total_students ?? 0) -
-                                            (($plan->detail->myanaung_previous ?? 0) + ($plan->detail->myanaung_transferable ?? 0)) +
-                                            (($plan->detail->kyankhin_total_students ?? 0) -
-                                                (($plan->detail->kyankhin_previous ?? 0) + ($plan->detail->kyankhin_transferable ?? 0))) +
-                                            (($plan->detail->ingapu_total_students ?? 0) -
-                                                (($plan->detail->ingapu_previous ?? 0) + ($plan->detail->ingapu_transferable ?? 0))),
+                                        ($detail->myanaung_total_students ?? 0) -
+                                            (($detail->myanaung_previous ?? 0) + ($detail->myanaung_transferable ?? 0)) +
+                                            (($detail->kyankhin_total_students ?? 0) -
+                                                (($detail->kyankhin_previous ?? 0) + ($detail->kyankhin_transferable ?? 0))) +
+                                            (($detail->ingapu_total_students ?? 0) -
+                                                (($detail->ingapu_previous ?? 0) + ($detail->ingapu_transferable ?? 0))),
                                     ) }}
                                 </td>
 
                                 {{-- ခွဲတမ်းပေးရန်အုပ်အရေအတွက် = အချိုး × ယခင်နှစ်လက်ကျန်စာအုပ်ဖယ်ပြီးကျောင်းသားဦးရေ --}}
                                 @php
                                     $eligibleMyanaung =
-                                        ($plan->detail->myanaung_total_students ?? 0) -
-                                        (($plan->detail->myanaung_previous ?? 0) +
-                                            ($plan->detail->myanaung_transferable ?? 0));
+                                        ($detail->myanaung_total_students ?? 0) -
+                                        (($detail->myanaung_previous ?? 0) +
+                                            ($detail->myanaung_transferable ?? 0));
 
                                     $eligibleKyankhin =
-                                        ($plan->detail->kyankhin_total_students ?? 0) -
-                                        (($plan->detail->kyankhin_previous ?? 0) +
-                                            ($plan->detail->kyankhin_transferable ?? 0));
+                                        ($detail->kyankhin_total_students ?? 0) -
+                                        (($detail->kyankhin_previous ?? 0) +
+                                            ($detail->kyankhin_transferable ?? 0));
 
                                     $eligibleIngapu =
-                                        ($plan->detail->ingapu_total_students ?? 0) -
-                                        (($plan->detail->ingapu_previous ?? 0) +
-                                            ($plan->detail->ingapu_transferable ?? 0));
+                                        ($detail->ingapu_total_students ?? 0) -
+                                        (($detail->ingapu_previous ?? 0) +
+                                            ($detail->ingapu_transferable ?? 0));
 
                                     $eligibleTotal = $eligibleMyanaung + $eligibleKyankhin + $eligibleIngapu;
 
@@ -500,19 +501,19 @@
                                 {{-- ခွဲတမ်းပေးရန်အိတ်ပြည့် = ခွဲတမ်းပေးရန်အုပ်အရေအတွက် ÷ တစ်အိတ်ပါယူနစ် --}}
                                 @php
                                     $eligibleMyanaung =
-                                        ($plan->detail->myanaung_total_students ?? 0) -
-                                        (($plan->detail->myanaung_previous ?? 0) +
-                                            ($plan->detail->myanaung_transferable ?? 0));
+                                        ($detail->myanaung_total_students ?? 0) -
+                                        (($detail->myanaung_previous ?? 0) +
+                                            ($detail->myanaung_transferable ?? 0));
 
                                     $eligibleKyankhin =
-                                        ($plan->detail->kyankhin_total_students ?? 0) -
-                                        (($plan->detail->kyankhin_previous ?? 0) +
-                                            ($plan->detail->kyankhin_transferable ?? 0));
+                                        ($detail->kyankhin_total_students ?? 0) -
+                                        (($detail->kyankhin_previous ?? 0) +
+                                            ($detail->kyankhin_transferable ?? 0));
 
                                     $eligibleIngapu =
-                                        ($plan->detail->ingapu_total_students ?? 0) -
-                                        (($plan->detail->ingapu_previous ?? 0) +
-                                            ($plan->detail->ingapu_transferable ?? 0));
+                                        ($detail->ingapu_total_students ?? 0) -
+                                        (($detail->ingapu_previous ?? 0) +
+                                            ($detail->ingapu_transferable ?? 0));
 
                                     $eligibleTotal = $eligibleMyanaung + $eligibleKyankhin + $eligibleIngapu;
 
@@ -540,19 +541,19 @@
                                 {{-- ခွဲတမ်းပေးရန်အပြေအုပ်အရေအတွက် = ခွဲတမ်းပေးရန်အုပ်အရေအတွက် ÷ တစ်အိတ်ပါယူနစ် (စားကြွင်း) --}}
                                 @php
                                     $eligibleMyanaung =
-                                        ($plan->detail->myanaung_total_students ?? 0) -
-                                        (($plan->detail->myanaung_previous ?? 0) +
-                                            ($plan->detail->myanaung_transferable ?? 0));
+                                        ($detail->myanaung_total_students ?? 0) -
+                                        (($detail->myanaung_previous ?? 0) +
+                                            ($detail->myanaung_transferable ?? 0));
 
                                     $eligibleKyankhin =
-                                        ($plan->detail->kyankhin_total_students ?? 0) -
-                                        (($plan->detail->kyankhin_previous ?? 0) +
-                                            ($plan->detail->kyankhin_transferable ?? 0));
+                                        ($detail->kyankhin_total_students ?? 0) -
+                                        (($detail->kyankhin_previous ?? 0) +
+                                            ($detail->kyankhin_transferable ?? 0));
 
                                     $eligibleIngapu =
-                                        ($plan->detail->ingapu_total_students ?? 0) -
-                                        (($plan->detail->ingapu_previous ?? 0) +
-                                            ($plan->detail->ingapu_transferable ?? 0));
+                                        ($detail->ingapu_total_students ?? 0) -
+                                        (($detail->ingapu_previous ?? 0) +
+                                            ($detail->ingapu_transferable ?? 0));
 
                                     $eligibleTotal = $eligibleMyanaung + $eligibleKyankhin + $eligibleIngapu;
 
@@ -579,56 +580,56 @@
 
                                 {{-- ယခင်နှစ်လက်ကျန်စာအုပ် --}}
                                 <td>
-                                    {{ number_format($plan->detail->myanaung_previous ?? 0) }}
+                                    {{ number_format($detail->myanaung_previous ?? 0) }}
                                 </td>
 
                                 <td>
-                                    {{ number_format($plan->detail->kyankhin_previous ?? 0) }}
+                                    {{ number_format($detail->kyankhin_previous ?? 0) }}
                                 </td>
 
                                 <td>
-                                    {{ number_format($plan->detail->ingapu_previous ?? 0) }}
+                                    {{ number_format($detail->ingapu_previous ?? 0) }}
                                 </td>
 
                                 {{-- ကျောင်းသားဦးရေ --}}
                                 <td>
-                                    {{ number_format($plan->detail->myanaung_total_students ?? 0) }}
+                                    {{ number_format($detail->myanaung_total_students ?? 0) }}
                                 </td>
 
                                 <td>
-                                    {{ number_format($plan->detail->kyankhin_total_students ?? 0) }}
+                                    {{ number_format($detail->kyankhin_total_students ?? 0) }}
                                 </td>
 
                                 <td>
-                                    {{ number_format($plan->detail->ingapu_total_students ?? 0) }}
+                                    {{ number_format($detail->ingapu_total_students ?? 0) }}
                                 </td>
 
                                 <td>
                                     {{ number_format(
-                                        ($plan->detail->myanaung_total_students ?? 0) +
-                                            ($plan->detail->kyankhin_total_students ?? 0) +
-                                            ($plan->detail->ingapu_total_students ?? 0),
+                                        ($detail->myanaung_total_students ?? 0) +
+                                            ($detail->kyankhin_total_students ?? 0) +
+                                            ($detail->ingapu_total_students ?? 0),
                                     ) }}
                                 </td>
 
                                 {{-- လက်ဆင့်ကမ်း(အသုံးပြုနိုင်) --}}
                                 <td>
-                                    {{ number_format($plan->detail->myanaung_transferable ?? 0) }}
+                                    {{ number_format($detail->myanaung_transferable ?? 0) }}
                                 </td>
 
                                 <td>
-                                    {{ number_format($plan->detail->kyankhin_transferable ?? 0) }}
+                                    {{ number_format($detail->kyankhin_transferable ?? 0) }}
                                 </td>
 
                                 <td>
-                                    {{ number_format($plan->detail->ingapu_transferable ?? 0) }}
+                                    {{ number_format($detail->ingapu_transferable ?? 0) }}
                                 </td>
 
                                 <td>
                                     {{ number_format(
-                                        ($plan->detail->myanaung_transferable ?? 0) +
-                                            ($plan->detail->kyankhin_transferable ?? 0) +
-                                            ($plan->detail->ingapu_transferable ?? 0),
+                                        ($detail->myanaung_transferable ?? 0) +
+                                            ($detail->kyankhin_transferable ?? 0) +
+                                            ($detail->ingapu_transferable ?? 0),
                                     ) }}
                                 </td>
 
@@ -636,19 +637,19 @@
                                 {{-- Formula = ယခင်နှစ်လက်ကျန်စာအုပ် + ခွဲတမ်းပေးရန်အုပ်အရေအတွက် + လက်ဆင့်ကမ်းအသုံးပြုနိုင် --}}
                                 @php
                                     $eligibleMyanaung =
-                                        ($plan->detail->myanaung_total_students ?? 0) -
-                                        (($plan->detail->myanaung_previous ?? 0) +
-                                            ($plan->detail->myanaung_transferable ?? 0));
+                                        ($detail->myanaung_total_students ?? 0) -
+                                        (($detail->myanaung_previous ?? 0) +
+                                            ($detail->myanaung_transferable ?? 0));
 
                                     $eligibleKyankhin =
-                                        ($plan->detail->kyankhin_total_students ?? 0) -
-                                        (($plan->detail->kyankhin_previous ?? 0) +
-                                            ($plan->detail->kyankhin_transferable ?? 0));
+                                        ($detail->kyankhin_total_students ?? 0) -
+                                        (($detail->kyankhin_previous ?? 0) +
+                                            ($detail->kyankhin_transferable ?? 0));
 
                                     $eligibleIngapu =
-                                        ($plan->detail->ingapu_total_students ?? 0) -
-                                        (($plan->detail->ingapu_previous ?? 0) +
-                                            ($plan->detail->ingapu_transferable ?? 0));
+                                        ($detail->ingapu_total_students ?? 0) -
+                                        (($detail->ingapu_previous ?? 0) +
+                                            ($detail->ingapu_transferable ?? 0));
 
                                     $eligibleTotal = $eligibleMyanaung + $eligibleKyankhin + $eligibleIngapu;
 
@@ -659,19 +660,19 @@
                                     $allocationIngapu = round($ratio * $eligibleIngapu);
 
                                     $finalMyanaung =
-                                        ($plan->detail->myanaung_previous ?? 0) +
+                                        ($detail->myanaung_previous ?? 0) +
                                         $allocationMyanaung +
-                                        ($plan->detail->myanaung_transferable ?? 0);
+                                        ($detail->myanaung_transferable ?? 0);
 
                                     $finalKyankhin =
-                                        ($plan->detail->kyankhin_previous ?? 0) +
+                                        ($detail->kyankhin_previous ?? 0) +
                                         $allocationKyankhin +
-                                        ($plan->detail->kyankhin_transferable ?? 0);
+                                        ($detail->kyankhin_transferable ?? 0);
 
                                     $finalIngapu =
-                                        ($plan->detail->ingapu_previous ?? 0) +
+                                        ($detail->ingapu_previous ?? 0) +
                                         $allocationIngapu +
-                                        ($plan->detail->ingapu_transferable ?? 0);
+                                        ($detail->ingapu_transferable ?? 0);
                                 @endphp
 
                                 <td>
@@ -693,19 +694,19 @@
                                 {{-- ကျောင်းသားအရအပိုအလို = လကထုတ်ပေးလက်ဆင့်ကမ်း - ကျောင်းသားဦးရေ --}}
                                 @php
                                     $eligibleMyanaung =
-                                        ($plan->detail->myanaung_total_students ?? 0) -
-                                        (($plan->detail->myanaung_previous ?? 0) +
-                                            ($plan->detail->myanaung_transferable ?? 0));
+                                        ($detail->myanaung_total_students ?? 0) -
+                                        (($detail->myanaung_previous ?? 0) +
+                                            ($detail->myanaung_transferable ?? 0));
 
                                     $eligibleKyankhin =
-                                        ($plan->detail->kyankhin_total_students ?? 0) -
-                                        (($plan->detail->kyankhin_previous ?? 0) +
-                                            ($plan->detail->kyankhin_transferable ?? 0));
+                                        ($detail->kyankhin_total_students ?? 0) -
+                                        (($detail->kyankhin_previous ?? 0) +
+                                            ($detail->kyankhin_transferable ?? 0));
 
                                     $eligibleIngapu =
-                                        ($plan->detail->ingapu_total_students ?? 0) -
-                                        (($plan->detail->ingapu_previous ?? 0) +
-                                            ($plan->detail->ingapu_transferable ?? 0));
+                                        ($detail->ingapu_total_students ?? 0) -
+                                        (($detail->ingapu_previous ?? 0) +
+                                            ($detail->ingapu_transferable ?? 0));
 
                                     $eligibleTotal = $eligibleMyanaung + $eligibleKyankhin + $eligibleIngapu;
 
@@ -716,39 +717,39 @@
                                     $allocationIngapu = round($ratio * $eligibleIngapu);
 
                                     $finalMyanaung =
-                                        ($plan->detail->myanaung_previous ?? 0) +
+                                        ($detail->myanaung_previous ?? 0) +
                                         $allocationMyanaung +
-                                        ($plan->detail->myanaung_transferable ?? 0);
+                                        ($detail->myanaung_transferable ?? 0);
 
                                     $finalKyankhin =
-                                        ($plan->detail->kyankhin_previous ?? 0) +
+                                        ($detail->kyankhin_previous ?? 0) +
                                         $allocationKyankhin +
-                                        ($plan->detail->kyankhin_transferable ?? 0);
+                                        ($detail->kyankhin_transferable ?? 0);
 
                                     $finalIngapu =
-                                        ($plan->detail->ingapu_previous ?? 0) +
+                                        ($detail->ingapu_previous ?? 0) +
                                         $allocationIngapu +
-                                        ($plan->detail->ingapu_transferable ?? 0);
+                                        ($detail->ingapu_transferable ?? 0);
                                 @endphp
 
                                 <td>
-                                    {{ number_format($finalMyanaung - ($plan->detail->myanaung_total_students ?? 0)) }}
+                                    {{ number_format($finalMyanaung - ($detail->myanaung_total_students ?? 0)) }}
                                 </td>
 
                                 <td>
-                                    {{ number_format($finalKyankhin - ($plan->detail->kyankhin_total_students ?? 0)) }}
+                                    {{ number_format($finalKyankhin - ($detail->kyankhin_total_students ?? 0)) }}
                                 </td>
 
                                 <td>
-                                    {{ number_format($finalIngapu - ($plan->detail->ingapu_total_students ?? 0)) }}
+                                    {{ number_format($finalIngapu - ($detail->ingapu_total_students ?? 0)) }}
                                 </td>
 
                                 <td>
                                     {{ number_format(
                                         $finalMyanaung -
-                                            ($plan->detail->myanaung_total_students ?? 0) +
-                                            ($finalKyankhin - ($plan->detail->kyankhin_total_students ?? 0)) +
-                                            ($finalIngapu - ($plan->detail->ingapu_total_students ?? 0)),
+                                            ($detail->myanaung_total_students ?? 0) +
+                                            ($finalKyankhin - ($detail->kyankhin_total_students ?? 0)) +
+                                            ($finalIngapu - ($detail->ingapu_total_students ?? 0)),
                                     ) }}
                                 </td>
 
@@ -759,7 +760,7 @@
                                             <i class="fas fa-pen"></i>
                                         </a>
 
-                                        @if (auth()->user()?->role === 'super')
+                                        @if (auth()->user()?->canDeleteRecords())
                                             <form action="{{ route('allocation-plans.destroy', $plan->id) }}" method="POST"
                                                 class="m-0 d-inline">
                                                 @csrf

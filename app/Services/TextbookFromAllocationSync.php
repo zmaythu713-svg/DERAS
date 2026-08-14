@@ -5,33 +5,25 @@ namespace App\Services;
 use App\Models\AllocationPlan;
 use App\Models\Textbook;
 use App\Models\Township;
+use App\Support\TownshipKeys;
 
 class TextbookFromAllocationSync
 {
-    /**
-     * Township name keys used on allocation_plan_details.
-     */
-    private const TOWNSHIP_KEYS = [
-        'မြန်အောင်' => 'myanaung',
-        'ကြံခင်း' => 'kyankhin',
-        'အင်္ဂပူ' => 'ingapu',
-    ];
-
     /**
      * Push calculated per-township allocation quantities into ပုံမှန်ဖြန့်ဝေစာရင်း.
      * Auto fields: တစ်အိတ်ပါယူနစ် (books_per_set), ထုတ်ပေးသည့်အုပ်ရေ (student_count).
      */
     public function sync(AllocationPlan $plan): void
     {
-        $plan->loadMissing('detail');
+        $plan->loadMissing('townships.township');
 
-        if (!$plan->detail) {
+        if ($plan->townships->isEmpty()) {
             return;
         }
 
         $booksPerSet = (int) $plan->books_per_package;
 
-        foreach (self::TOWNSHIP_KEYS as $townshipName => $key) {
+        foreach (TownshipKeys::nameToSlugMap() as $townshipName => $key) {
             $township = Township::query()
                 ->where('name', $townshipName)
                 ->first();
@@ -40,7 +32,7 @@ class TextbookFromAllocationSync
                 continue;
             }
 
-            $issuedQty = (int) ($plan->detail->{"{$key}_allocation"} ?? 0);
+            $issuedQty = $plan->townshipComputedValue($key, 'allocation');
 
             Textbook::updateOrCreate(
                 [
@@ -57,6 +49,18 @@ class TextbookFromAllocationSync
                 ]
             );
         }
+    }
+
+    /**
+     * Remove textbooks that were synced from this allocation plan (same natural key).
+     */
+    public function removeForPlan(AllocationPlan $plan): void
+    {
+        Textbook::query()
+            ->where('academic_year_id', $plan->academic_year_id)
+            ->where('grade_id', $plan->grade_id)
+            ->where('book_name_id', $plan->book_name_id)
+            ->delete();
     }
 
     private function formatBagCount(int $issuedQty, int $booksPerSet): string

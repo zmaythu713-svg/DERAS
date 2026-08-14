@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -701,12 +701,16 @@
                             <span>ပညာသင်နှစ်များ</span>
                         </a>
 
-                        <a class="collapse-item {{ request()->is('grades*') ? 'active-item' : '' }}" href="/grades">
+                        <a class="collapse-item {{ request()->is('grades*') && !request()->is('grade-subjects*') ? 'active-item' : '' }}" href="/grades">
                             <span>အတန်းများ</span>
                         </a>
 
                         <a class="collapse-item {{ request()->is('book-names*') ? 'active-item' : '' }}" href="/book-names">
                             <span>ဘာသာရပ်များ</span>
+                        </a>
+
+                        <a class="collapse-item {{ request()->is('grade-subjects*') ? 'active-item' : '' }}" href="/grade-subjects">
+                            <span>အတန်း–ဘာသာရပ်</span>
                         </a>
 
                         <a class="collapse-item {{ request()->is('company-contacts*') ? 'active-item' : '' }}" href="/company-contacts">
@@ -778,6 +782,10 @@
                             $pageParent = 'အခြေခံအချက်အလက်များ';
                             $pageTitle = 'ပညာသင်နှစ်များ';
                             $pageIcon = 'fa-calendar-alt';
+                        } elseif (request()->is('grade-subjects*')) {
+                            $pageParent = 'အခြေခံအချက်အလက်များ';
+                            $pageTitle = 'အတန်း–ဘာသာရပ်';
+                            $pageIcon = 'fa-link';
                         } elseif (request()->is('grades*')) {
                             $pageParent = 'အခြေခံအချက်အလက်များ';
                             $pageTitle = 'အတန်းများ';
@@ -850,10 +858,12 @@
                                     ကိုယ်ရေးအချက်အလက်
                                 </a>
 
-                                <a class="dropdown-item rounded-lg py-2 px-3 text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 transition-colors" href="{{ route('admin-users.index') }}">
-                                    <i class="mr-2.5 fas fa-users text-emerald-600"></i>
-                                    စီမံခန့်ခွဲသူများစာရင်း
-                                </a>
+                                @if (auth()->user()?->canManageUsers())
+                                    <a class="dropdown-item rounded-lg py-2 px-3 text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 transition-colors" href="{{ route('admin-users.index') }}">
+                                        <i class="mr-2.5 fas fa-users text-emerald-600"></i>
+                                        စီမံခန့်ခွဲသူများစာရင်း
+                                    </a>
+                                @endif
 
                                 <a class="dropdown-item rounded-lg py-2 px-3 text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 transition-colors" href="{{ route('password.edit') }}">
                                     <i class="mr-2.5 fas fa-lock text-emerald-600"></i>

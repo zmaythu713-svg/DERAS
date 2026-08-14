@@ -54,13 +54,13 @@ class ResourceLookupController extends Controller
             'book_name_id' => 'required|exists:book_names,id',
         ]);
 
-        $plan = AllocationPlan::with('detail')
+        $plan = AllocationPlan::with('townships.township')
             ->where('academic_year_id', $data['academic_year_id'])
             ->where('grade_id', $data['grade_id'])
             ->where('book_name_id', $data['book_name_id'])
             ->first();
 
-        if (!$plan || !$plan->detail) {
+        if (!$plan) {
             return response()->json([
                 'found' => false,
                 'books_per_set' => null,
@@ -76,7 +76,7 @@ class ResourceLookupController extends Controller
             default => null,
         };
 
-        $issued = $key ? (int) ($plan->detail->{"{$key}_allocation"} ?? 0) : 0;
+        $issued = $key ? $plan->townshipComputedValue($key, 'allocation') : 0;
 
         return response()->json([
             'found' => true,
@@ -302,6 +302,7 @@ class ResourceLookupController extends Controller
         ]);
 
         $row = TeacherGuide::query()
+            ->with('townshipAllocations.township')
             ->where('academic_year_id', $data['academic_year_id'])
             ->where('grade_id', $data['grade_id'])
             ->where('book_name_id', $data['book_name_id'])

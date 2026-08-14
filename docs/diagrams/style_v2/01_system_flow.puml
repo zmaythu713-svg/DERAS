@@ -1,0 +1,40 @@
+@startuml
+skinparam shadowing false
+skinparam monochrome true
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+skinparam ArrowColor black
+skinparam ActivityBorderColor black
+skinparam ActivityBackgroundColor white
+skinparam ActivityDiamondBackgroundColor white
+skinparam ActivityDiamondBorderColor black
+
+title Figure 1: System Flow Diagram for DERAS
+
+(*) --> "Login"
+if "Check Email and Password" then
+  -->[Yes] "View Dashboard"
+  --> "Manage Academic Years"
+  --> "Manage Townships"
+  --> "Manage Grades / Subjects"
+  --> "Manage Book Names"
+  --> "Manage Student Quota"
+  --> "Manage Allocation Plans"
+  --> "Manage Textbooks"
+  --> "Manage Stocks"
+  --> "Manage School Supplies"
+  --> "Manage Supply Details"
+  --> "Manage Teacher Guide Receipt"
+  --> "Manage Teacher Guide Distribution"
+  --> "Manage Teacher Guide Issues"
+  --> "Manage Teacher Guide Summaries"
+  --> "Manage Company Contacts"
+  --> "Manage Admin Users (Super)"
+  --> "Manage Profile / Password"
+  --> "Logout"
+  --> (*)
+else
+  -->[No] "Login"
+endif
+
+@enduml

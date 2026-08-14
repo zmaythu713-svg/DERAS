@@ -180,7 +180,7 @@
             </div>
             @isset($quota)
                 <div class="col-md-3">
-                    <label class="form-label"><i class="fas fa-calculator me-1"></i>မူလတန်း ပေါင်း</label>
+                    <label class="form-label"><i class="fas fa-calculator me-1"></i>ပေါင်း</label>
                     <input type="number" class="form-control fw-bold"
                         style="background-color: #f0faf4; color: #105c3a; border-color: #aad6bc;"
                         value="{{ $quota->primary_public + $quota->primary_monk + $quota->primary_private }}" disabled>
@@ -216,7 +216,7 @@
             </div>
             @isset($quota)
                 <div class="col-md-3">
-                    <label class="form-label"><i class="fas fa-calculator me-1"></i>အလယ်တန်း ပေါင်း</label>
+                    <label class="form-label"><i class="fas fa-calculator me-1"></i>ပေါင်း</label>
                     <input type="number" class="form-control fw-bold"
                         style="background-color: #f0faf4; color: #105c3a; border-color: #aad6bc;"
                         value="{{ $quota->middle_public + $quota->middle_monk + $quota->middle_private }}" disabled>
@@ -264,7 +264,7 @@
                     $distributionTotal    = $totalWithAgriculture - $grandPrivate;
                 @endphp
                 <div class="col-md-3">
-                    <label class="form-label"><i class="fas fa-calculator me-1"></i>အထက်တန်း ပေါင်း</label>
+                    <label class="form-label"><i class="fas fa-calculator me-1"></i>ပေါင်း</label>
                     <input type="number" class="form-control fw-bold"
                         style="background-color: #f0faf4; color: #105c3a; border-color: #aad6bc;"
                         value="{{ $highTotal }}" disabled>
@@ -284,10 +284,10 @@
         <div class="card-body p-4">
             <div class="row g-3">
                 @foreach ([
-                    ['label' => 'စုစုပေါင်း အခြေခံ', 'value' => $grandPublic, 'icon' => 'fa-building'],
-                    ['label' => 'စုစုပေါင်း ဘက',    'value' => $grandMonk, 'icon' => 'fa-vihara'],
-                    ['label' => 'စုစုပေါင်း ကိုယ်ပိုင်','value' => $grandPrivate, 'icon' => 'fa-user-graduate'],
-                    ['label' => 'စုစုပေါင်း ပေါင်း', 'value' => $grandTotal, 'icon' => 'fa-calculator'],
+                    ['label' => 'အခြေခံ', 'value' => $grandPublic, 'icon' => 'fa-building'],
+                    ['label' => 'ဘက',    'value' => $grandMonk, 'icon' => 'fa-vihara'],
+                    ['label' => 'ကိုယ်ပိုင်','value' => $grandPrivate, 'icon' => 'fa-user-graduate'],
+                    ['label' => 'ပေါင်း', 'value' => $grandTotal, 'icon' => 'fa-calculator'],
                 ] as $item)
                     <div class="col-md-3">
                         <label class="form-label"><i class="fas {{ $item['icon'] }} me-1"></i>{{ $item['label'] }}</label>

@@ -166,7 +166,6 @@ class TeacherGuideSeeder extends Seeder
                         'group_title' => $group['title'],
                         'kg_to_g12_quota' => $value[0],
                         'g1_to_g5_quota' => $value[1],
-                        'total_quota' => $value[2],
                         'remark' => null,
                     ]
                 );

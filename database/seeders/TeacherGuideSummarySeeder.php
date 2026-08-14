@@ -2407,9 +2407,7 @@ Grade-3
                         'group_title' => $row['group_title'],
                         'previous_balance' => $row['previous_balance'],
                         'fiscal_year_quota' => $row['fiscal_year_quota'],
-                        'total_books' => $row['total_books'],
                         'distributed_books' => $row['distributed_books'],
-                        'remaining_books' => $row['remaining_books'],
                         'remark' => $row['remark'],
                     ]
                 );

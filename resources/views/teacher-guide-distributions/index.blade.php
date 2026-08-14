@@ -1,4 +1,4 @@
-@extends('layouts.master')
+﻿@extends('layouts.master')
 
 @section('content')
     @php
@@ -230,7 +230,7 @@
                                         <i class="fas fa-pen"></i>
                                     </a>
 
-                                    @if (auth()->user()?->role === 'super')
+                                    @if (auth()->user()?->canDeleteRecords())
                                         <form action="{{ route('teacher-guide-distributions.destroy', $row->id) }}"
                                             method="POST" class="d-inline m-0">
                                             @csrf

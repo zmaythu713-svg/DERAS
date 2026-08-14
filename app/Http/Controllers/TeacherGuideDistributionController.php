@@ -39,7 +39,9 @@ class TeacherGuideDistributionController extends Controller
                 'academicYear',
                 'grade',
                 'bookName',
-            ]);
+                'townshipAllocations.township',
+            ])
+            ->whereHas('townshipAllocations');
 
         if ($yearId) {
             $query->where('academic_year_id', $yearId);
@@ -179,32 +181,17 @@ class TeacherGuideDistributionController extends Controller
             $data['group_title'] = $gradeName . "\n(" . $data['guide_type'] . ')';
         }
 
-        $data['total_quota'] =
-            ($data['kg_to_g12_quota'] ?? 0)
-            + ($data['g1_to_g5_quota'] ?? 0);
+        $townshipQtys = $this->extractTownshipQtys($data);
+        unset(
+            $data['kg_g12_myanaung_qty'],
+            $data['kg_g12_kyankhin_qty'],
+            $data['kg_g12_ingapu_qty'],
+            $data['g1_g5_myanaung_qty'],
+            $data['g1_g5_kyankhin_qty'],
+            $data['g1_g5_ingapu_qty']
+        );
 
-        $data['total_myanaung_qty'] =
-            ($data['kg_g12_myanaung_qty'] ?? 0)
-            + ($data['g1_g5_myanaung_qty'] ?? 0);
-
-        $data['total_kyankhin_qty'] =
-            ($data['kg_g12_kyankhin_qty'] ?? 0)
-            + ($data['g1_g5_kyankhin_qty'] ?? 0);
-
-        $data['total_ingapu_qty'] =
-            ($data['kg_g12_ingapu_qty'] ?? 0)
-            + ($data['g1_g5_ingapu_qty'] ?? 0);
-
-        $data['distributed_total'] =
-            $data['total_myanaung_qty']
-            + $data['total_kyankhin_qty']
-            + $data['total_ingapu_qty'];
-
-        $data['remaining_total'] =
-            $data['total_quota']
-            - $data['distributed_total'];
-
-        TeacherGuide::updateOrCreate(
+        $guide = TeacherGuide::updateOrCreate(
             [
                 'academic_year_id' => $data['academic_year_id'],
                 'grade_id' => $data['grade_id'],
@@ -213,6 +200,8 @@ class TeacherGuideDistributionController extends Controller
             ],
             $data
         );
+
+        $guide->syncTownshipQtys($townshipQtys);
 
         return redirect()
             ->route('teacher-guide-distributions.index')
@@ -225,6 +214,7 @@ class TeacherGuideDistributionController extends Controller
             'academicYear',
             'grade',
             'bookName',
+            'townshipAllocations.township',
         ]);
 
         $years = AcademicYear::where('is_active', true)
@@ -255,42 +245,34 @@ class TeacherGuideDistributionController extends Controller
         }
 
         $data = $this->validatedData($request);
-
-        $data['total_myanaung_qty'] =
-            ($data['kg_g12_myanaung_qty'] ?? 0)
-            + ($data['g1_g5_myanaung_qty'] ?? 0);
-
-        $data['total_kyankhin_qty'] =
-            ($data['kg_g12_kyankhin_qty'] ?? 0)
-            + ($data['g1_g5_kyankhin_qty'] ?? 0);
-
-        $data['total_ingapu_qty'] =
-            ($data['kg_g12_ingapu_qty'] ?? 0)
-            + ($data['g1_g5_ingapu_qty'] ?? 0);
-
-        $data['distributed_total'] =
-            $data['total_myanaung_qty']
-            + $data['total_kyankhin_qty']
-            + $data['total_ingapu_qty'];
-
-        $data['remaining_total'] =
-            $teacherGuideDistribution->total_quota
-            - $data['distributed_total'];
+        $townshipQtys = $this->extractTownshipQtys($data);
+        unset(
+            $data['kg_g12_myanaung_qty'],
+            $data['kg_g12_kyankhin_qty'],
+            $data['kg_g12_ingapu_qty'],
+            $data['g1_g5_myanaung_qty'],
+            $data['g1_g5_kyankhin_qty'],
+            $data['g1_g5_ingapu_qty']
+        );
 
         $teacherGuideDistribution->update($data);
+        $teacherGuideDistribution->syncTownshipQtys($townshipQtys);
 
         return redirect()
             ->route('teacher-guide-distributions.index')
             ->with('success', 'ဖြန့်ဝေရန်ခွဲတမ်း အချက်အလက် ပြင်ဆင်ပြီးပါပြီ။');
     }
 
-    public function destroy(TeacherGuide $teacherGuide)
+    public function destroy(TeacherGuide $teacherGuideDistribution)
     {
-        $teacherGuide->delete();
+        // Receipt + distribution share teacher_guides. Clearing township rows
+        // removes distribution only — do not delete the receipt header.
+        $teacherGuideDistribution->townshipAllocations()->delete();
+        $teacherGuideDistribution->unsetRelation('townshipAllocations');
 
         return redirect()
             ->route('teacher-guide-distributions.index')
-            ->with('success', 'အောင်မြင်စွာဖျက်ပြီးပါပြီ.');
+            ->with('success', 'ဖြန့်ဝေရန်ခွဲတမ်း ဖျက်ပြီးပါပြီ (လက်ခံရရှိမှု ထိန်းသိမ်းထားပါသည်).');
     }
 
     private function validatedData(Request $request): array
@@ -306,5 +288,21 @@ class TeacherGuideDistributionController extends Controller
 
             'remark' => 'nullable|string|max:1000',
         ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, int|null>
+     */
+    private function extractTownshipQtys(array $data): array
+    {
+        return [
+            'kg_g12_myanaung_qty' => $data['kg_g12_myanaung_qty'] ?? 0,
+            'kg_g12_kyankhin_qty' => $data['kg_g12_kyankhin_qty'] ?? 0,
+            'kg_g12_ingapu_qty' => $data['kg_g12_ingapu_qty'] ?? 0,
+            'g1_g5_myanaung_qty' => $data['g1_g5_myanaung_qty'] ?? 0,
+            'g1_g5_kyankhin_qty' => $data['g1_g5_kyankhin_qty'] ?? 0,
+            'g1_g5_ingapu_qty' => $data['g1_g5_ingapu_qty'] ?? 0,
+        ];
     }
 }

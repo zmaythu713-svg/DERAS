@@ -93,7 +93,11 @@ class AdminUserController extends Controller
     public function destroy(User $adminUser)
     {
         if ($adminUser->id === auth()->id()) {
-            return back()->with('error', 'You cannot delete your own account.');
+            return back()->with('error', 'ကိုယ့်အကောင့်ကို ဖျက်၍မရပါ။');
+        }
+
+        if ($adminUser->isSuper()) {
+            return back()->with('error', 'Super Admin အကောင့်ကို ဖျက်၍မရပါ။');
         }
 
         $adminUser->delete();

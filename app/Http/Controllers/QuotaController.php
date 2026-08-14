@@ -28,7 +28,7 @@ class QuotaController extends Controller
 
         $canCreate = $selectedYear?->allowsDataEntry() ?? false;
 
-        $quotaQuery = Quota::with(['academicYear', 'township'])
+        $quotaQuery = Quota::with(['academicYear', 'township', 'lines'])
             ->where('academic_year_id', $academicYearId);
 
         if ($selectedYear?->isFuture()) {
@@ -109,7 +109,17 @@ class QuotaController extends Controller
     {
         $this->assertYearAllowsDataEntry($request->input('academic_year_id'));
 
-        Quota::create($this->validatedData($request));
+        $data = $this->validatedData($request);
+        $header = [
+            'academic_year_id' => $data['academic_year_id'],
+            'township_id' => $data['township_id'],
+        ];
+        unset(
+            $data['academic_year_id'],
+            $data['township_id']
+        );
+
+        Quota::createWithLines($header, $data);
 
         return redirect()
             ->route('quota.index', array_filter([
@@ -120,7 +130,7 @@ class QuotaController extends Controller
 
     public function edit($id)
     {
-        $quota = Quota::findOrFail($id);
+        $quota = Quota::with('lines')->findOrFail($id);
 
         return view('quota.edit', $this->formData() + [
             'quota' => $quota,
@@ -132,7 +142,14 @@ class QuotaController extends Controller
         $this->assertYearAllowsDataEntry($request->input('academic_year_id'));
 
         $quota = Quota::findOrFail($id);
-        $quota->update($this->validatedData($request));
+        $data = $this->validatedData($request);
+        $header = [
+            'academic_year_id' => $data['academic_year_id'],
+            'township_id' => $data['township_id'],
+        ];
+        unset($data['academic_year_id'], $data['township_id']);
+
+        $quota->updateWithLines($header, $data);
 
         return redirect()
             ->route('quota.index', array_filter([
@@ -189,26 +206,16 @@ class QuotaController extends Controller
             'primary_public' => 'nullable|integer|min:0',
             'primary_monk' => 'nullable|integer|min:0',
             'primary_private' => 'nullable|integer|min:0',
-            'primary_total' => 'nullable|integer|min:0',
 
             'middle_public' => 'nullable|integer|min:0',
             'middle_monk' => 'nullable|integer|min:0',
             'middle_private' => 'nullable|integer|min:0',
-            'middle_total' => 'nullable|integer|min:0',
 
             'high_public' => 'nullable|integer|min:0',
             'high_monk' => 'nullable|integer|min:0',
             'high_private' => 'nullable|integer|min:0',
-            'high_total' => 'nullable|integer|min:0',
-
-            'grand_public' => 'nullable|integer|min:0',
-            'grand_monk' => 'nullable|integer|min:0',
-            'grand_private' => 'nullable|integer|min:0',
-            'grand_total' => 'nullable|integer|min:0',
 
             'agriculture' => 'nullable|integer|min:0',
-            'total_with_agriculture' => 'nullable|integer|min:0',
-            'distribution_total' => 'nullable|integer|min:0',
         ]);
 
         foreach ([
@@ -219,16 +226,6 @@ class QuotaController extends Controller
         ] as $field) {
             $data[$field] = (int) ($data[$field] ?? 0);
         }
-
-        $data['primary_total'] = $data['primary_public'] + $data['primary_monk'] + $data['primary_private'];
-        $data['middle_total'] = $data['middle_public'] + $data['middle_monk'] + $data['middle_private'];
-        $data['high_total'] = $data['high_public'] + $data['high_monk'] + $data['high_private'];
-        $data['grand_public'] = $data['primary_public'] + $data['middle_public'] + $data['high_public'];
-        $data['grand_monk'] = $data['primary_monk'] + $data['middle_monk'] + $data['high_monk'];
-        $data['grand_private'] = $data['primary_private'] + $data['middle_private'] + $data['high_private'];
-        $data['grand_total'] = $data['grand_public'] + $data['grand_monk'] + $data['grand_private'];
-        $data['total_with_agriculture'] = $data['grand_total'] + $data['agriculture'];
-        $data['distribution_total'] = $data['total_with_agriculture'];
 
         return $data;
     }

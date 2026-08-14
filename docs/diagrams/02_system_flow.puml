@@ -1,0 +1,44 @@
+@startuml DERAS_SystemFlow
+!theme plain
+title DERAS — System Flow (Activity)\nAcademic Year Resource Allocation Pipeline
+
+|Admin / Super|
+start
+:Login;
+:Open Dashboard;
+
+|Master Data|
+:Ensure Academic Year (current);
+:Ensure Townships / Grades / Book Names;
+
+|Student Quota|
+:Enter Quota by Township\n(Primary / Middle / High / Agriculture);
+
+|Textbook Path|
+:Create Allocation Plan\n(year, grade, book,\nprevious / students / transferable);
+:System calculates ratio &\ntownship allocation;
+:Auto-sync Textbook issues\n& lookup previous balances;
+
+|School Supply Path|
+:Allocate school supplies\n(item × school_count × rate);
+:Enter Supply Details\n(unit / issued);
+
+|Teacher Guide Path|
+:Record Receipt Quota\n(KG–G12 / G1–G5);
+:Distribute to Townships\n(per guide type);
+:Issue to Townships\n(package / loose computed);
+:Update Summary\n(previous + quota − distributed);
+
+|Admin / Super|
+:Review Dashboard / Indexes;
+:Logout;
+stop
+
+legend right
+  |= Path |= Tables |
+  | Textbook | quotas → allocation_plans →\nallocation_plan_townships → textbooks / stocks |
+  | Supplies | school_supply_* → supply_details |
+  | Teacher Guide | teacher_guides →\ntownship_allocations → issues → summaries |
+endlegend
+
+@enduml
