@@ -209,6 +209,7 @@
                     </tbody>
                 </table>
             </div>
+            @include('partials.pagination', ['items' => $details])
         @endif
 
     </div>

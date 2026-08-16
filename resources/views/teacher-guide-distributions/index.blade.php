@@ -247,6 +247,7 @@
                 </tbody>
             </table>
         </div>
+        @include('partials.pagination', ['items' => $teacherGuides])
         @endif
 
     </div>

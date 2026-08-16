@@ -1,81 +1,151 @@
 ﻿@extends('layouts.master')
 
 @section('content')
+    <style>
+        .dash-metrics {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+            align-items: stretch;
+        }
+        @media (min-width: 576px) {
+            .dash-metrics { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (min-width: 992px) {
+            .dash-metrics { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (min-width: 1200px) {
+            .dash-metrics { grid-template-columns: repeat(5, 1fr); }
+        }
+
+        .dash-metric-card {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 52px;
+            grid-template-rows: auto 52px;
+            column-gap: 14px;
+            row-gap: 10px;
+            align-items: center;
+            min-height: 132px;
+            height: auto;
+            padding: 18px 20px;
+            background: #fff;
+            border-radius: 16px;
+            border-left: 5px solid #ccc;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+            box-sizing: border-box;
+        }
+        .dash-metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1);
+        }
+
+        .dash-metric-card.is-quota { border-left-color: #059669; }
+        .dash-metric-card.is-handover { border-left-color: #0284c7; }
+        .dash-metric-card.is-distributed { border-left-color: #0d9488; }
+        .dash-metric-card.is-remaining { border-left-color: #f59e0b; }
+        .dash-metric-card.is-students { border-left-color: #4f46e5; }
+
+        .dash-metric-label {
+            grid-column: 1 / -1;
+            grid-row: 1;
+            margin: 0;
+            min-height: 1.6em;
+            display: flex;
+            align-items: flex-start;
+            font-size: 14px;
+            font-weight: 700;
+            color: #475569;
+            line-height: 1.7;
+            padding-top: 2px;
+            padding-bottom: 2px;
+            overflow: visible;
+        }
+        .dash-metric-label > span {
+            display: block;
+            overflow: visible;
+            white-space: normal;
+            word-break: break-word;
+        }
+
+        .dash-metric-value {
+            grid-column: 1;
+            grid-row: 2;
+            margin: 0;
+            align-self: center;
+            font-size: 1.7rem;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -0.02em;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+        .dash-metric-card.is-quota .dash-metric-value { color: #064e3b; }
+        .dash-metric-card.is-handover .dash-metric-value { color: #075985; }
+        .dash-metric-card.is-distributed .dash-metric-value { color: #0f766e; }
+        .dash-metric-card.is-remaining .dash-metric-value { color: #b45309; }
+        .dash-metric-card.is-students .dash-metric-value { color: #3730a3; }
+
+        .dash-metric-icon {
+            grid-column: 2;
+            grid-row: 2;
+            align-self: center;
+            justify-self: end;
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+        .dash-metric-card.is-quota .dash-metric-icon { background: #ecfdf5; color: #059669; }
+        .dash-metric-card.is-handover .dash-metric-icon { background: #f0f9ff; color: #0284c7; }
+        .dash-metric-card.is-distributed .dash-metric-icon { background: #f0fdfa; color: #0d9488; }
+        .dash-metric-card.is-remaining .dash-metric-icon { background: #fffbeb; color: #d97706; }
+        .dash-metric-card.is-students .dash-metric-icon { background: #eef2ff; color: #4f46e5; }
+    </style>
+
     <div class="app-page-container space-y-6">
 
-        <!-- Top Metric Cards Row (Original Labels & Formulas Restored) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="dash-metrics" id="dashMetrics">
 
-            <!-- Metric 1: ခွဲတမ်းစာအုပ် -->
-            <div class="modern-card p-5 border-l-4 border-l-emerald-600 hover:scale-[1.02] transition-transform">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <span class="text-sm sm:text-base font-bold text-slate-600 tracking-wide block mb-1">
-                            ခွဲတမ်းစာအုပ်
-                        </span>
-                        <h3 class="text-2xl sm:text-3xl font-extrabold text-emerald-900 m-0">
-                            {{ number_format($summary['total_quota_books']) }}
-                        </h3>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shadow-sm">
-                        <i class="fas fa-book-open"></i>
-                    </div>
-                </div>
+            <div class="dash-metric-card is-quota" title="ခွဲတမ်းစာအုပ်">
+                <div class="dash-metric-label"><span>ခွဲတမ်းစာအုပ်</span></div>
+                <h3 class="dash-metric-value" data-metric-value>{{ number_format($summary['total_quota_books']) }}</h3>
+                <div class="dash-metric-icon"><i class="fas fa-book-open"></i></div>
             </div>
 
-            <!-- Metric 2: ဖြန့်ဝေပြီး -->
-            <div class="modern-card p-5 border-l-4 border-l-teal-600 hover:scale-[1.02] transition-transform">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <span class="text-sm sm:text-base font-bold text-slate-600 tracking-wide block mb-1">
-                            ဖြန့်ဝေပြီး
-                        </span>
-                        <h3 class="text-2xl sm:text-3xl font-extrabold text-teal-700 m-0">
-                            {{ number_format($summary['distributed_books']) }}
-                        </h3>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center text-xl shadow-sm">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                </div>
+            <div class="dash-metric-card is-handover" title="လက်ဆင့်ကမ်းစာအုပ်">
+                <div class="dash-metric-label"><span>လက်ဆင့်ကမ်းစာအုပ်</span></div>
+                <h3 class="dash-metric-value" data-metric-value>{{ number_format($summary['handover_books']) }}</h3>
+                <div class="dash-metric-icon"><i class="fas fa-hands-helping"></i></div>
             </div>
 
-            <!-- Metric 3: လက်ကျန် -->
-            <div class="modern-card p-5 border-l-4 border-l-amber-500 hover:scale-[1.02] transition-transform">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <span class="text-sm sm:text-base font-bold text-slate-600 tracking-wide block mb-1">
-                            လက်ကျန်
-                        </span>
-                        <h3 class="text-2xl sm:text-3xl font-extrabold text-amber-600 m-0">
-                            {{ number_format($summary['remaining_books']) }}
-                        </h3>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shadow-sm">
-                        <i class="fas fa-boxes"></i>
-                    </div>
-                </div>
+            <div class="dash-metric-card is-distributed" title="ဖြန့်ဝေပြီးစာအုပ်">
+                <div class="dash-metric-label"><span>ဖြန့်ဝေပြီးစာအုပ်</span></div>
+                <h3 class="dash-metric-value" data-metric-value>{{ number_format($summary['distributed_books']) }}</h3>
+                <div class="dash-metric-icon"><i class="fas fa-check-circle"></i></div>
             </div>
 
-            <!-- Metric 4: ကျောင်းသား -->
-            <div class="modern-card p-5 border-l-4 border-l-indigo-600 hover:scale-[1.02] transition-transform">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <span class="text-sm sm:text-base font-bold text-slate-600 tracking-wide block mb-1">
-                            ကျောင်းသား
-                        </span>
-                        <h3 class="text-2xl sm:text-3xl font-extrabold text-indigo-700 m-0">
-                            {{ number_format($summary['students']) }}
-                        </h3>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl shadow-sm">
-                        <i class="fas fa-user-graduate"></i>
-                    </div>
-                </div>
+            <div class="dash-metric-card is-remaining"
+                title="လက်ကျန်စာအုပ် = ခွဲတမ်း + လက်ဆင့်ကမ်း − ဖြန့်ဝေပြီး">
+                <div class="dash-metric-label"><span>လက်ကျန်စာအုပ်</span></div>
+                <h3 class="dash-metric-value" data-metric-value>{{ number_format($summary['remaining_books']) }}</h3>
+                <div class="dash-metric-icon"><i class="fas fa-boxes"></i></div>
+            </div>
+
+            <div class="dash-metric-card is-students"
+                title="ကျောင်းသားခွဲတမ်း — မူလ / အလယ် / အထက် / စက်စိုက်မွေး စုစုပေါင်း">
+                <div class="dash-metric-label"><span>ကျောင်းသား</span></div>
+                <h3 class="dash-metric-value" data-metric-value>{{ number_format($summary['students']) }}</h3>
+                <div class="dash-metric-icon"><i class="fas fa-user"></i></div>
             </div>
 
         </div>
-
 
         <!-- SECTION 1: ပြဌာန်းစာအုပ် Donut & Bar Chart -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -149,6 +219,27 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+
+            // Metric cards: shrink number font if it overflows the card width
+            function fitMetricValues() {
+                document.querySelectorAll('[data-metric-value]').forEach(function (el) {
+                    el.style.fontSize = '';
+                    var card = el.closest('.dash-metric-card');
+                    if (!card) return;
+                    var icon = card.querySelector('.dash-metric-icon');
+                    var avail = card.clientWidth - 20 - 20 - 14 - (icon ? icon.offsetWidth : 52) - 8;
+                    var max = 1.7;
+                    var min = 1.0;
+                    var size = max;
+                    el.style.fontSize = size + 'rem';
+                    while (el.scrollWidth > avail && size > min) {
+                        size -= 0.05;
+                        el.style.fontSize = size + 'rem';
+                    }
+                });
+            }
+            fitMetricValues();
+            window.addEventListener('resize', fitMetricValues);
 
             Chart.defaults.font.family = "Noto Sans Myanmar";
             Chart.register(ChartDataLabels);

@@ -62,15 +62,16 @@ class SchoolSupplyController extends Controller
         }
 
         if ($selectedYear?->isFuture()) {
-            $allocations = collect();
-        } else {
-            $allocations = $query
-                ->orderBy('grade_id')
-                ->orderBy('row_type')
-                ->orderBy('row_label')
-                ->orderBy('school_supply_item_id')
-                ->get();
+            $query->whereRaw('0 = 1');
         }
+
+        $allocations = $query
+            ->orderBy('grade_id')
+            ->orderBy('row_type')
+            ->orderBy('row_label')
+            ->orderBy('school_supply_item_id')
+            ->paginate(config('deras.pagination_per_page'))
+            ->withQueryString();
 
         $emptyMessage = 'အချက်အလက်မရှိပါ';
         if ($selectedYear?->isFuture()) {

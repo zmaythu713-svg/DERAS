@@ -166,7 +166,7 @@
                 <tbody>
                     @foreach($issues as $key => $issue)
                         <tr>
-                            <td class="font-mono text-slate-500">{{ $key + 1 }}</td>
+                            <td class="font-mono text-slate-500">{{ ($issues->firstItem() ?? 1) + $key }}</td>
                             <td class="whitespace-nowrap font-medium text-slate-800">{{ $issue->grade?->name }}</td>
                             <td class="text-start font-medium text-slate-800" style="min-width: 220px;">{{ $issue->bookName?->name }}</td>
                             <td class="whitespace-nowrap font-medium text-slate-800">{{ $issue->guide_type }}</td>
@@ -205,6 +205,7 @@
                 </tbody>
             </table>
         </div>
+        @include('partials.pagination', ['items' => $issues])
         @endif
     </div>
 

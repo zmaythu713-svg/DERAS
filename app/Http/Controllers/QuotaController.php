@@ -32,42 +32,41 @@ class QuotaController extends Controller
             ->where('academic_year_id', $academicYearId);
 
         if ($selectedYear?->isFuture()) {
-            $quotas = collect();
-        } else {
-            $quotas = $quotaQuery->orderBy('id')->get();
+            $quotaQuery->whereRaw('0 = 1');
         }
 
-        $rows = $quotas->map(function ($quota) {
-            return [
-                'id' => $quota->id,
-                'academic_year' => $quota->academicYear?->name,
-                'township' => $quota->township?->name,
+        $rows = $quotaQuery->orderBy('id')->paginate(config('deras.pagination_per_page'))->withQueryString()
+            ->through(function ($quota) {
+                return [
+                    'id' => $quota->id,
+                    'academic_year' => $quota->academicYear?->name,
+                    'township' => $quota->township?->name,
 
-                'primary_public' => $quota->primary_public,
-                'primary_monk' => $quota->primary_monk,
-                'primary_private' => $quota->primary_private,
-                'primary_total' => $quota->primary_total,
+                    'primary_public' => $quota->primary_public,
+                    'primary_monk' => $quota->primary_monk,
+                    'primary_private' => $quota->primary_private,
+                    'primary_total' => $quota->primary_total,
 
-                'middle_public' => $quota->middle_public,
-                'middle_monk' => $quota->middle_monk,
-                'middle_private' => $quota->middle_private,
-                'middle_total' => $quota->middle_total,
+                    'middle_public' => $quota->middle_public,
+                    'middle_monk' => $quota->middle_monk,
+                    'middle_private' => $quota->middle_private,
+                    'middle_total' => $quota->middle_total,
 
-                'high_public' => $quota->high_public,
-                'high_monk' => $quota->high_monk,
-                'high_private' => $quota->high_private,
-                'high_total' => $quota->high_total,
+                    'high_public' => $quota->high_public,
+                    'high_monk' => $quota->high_monk,
+                    'high_private' => $quota->high_private,
+                    'high_total' => $quota->high_total,
 
-                'grand_public' => $quota->grand_public,
-                'grand_monk' => $quota->grand_monk,
-                'grand_private' => $quota->grand_private,
-                'grand_total' => $quota->grand_total,
+                    'grand_public' => $quota->grand_public,
+                    'grand_monk' => $quota->grand_monk,
+                    'grand_private' => $quota->grand_private,
+                    'grand_total' => $quota->grand_total,
 
-                'agriculture' => $quota->agriculture,
-                'total_with_agriculture' => $quota->total_with_agriculture,
-                'distribution_total' => $quota->distribution_total,
-            ];
-        });
+                    'agriculture' => $quota->agriculture,
+                    'total_with_agriculture' => $quota->total_with_agriculture,
+                    'distribution_total' => $quota->distribution_total,
+                ];
+            });
 
         $emptyMessage = 'အချက်အလက်မရှိပါ';
         if ($selectedYear?->isFuture()) {

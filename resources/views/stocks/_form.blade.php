@@ -92,6 +92,12 @@
         justify-content: flex-end;
         gap: 10px;
     }
+    /* readonly / calculated fields */
+    .calc-input {
+        background: #f1f5f9 !important;
+        color: #0f172a;
+        cursor: default;
+    }
 </style>
 
 {{-- ===== Row 1: ပညာသင်နှစ် | မြို့နယ် | အတန်း ===== --}}
@@ -166,16 +172,16 @@
         <label class="form-label">
             <i class="fas fa-history me-1"></i>ယခင်နှစ်လက်ကျန်
         </label>
-        <input type="number" name="previous_balance" class="form-control"
+        <input type="number" name="previous_balance" id="previous_balance" class="form-control calc-input"
             value="{{ \App\Support\FormValue::number(old('previous_balance', $stock->previous_balance ?? null)) }}"
-            placeholder="0" min="0">
+            placeholder="0" min="0" readonly>
     </div>
 
     <div class="col-md-4 ps-md-3">
         <label class="form-label">
             <i class="fas fa-exchange-alt me-1"></i>လက်ဆင့်ကမ်း
         </label>
-        <input type="number" name="transferred" class="form-control"
+        <input type="number" name="transferred" id="transferred" class="form-control"
             value="{{ \App\Support\FormValue::number(old('transferred', $stock->transferred ?? null)) }}"
             placeholder="0" min="0">
     </div>
@@ -187,7 +193,7 @@
         <label class="form-label">
             <i class="fas fa-check-circle me-1"></i>အပ်နှံပြီးလိုအပ်မှု
         </label>
-        <input type="number" name="enrolled_need" class="form-control"
+        <input type="number" name="enrolled_need" id="enrolled_need" class="form-control"
             value="{{ \App\Support\FormValue::number(old('enrolled_need', $stock->enrolled_need ?? null)) }}"
             placeholder="0" min="0">
     </div>
@@ -196,9 +202,9 @@
         <label class="form-label">
             <i class="fas fa-list-ol me-1"></i>လိုအပ်မှု
         </label>
-        <input type="number" name="required_qty" class="form-control"
+        <input type="number" name="required_qty" id="required_qty" class="form-control calc-input"
             value="{{ \App\Support\FormValue::number(old('required_qty', $stock->required_qty ?? null)) }}"
-            placeholder="0" min="0">
+            placeholder="0" min="0" readonly>
     </div>
 
     <div class="col-md-4 ps-md-3">
@@ -224,19 +230,57 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        if (!window.DerasForm) return;
-        DerasForm.wireGradeSubjects({
-            gradeSelect: '#grade_id',
-            subjectSelect: '#book_name_id',
-            categorySlug: 'textbook',
-            keepSelected: true,
+        function num(el) {
+            if (!el) return 0;
+            var raw = String(el.value || '').trim();
+            if (raw === '') return 0;
+            var v = parseInt(raw, 10);
+            return isNaN(v) ? 0 : v;
+        }
+
+        function recalcStockNeed() {
+            var previous = document.getElementById('previous_balance');
+            var transferred = document.getElementById('transferred');
+            var enrolled = document.getElementById('enrolled_need');
+            var required = document.getElementById('required_qty');
+            if (!previous || !transferred || !enrolled || !required) return;
+
+            var result = num(enrolled) - (num(previous) + num(transferred));
+            if (result < 0) result = 0;
+            required.value = String(result);
+        }
+
+        ['transferred', 'enrolled_need', 'previous_balance'].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('input', recalcStockNeed);
+            el.addEventListener('change', recalcStockNeed);
+            el.addEventListener('keyup', recalcStockNeed);
         });
-        DerasForm.wirePreviousBalanceAutofill({
-            yearSelect: '[name="academic_year_id"]',
-            townshipSelect: '[name="township_id"]',
-            gradeSelect: '#grade_id',
-            subjectSelect: '#book_name_id',
-            balanceInput: '[name="previous_balance"]',
-        });
+
+        if (window.DerasForm) {
+            DerasForm.wireGradeSubjects({
+                gradeSelect: '#grade_id',
+                subjectSelect: '#book_name_id',
+                categorySlug: 'textbook',
+                keepSelected: true,
+            });
+            DerasForm.wirePreviousBalanceAutofill({
+                yearSelect: '[name="academic_year_id"]',
+                townshipSelect: '[name="township_id"]',
+                gradeSelect: '#grade_id',
+                subjectSelect: '#book_name_id',
+                balanceInput: '#previous_balance',
+            });
+            DerasForm.wireStockRequirementCalc({
+                previousInput: '#previous_balance',
+                transferredInput: '#transferred',
+                enrolledInput: '#enrolled_need',
+                requiredInput: '#required_qty',
+            });
+        }
+
+        recalcStockNeed();
+        setTimeout(recalcStockNeed, 400);
     });
 </script>

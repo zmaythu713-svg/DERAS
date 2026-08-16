@@ -60,7 +60,7 @@
                 <tbody>
                     @forelse ($grades as $key => $grade)
                         <tr>
-                            <td class="font-mono text-slate-500">{{ $key + 1 }}</td>
+                            <td class="font-mono text-slate-500">{{ ($grades->firstItem() ?? 1) + $key }}</td>
                             <td class="font-semibold text-slate-800 text-center">
                                 {{ $grade->name }}
                             </td>
@@ -107,6 +107,8 @@
                 </tbody>
             </table>
         </div>
+
+        @include('partials.pagination', ['items' => $grades])
 
     </div>
 @endsection

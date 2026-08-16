@@ -1,246 +1,293 @@
-@startuml DERAS_ER
+@startuml DERAS_ER_Chen
 !theme plain
-title DERAS — ER Diagram (Normalized Core)
+skinparam shadowing false
+skinparam monochrome true
 hide circle
-skinparam linetype ortho
+left to right direction
 
-entity "users" as users {
-  * id : bigint <<PK>>
+' Chen-style conceptual ER (normalized DERAS schema)
+' PNG: docs/diagrams/images_final/Figure3_ER_Chen_BW.png
+
+entity "academic_year" as year {
+  * id
   --
-  name : string
-  email : string <<UQ>>
-  role : string
-  password : string
+  name
+  start_year
+  end_year
+  is_current
+  is_active
 }
 
-entity "academic_years" as years {
-  * id : bigint <<PK>>
+entity "township" as town {
+  * id
   --
-  name : string
-  start_year : int
-  end_year : int
-  is_current : bool
-  is_active : bool
+  name
+  is_active
 }
 
-entity "townships" as towns {
-  * id : bigint <<PK>>
+entity "grade" as grade {
+  * id
   --
-  name : string
-  is_active : bool
+  name
+  is_active
 }
 
-entity "grades" as grades {
-  * id : bigint <<PK>>
+entity "book_name" as book {
+  * id
   --
-  name : string
-  is_active : bool
+  name
+  is_active
 }
 
-entity "book_names" as books {
-  * id : bigint <<PK>>
+entity "category" as cat {
+  * id
   --
-  name : string
-  is_active : bool
+  name_mm
+  slug
 }
 
-entity "categories" as cats {
-  * id : bigint <<PK>>
+entity "grade_book_name" as gbn {
+  * id
   --
-  name : string
-  slug : string
+  grade_id
+  book_name_id
+  category_id
 }
 
-entity "grade_book_names" as gbn {
-  * id : bigint <<PK>>
+entity "quota" as quota {
+  * id
   --
-  * grade_id : FK
-  * book_name_id : FK
-  * category_id : FK
+  academic_year_id
+  township_id
 }
 
-entity "quotas" as quotas {
-  * id : bigint <<PK>>
+entity "quota_line" as qline {
+  * id
   --
-  * academic_year_id : FK
-  * township_id : FK
-  primary_public / monk / private
-  middle_public / monk / private
-  high_public / monk / private
-  agriculture
+  quota_id
+  school_level
+  ownership
+  quantity
 }
 
-entity "allocation_plans" as plans {
-  * id : bigint <<PK>>
+entity "allocation_plan" as plan {
+  * id
   --
-  * academic_year_id : FK
-  * grade_id : FK
-  * book_name_id : FK
+  academic_year_id
+  grade_id
+  book_name_id
   sequence_no
   received_books
   books_per_package
-  remark
 }
 
-entity "allocation_plan_townships" as apt {
-  * id : bigint <<PK>>
+entity "allocation_plan_township" as apt {
+  * id
   --
-  * allocation_plan_id : FK
-  * township_id : FK
+  allocation_plan_id
+  township_id
   previous
   total_students
   transferable
 }
 
-entity "textbooks" as tb {
-  * id : bigint <<PK>>
+entity "textbook" as tb {
+  * id
   --
-  * academic_year_id : FK
-  * township_id : FK
-  * grade_id : FK
-  * book_name_id : FK
+  academic_year_id
+  township_id
+  grade_id
+  book_name_id
   books_per_set
   student_count
 }
 
-entity "stocks" as stocks {
-  * id : bigint <<PK>>
+entity "stock" as stock {
+  * id
   --
-  * academic_year_id : FK
-  * township_id : FK
-  * grade_id : FK
-  * book_name_id : FK
+  academic_year_id
+  township_id
+  grade_id
+  book_name_id
   previous_balance
   transferred
-  enrolled_need
   required_qty
 }
 
-entity "teacher_guides" as tg {
-  * id : bigint <<PK>>
+entity "previous_year_balance" as pyb {
+  * id
   --
-  * academic_year_id : FK
-  * grade_id : FK
-  * book_name_id : FK
+  academic_year_id
+  township_id
+  grade_id
+  book_name_id
+  balance
+}
+
+entity "teacher_guide" as tg {
+  * id
+  --
+  academic_year_id
+  grade_id
+  book_name_id
   guide_type
-  group_no / group_title / sequence_no
   kg_to_g12_quota
   g1_to_g5_quota
 }
 
-entity "teacher_guide_township_allocations" as tgta {
-  * id : bigint <<PK>>
+entity "tg_township_allocation" as tgta {
+  * id
   --
-  * teacher_guide_id : FK
-  * township_id : FK
+  teacher_guide_id
+  township_id
   kg_g12_qty
   g1_g5_qty
 }
 
-entity "teacher_guide_issues" as tgi {
-  * id : bigint <<PK>>
+entity "teacher_guide_issue" as tgi {
+  * id
   --
-  * academic_year_id : FK
-  * grade_id : FK
-  * book_name_id : FK
-  guide_type
+  teacher_guide_id
   district_unit
   package_unit
 }
 
-entity "teacher_guide_issue_townships" as tgit {
-  * id : bigint <<PK>>
+entity "tg_issue_township" as tgit {
+  * id
   --
-  * teacher_guide_issue_id : FK
-  * township_id : FK
+  teacher_guide_issue_id
+  township_id
   issued_quantity
 }
 
-entity "teacher_guide_summaries" as tgs {
-  * id : bigint <<PK>>
+entity "teacher_guide_summary" as tgs {
+  * id
   --
-  * academic_year_id : FK
-  * grade_id : FK
-  * book_name_id : FK
-  guide_type
+  teacher_guide_id
   previous_balance
   fiscal_year_quota
   distributed_books
 }
 
-entity "school_supply_items" as ssi {
-  * id : bigint <<PK>>
+entity "school_supply_item" as ssi {
+  * id
   --
   name
   rate
 }
 
-entity "school_supply_allocations" as ssa {
-  * id : bigint <<PK>>
+entity "school_supply_allocation" as ssa {
+  * id
   --
-  * academic_year_id : FK
-  * grade_id : FK
-  township_id : FK
-  * school_supply_item_id : FK
+  academic_year_id
+  grade_id
+  township_id
+  school_supply_item_id
   school_count
   quantity
 }
 
-entity "supply_items" as si {
-  * id : bigint <<PK>>
+entity "supply_item" as si {
+  * id
   --
   name
 }
 
-entity "supply_details" as sd {
-  * id : bigint <<PK>>
+entity "supply_detail" as sd {
+  * id
   --
-  * academic_year_id : FK
-  * township_id : FK
-  * grade_id : FK
-  * supply_item_id : FK
+  academic_year_id
+  township_id
+  grade_id
+  supply_item_id
   unit
   issued_total
 }
 
-entity "company_contacts" as cc {
-  * id : bigint <<PK>>
+entity "school_count" as sc {
+  * id
+  --
+  academic_year_id
+  grade_id
+  township_id
+  school_count
+}
+
+entity "company_contact" as cc {
+  * id
   --
   company_name
   lot
   responsible_name
   phone
-  is_active
 }
 
-years ||--o{ quotas
-towns ||--o{ quotas
-years ||--o{ plans
-grades ||--o{ plans
-books ||--o{ plans
-plans ||--|{ apt
-towns ||--o{ apt
+entity "role" as role {
+  * id
+  --
+  name
+  slug
+}
 
-years ||--o{ tb
-towns ||--o{ tb
-grades ||--o{ gbn
-books ||--o{ gbn
-cats ||--o{ gbn
+entity "permission" as perm {
+  * id
+  --
+  name
+  slug
+}
 
-years ||--o{ tg
-grades ||--o{ tg
-books ||--o{ tg
-tg ||--|{ tgta
-towns ||--o{ tgta
+entity "role_permission" as rp {
+  * id
+  --
+  role_id
+  permission_id
+}
 
-years ||--o{ tgi
-tgi ||--|{ tgit
-towns ||--o{ tgit
+entity "user" as user {
+  * id
+  --
+  name
+  email
+  role_id
+}
 
-years ||--o{ tgs
-years ||--o{ ssa
-ssi ||--o{ ssa
-years ||--o{ sd
-si ||--o{ sd
+year ||--o{ quota : Has
+town ||--o{ quota : Has
+quota ||--|{ qline : Has
+
+year ||--o{ plan : Has
+grade ||--o{ plan : Has
+book ||--o{ plan : Has
+plan ||--|{ apt : Has
+town ||--o{ apt : Has
+
+plan ||--o{ tb : Syncs
+year ||--o{ tb : Has
+year ||--o{ stock : Has
+year ||--o{ pyb : Has
+
+year ||--o{ tg : Has
+grade ||--o{ tg : Has
+book ||--o{ tg : Has
+tg ||--|{ tgta : Distributes
+town ||--o{ tgta : Has
+tg ||--o{ tgi : Has
+tgi ||--|{ tgit : Issues
+town ||--o{ tgit : Has
+tg ||--o{ tgs : Has
+
+grade ||--o{ gbn : Has
+book ||--o{ gbn : Has
+cat ||--o{ gbn : Has
+
+ssi ||--o{ ssa : Has
+year ||--o{ ssa : Has
+si ||--o{ sd : Has
+year ||--o{ sd : Has
+year ||--o{ sc : Has
+
+role ||--o{ rp : Has
+perm ||--o{ rp : Has
+role ||--o{ user : Has
 
 @enduml

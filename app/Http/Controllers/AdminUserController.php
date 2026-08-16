@@ -7,6 +7,7 @@ use App\Support\TextName;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class AdminUserController extends Controller
 {
@@ -21,7 +22,7 @@ class AdminUserController extends Controller
             });
         }
 
-        $users = $query->latest()->get();
+        $users = $query->latest()->paginate(config('deras.pagination_per_page'))->withQueryString();
 
         return view('admin-users.index', compact('users'));
     }
@@ -36,14 +37,15 @@ class AdminUserController extends Controller
         $data = $request->validate([
             'name'     => ['required', 'string', 'max:255', TextName::validationRule('အမည်')],
             'email'    => 'required|email|unique:users,email',
-            'role'     => 'required|in:super,admin',
+            // New accounts may only be Admin (Super is seeded / reserved).
+            'role'     => 'required|in:admin',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
         User::create([
             'name'     => $data['name'],
             'email'    => $data['email'],
-            'role'     => $data['role'],
+            'role'     => 'admin',
             'password' => Hash::make($data['password']),
         ]);
 
@@ -61,23 +63,41 @@ class AdminUserController extends Controller
 
     public function update(Request $request, User $adminUser)
     {
-        $data = $request->validate([
+        $rules = [
             'name' => ['required', 'string', 'max:255', TextName::validationRule('အမည်')],
-
             'email' => [
                 'required',
                 'email',
                 Rule::unique('users', 'email')->ignore($adminUser->id),
             ],
-
-            'role' => 'required|in:super,admin',
-
             'password' => 'nullable|string|min:8|confirmed',
-        ]);
+        ];
+
+        // Existing Super Admin: role is locked (cannot demote/promote via form).
+        // Admin accounts: role stays admin only (cannot promote to Super).
+        if ($adminUser->isSuper()) {
+            $rules['role'] = 'nullable|in:super';
+        } else {
+            $rules['role'] = 'required|in:admin';
+        }
+
+        $data = $request->validate($rules);
+
+        if (!$adminUser->isSuper() && ($data['role'] ?? '') === 'super') {
+            throw ValidationException::withMessages([
+                'role' => 'Admin အကောင့်ကို Super Admin သို့ ပြောင်း၍မရပါ။',
+            ]);
+        }
 
         $adminUser->name = $data['name'];
         $adminUser->email = $data['email'];
-        $adminUser->role = $data['role'];
+
+        if ($adminUser->isSuper()) {
+            // Keep Super role unchanged
+            $adminUser->role = 'super';
+        } else {
+            $adminUser->role = 'admin';
+        }
 
         if (!empty($data['password'])) {
             $adminUser->password = Hash::make($data['password']);

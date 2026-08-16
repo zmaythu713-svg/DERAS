@@ -15,7 +15,7 @@ class BookNameController extends Controller
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        $bookNames = $query->latest()->get();
+        $bookNames = $query->latest()->paginate(config('deras.pagination_per_page'))->withQueryString();
 
         return view('book-names.index', compact('bookNames'));
     }

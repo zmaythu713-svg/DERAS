@@ -150,12 +150,17 @@
                     <div class="row mb-4">
                         <div class="col-md-6 mb-3 mb-md-0">
                             <label class="form-label"><i class="fas fa-user-shield me-1"></i> အမျိုးအစား (Role) <span class="text-danger">*</span></label>
-                            <select name="role" class="form-select @error('role') is-invalid @enderror" required>
-                                <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Admin</option>
-                                <option value="super" {{ old('role', $user->role) == 'super' ? 'selected' : '' }}>Super Admin</option>
-                            </select>
+                            @if ($user->role === 'super')
+                                <input type="hidden" name="role" value="super">
+                                <div class="form-control bg-light" style="pointer-events: none;">Super Admin</div>
+                                <small class="text-muted">Super Admin role ကို ပြောင်း၍မရပါ။</small>
+                            @else
+                                <input type="hidden" name="role" value="admin">
+                                <div class="form-control bg-light" style="pointer-events: none;">Admin</div>
+                                <small class="text-muted">Admin ကို Super Admin သို့ ပြောင်း၍မရပါ။</small>
+                            @endif
                             @error('role')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                         </div>
 

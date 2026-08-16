@@ -18,7 +18,7 @@ class CompanyContactController extends Controller
                 ->orWhere('responsible_name', 'like', "%{$request->search}%");
         }
 
-        $data = $query->orderBy('id', 'desc')->get();
+        $data = $query->orderBy('id', 'desc')->paginate(config('deras.pagination_per_page'))->withQueryString();
 
         return view('company-contacts.index', compact('data'));
     }

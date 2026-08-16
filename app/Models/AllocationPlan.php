@@ -189,6 +189,9 @@ class AllocationPlan extends Model
         }
 
         $allocation = (int) round($this->ratio * $eligible);
+        if ($allocation < 0) {
+            $allocation = 0;
+        }
         $final = $previous + $allocation + $transferable;
 
         return match ($field) {

@@ -216,26 +216,7 @@
                 </table>
             </div>
 
-            <div class="mt-5">
-                <table class="table table-bordered text-center align-middle">
-                    <tr>
-                        <td style="width: 33%;"><div class="py-3">ပစ္စည်းထုတ်ပေးသူလက်မှတ် ............................</div></td>
-                        <td style="width: 33%;"><div class="py-3">ပစ္စည်းလက်ခံသူလက်မှတ် ............................</div></td>
-                    </tr>
-                    <tr>
-                        <td><div class="py-2">အမည် ............................</div></td>
-                        <td><div class="py-2">အမည် ............................</div></td>
-                    </tr>
-                    <tr>
-                        <td><div class="py-2">မြို့နယ် ............................</div></td>
-                        <td><div class="py-2">မြို့နယ် ............................</div></td>
-                    </tr>
-                    <tr>
-                        <td><div class="py-2">ရာထူး ............................</div></td>
-                        <td><div class="py-2">ရာထူး ............................</div></td>
-                    </tr>
-                </table>
-            </div>
+            @include('partials.pagination', ['items' => $textbooks])
         @endif
 
         <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>

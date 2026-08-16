@@ -184,9 +184,18 @@ window.DerasForm = (function () {
 
             try {
                 const data = await fetchJson('/lookups/previous-year-balance?' + params.toString());
-                if (data.found && typeof data.previous_balance === 'number') {
-                    balanceInput.value = displayNumber(data.previous_balance);
+                var bal = 0;
+                if (typeof data.previous_balance === 'number') {
+                    bal = data.previous_balance;
+                } else if (data.previous_balance && typeof data.previous_balance === 'object') {
+                    bal = 0;
                 }
+                balanceInput.value = displayNumber(bal);
+                if (options.readOnly !== false) {
+                    balanceInput.readOnly = true;
+                    balanceInput.classList.add('calc-input');
+                }
+                balanceInput.dispatchEvent(new Event('input', { bubbles: true }));
             } catch (e) {
                 console.error(e);
             }
@@ -196,6 +205,54 @@ window.DerasForm = (function () {
             el.addEventListener('change', autofill);
         });
         if (township) township.addEventListener('change', autofill);
+
+        if (year.value && grade.value && subject.value && (!township || township.value)) {
+            autofill();
+        }
+    }
+
+    /**
+     * Stocks (ထပ်ဆောင်းဖြန့်ဝေ):
+     * လိုအပ်မှု = အပ်နှံပြီးလိုအပ်မှု - (ယခင်နှစ်လက်ကျန် + လက်ဆင့်ကမ်း)
+     */
+    function wireStockRequirementCalc(options) {
+        const previous = qs(options.previousInput || '[name="previous_balance"]');
+        const transferred = qs(options.transferredInput || '[name="transferred"]');
+        const enrolled = qs(options.enrolledInput || '[name="enrolled_need"]');
+        const required = qs(options.requiredInput || '[name="required_qty"]');
+
+        if (!previous || !transferred || !enrolled || !required) return;
+
+        function num(el) {
+            var raw = String(el.value || '').trim();
+            if (raw === '') return 0;
+            var v = parseInt(raw, 10);
+            return isNaN(v) ? 0 : v;
+        }
+
+        function recalc() {
+            var prev = num(previous);
+            var hand = num(transferred);
+            var need = num(enrolled);
+            // လိုအပ်မှု = အပ်နှံပြီးလိုအပ်မှု - (ယခင်နှစ်လက်ကျန် + လက်ဆင့်ကမ်း)
+            var result = need - (prev + hand);
+            if (result < 0) result = 0;
+            required.value = String(result);
+            required.readOnly = true;
+            required.classList.add('calc-input');
+        }
+
+        [previous, transferred, enrolled].forEach(function (el) {
+            el.addEventListener('input', recalc);
+            el.addEventListener('change', recalc);
+            el.addEventListener('keyup', recalc);
+            el.addEventListener('blur', recalc);
+        });
+
+        // Recalc after autofill / late subject load
+        setTimeout(recalc, 0);
+        setTimeout(recalc, 300);
+        setTimeout(recalc, 800);
     }
 
     function wireSchoolCountAutofill(options) {
@@ -575,6 +632,7 @@ window.DerasForm = (function () {
         wireGradeSubjects: wireGradeSubjects,
         wireTextbookAllocationAutofill: wireTextbookAllocationAutofill,
         wirePreviousBalanceAutofill: wirePreviousBalanceAutofill,
+        wireStockRequirementCalc: wireStockRequirementCalc,
         wireSchoolCountAutofill: wireSchoolCountAutofill,
         wireSupplyIssuedFromQuota: wireSupplyIssuedFromQuota,
         wireTeacherGuideDistributionForm: wireTeacherGuideDistributionForm,

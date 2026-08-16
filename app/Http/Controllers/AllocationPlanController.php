@@ -59,10 +59,10 @@ class AllocationPlanController extends Controller
 
         // Future years: never show rows (and create is blocked).
         if ($selectedYear?->isFuture()) {
-            $plans = collect();
-        } else {
-            $plans = $query->orderBy('sequence_no')->get();
+            $query->whereRaw('0 = 1');
         }
+
+        $plans = $query->orderBy('sequence_no')->paginate(config('deras.pagination_per_page'))->withQueryString();
 
         $emptyMessage = 'အချက်အလက်မရှိပါ';
         if ($selectedYear?->isFuture()) {

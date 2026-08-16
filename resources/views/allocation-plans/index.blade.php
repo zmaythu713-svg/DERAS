@@ -225,7 +225,7 @@
                             </th>
 
                             <th colspan="4">
-                                လက်ဆင့်ကမ်း(အသုံးပြုနိုင်)
+                                လက်ဆင့်ကမ်းစာအုပ်
                             </th>
 
                             <th colspan="4">
@@ -390,7 +390,7 @@
                             @php $detail = $plan->detailCompat(); @endphp
                             <tr>
                                 <td>
-                                    {{ $key + 1 }}
+                                    {{ ($plans->firstItem() ?? 1) + $key }}
                                 </td>
 
                                 <td>
@@ -777,13 +777,14 @@
                     </tbody>
                 </table>
             </div>
+            @include('partials.pagination', ['items' => $plans])
         @endif
         <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/file-saver/dist/FileSaver.min.js"></script>
         <script>
             async function exportAllocationPlan() {
 
-                const plans = @json($plans);
+                const plans = @json($plans->items());
 
                 const workbook = new ExcelJS.Workbook();
 

@@ -57,20 +57,21 @@ class TextbookController extends Controller
         }
 
         if ($selectedYear?->isFuture()) {
-            $textbooks = collect();
-        } else {
-            $textbooks = $query
-                ->orderBy('township_id')
-                ->orderBy('id')
-                ->get();
+            $query->whereRaw('0 = 1');
         }
+
+        $textbooks = $query
+            ->orderBy('township_id')
+            ->orderBy('id')
+            ->paginate(config('deras.pagination_per_page'))
+            ->withQueryString();
 
         $emptyMessage = 'အချက်အလက်မရှိပါ';
         if ($selectedYear?->isFuture()) {
             $emptyMessage = 'မရောက်သေးသောပညာသင်နှစ်ဖြစ်သဖြင့် အချက်အလက်ထည့်သွင်း၍မရနိုင်ပါ';
         }
 
-        $blocks = $textbooks->groupBy('township_id')->map(function ($items) {
+        $blocks = $textbooks->getCollection()->groupBy('township_id')->map(function ($items) {
             return [
                 'academic_year' => $items->first()->year?->name,
                 'township' => $items->first()->township?->name,
@@ -92,6 +93,7 @@ class TextbookController extends Controller
 
         return view('textbook.index', [
             'blocks' => $blocks,
+            'textbooks' => $textbooks,
             'maxRows' => $maxRows,
             'years' => $years,
             'townships' => Township::dropdownOptions(),

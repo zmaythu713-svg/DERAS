@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AllocationPlan;
+use App\Models\AllocationPlanTownship;
 use App\Models\Quota;
 use App\Models\QuotaLine;
 use App\Models\Textbook;
@@ -16,17 +17,25 @@ class DashboardController extends Controller
             ->get();
 
         $totalQuotaBooks = $this->calculateTotalAllocationBooks($plans);
+        $handoverBooks = $this->calculateHandoverBooks();
         $distributedBooks = $this->calculateDistributedBooks();
+
+        // လက်ကျန် = (ခွဲတမ်း + လက်ဆင့်ကမ်း) − ဖြန့်ဝေပြီး
+        // လက်ဆင့်ကမ်းကြောင့် ဖြန့်ဝေပြီးက ခွဲတမ်းထက် များနိုင်သည်
+        $remainingBooks = max(0, ($totalQuotaBooks + $handoverBooks) - $distributedBooks);
 
         $summary = [
             // ခွဲတမ်းစာအုပ်
             'total_quota_books' => $totalQuotaBooks,
 
+            // လက်ဆင့်ကမ်းစာအုပ်
+            'handover_books' => $handoverBooks,
+
             // ဖြန့်ဝေပြီး
             'distributed_books' => $distributedBooks,
 
-            // ယခုနှစ်လက်ကျန် = ခွဲတမ်း − ဖြန့်ဝေပြီး
-            'remaining_books' => max(0, $totalQuotaBooks - $distributedBooks),
+            // လက်ကျန် (ခွဲတမ်း + လက်ဆင့်ကမ်း − ဖြန့်ဝေပြီး)
+            'remaining_books' => $remainingBooks,
 
             // ကျောင်းသား
             'students' =>
@@ -65,14 +74,32 @@ class DashboardController extends Controller
         return (int) $plans->sum('received_books');
     }
 
+    /** လက်ဆင့်ကမ်းစာအုပ် (allocation plan township transferable) */
+    private function calculateHandoverBooks(): int
+    {
+        return (int) AllocationPlanTownship::query()->sum('transferable');
+    }
+
     private function calculateDistributedBooks()
     {
         // ပုံမှန်ဖြန့်ဝေ — student_count မှာ ထုတ်ပေးသည့်အုပ်ရေ သိမ်းထားသည်
         // (book_count က "၅၆အိတ်၇၄အုပ်" စာသားဖြစ်၍ SUM မရ)
-        return (int) (Textbook::selectRaw(
-            'SUM(CAST(student_count AS UNSIGNED)) as total'
-        )
-            ->value('total') ?? 0);
+        // UNSIGNED cast မသုံး — အနှုတ်တန်ဖိုးက 2^64 နီးပါး ဖြစ်သွားသည်
+        return $this->sumIssuedTextbookQty();
+    }
+
+    /** Sum issued textbook qty; treat negatives as 0 (bad sync / overflow-safe). */
+    private function sumIssuedTextbookQty(?int $townshipId = null): int
+    {
+        $query = Textbook::query()->selectRaw(
+            'COALESCE(SUM(GREATEST(CAST(student_count AS SIGNED), 0)), 0) as total'
+        );
+
+        if ($townshipId !== null) {
+            $query->where('township_id', $townshipId);
+        }
+
+        return (int) ($query->value('total') ?? 0);
     }
 
     private function calculateTotalStudents()
@@ -98,14 +125,7 @@ class DashboardController extends Controller
 
         foreach ($townships as $township) {
 
-            $total = Textbook::where(
-                'township_id',
-                $township->id
-            )
-                ->selectRaw(
-                    'SUM(CAST(student_count AS UNSIGNED)) as total'
-                )
-                ->value('total') ?? 0;
+            $total = $this->sumIssuedTextbookQty((int) $township->id);
 
             $labels[] = $township->name;
 
@@ -185,14 +205,7 @@ class DashboardController extends Controller
             )
                 ->value('id');
 
-            $distributedTotal = Textbook::where(
-                'township_id',
-                $townshipId
-            )
-                ->selectRaw(
-                    'SUM(CAST(student_count AS UNSIGNED)) as total'
-                )
-                ->value('total') ?? 0;
+            $distributedTotal = $this->sumIssuedTextbookQty($townshipId ? (int) $townshipId : null);
 
             $distributed[] = $distributedTotal;
         }

@@ -238,7 +238,7 @@
                             @foreach ($calculatedRows as $row)
                                 <tr>
 
-                                    <td class="font-mono text-slate-500">{{ $loop->iteration }}</td>
+                                    <td class="font-mono text-slate-500">{{ ($rows->firstItem() ?? 1) + $loop->index }}</td>
 
                                     <td class="whitespace-nowrap font-semibold text-slate-800">
                                         {{ $row['township'] }}
@@ -361,6 +361,7 @@
         </table>
 
         </div>
+        @include('partials.pagination', ['items' => $rows])
         @endif
 
         <style>

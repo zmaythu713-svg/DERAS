@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\AcademicYear;
 use App\Models\BookName;
 use App\Models\Grade;
+use App\Models\TeacherGuide;
 use App\Models\TeacherGuideSummary;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -2394,7 +2395,26 @@ Grade-3
                     ['is_active' => true]
                 );
 
+                $guide = TeacherGuide::firstOrCreate(
+                    [
+                        'academic_year_id' => $year->id,
+                        'grade_id' => $grade->id,
+                        'book_name_id' => $bookName->id,
+                        'guide_type' => $row['guide_type'],
+                        'sequence_no' => $row['sequence_no'],
+                    ],
+                    [
+                        'group_no' => $row['group_no'],
+                        'group_title' => $row['group_title'],
+                        'kg_to_g12_quota' => (int) ($row['fiscal_year_quota'] ?? 0),
+                        'g1_to_g5_quota' => 0,
+                    ]
+                );
+
                 TeacherGuideSummary::updateOrCreate(
+                    [
+                        'teacher_guide_id' => $guide->id,
+                    ],
                     [
                         'academic_year_id' => $year->id,
                         'group_no' => $row['group_no'],
@@ -2402,8 +2422,6 @@ Grade-3
                         'book_name_id' => $bookName->id,
                         'guide_type' => $row['guide_type'],
                         'sequence_no' => $row['sequence_no'],
-                    ],
-                    [
                         'group_title' => $row['group_title'],
                         'previous_balance' => $row['previous_balance'],
                         'fiscal_year_quota' => $row['fiscal_year_quota'],

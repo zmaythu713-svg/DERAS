@@ -165,7 +165,7 @@
                 <tbody>
                     @foreach ($summaries as $index => $row)
                         <tr>
-                            <td>{{ $index + 1 }}</td>
+                            <td>{{ ($summaries->firstItem() ?? 1) + $index }}</td>
                             <td class="whitespace-nowrap font-medium text-slate-800">{{ $row->grade?->name }}</td>
                             <td>{{ $row->sequence_no }}</td>
                             <td class="text-start font-medium">{{ $row->bookName?->name }}</td>
@@ -197,6 +197,7 @@
                 </tbody>
             </table>
         </div>
+        @include('partials.pagination', ['items' => $summaries])
         @endif
     </div>
 

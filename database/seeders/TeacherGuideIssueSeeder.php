@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\AcademicYear;
 use App\Models\BookName;
 use App\Models\Grade;
+use App\Models\TeacherGuide;
 use App\Models\TeacherGuideIssue;
 use App\Models\Township;
 use Illuminate\Database\Seeder;
@@ -205,13 +206,30 @@ class TeacherGuideIssueSeeder extends Seeder
                 $grade = Grade::firstOrCreate(['name' => $gradeName], ['is_active' => true]);
                 $book = BookName::firstOrCreate(['name' => $bookName], ['is_active' => true]);
 
+                $guide = TeacherGuide::firstOrCreate(
+                    [
+                        'academic_year_id' => $year->id,
+                        'grade_id' => $grade->id,
+                        'book_name_id' => $book->id,
+                        'guide_type' => $guideType,
+                        'sequence_no' => $sequenceNo,
+                    ],
+                    [
+                        'group_no' => $groupNo,
+                        'group_title' => $groupTitle,
+                        'kg_to_g12_quota' => 0,
+                        'g1_to_g5_quota' => 0,
+                    ]
+                );
+
                 $issue = TeacherGuideIssue::updateOrCreate([
+                    'teacher_guide_id' => $guide->id,
+                ], [
                     'academic_year_id' => $year->id,
                     'grade_id' => $grade->id,
                     'book_name_id' => $book->id,
                     'guide_type' => $guideType,
                     'sequence_no' => $sequenceNo,
-                ], [
                     'group_no' => $groupNo,
                     'group_title' => $groupTitle,
                     'district_unit' => $districtUnit,

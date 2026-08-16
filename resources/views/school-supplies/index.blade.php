@@ -122,7 +122,7 @@
 
             foreach ($allocations as $key => $row) {
                 $exportRows[] = [
-                    'sequence' => $key + 1,
+                    'sequence' => ($allocations->firstItem() ?? 1) + $key,
                     'academic_year' => $row->academicYear?->name,
                     'grade' => $row->grade?->name,
                     'region' => $row->region,
@@ -168,7 +168,7 @@
                     <tbody>
                         @foreach ($allocations as $key => $row)
                             <tr>
-                                <td class="font-mono text-slate-500">{{ $key + 1 }}</td>
+                                <td class="font-mono text-slate-500">{{ ($allocations->firstItem() ?? 1) + $key }}</td>
                                 <td class="whitespace-nowrap font-medium text-slate-800">{{ $row->academicYear?->name }}</td>
                                 <td class="whitespace-nowrap font-medium text-slate-800">{{ $row->grade?->name }}</td>
                                 <td class="whitespace-nowrap font-medium text-slate-800">
@@ -204,6 +204,7 @@
                     </tbody>
                 </table>
             </div>
+            @include('partials.pagination', ['items' => $allocations])
         @endif
 
     </div>

@@ -521,6 +521,7 @@
     <link href="{{ asset('admin_folder/css/sb-admin-2.css') }}" rel="stylesheet">
     <link href="{{ asset('css/position_fixed.css') }}?v=18" rel="stylesheet">
     <link href="{{ asset('css/deras-validation.css') }}?v=1" rel="stylesheet">
+    <link href="{{ asset('css/deras-pagination.css') }}?v=1" rel="stylesheet">
 
     {{-- FIXED LAYOUT: sidebar & topbar always stay in place regardless of scroll --}}
     <style>
@@ -902,8 +903,9 @@
     <script src="{{ asset('admin_folder/vendor/jquery-easing/jquery.easing.min.js') }}"></script>
     <script src="{{ asset('admin_folder/js/sb-admin-2.min.js') }}"></script>
 
-    <script src="{{ asset('js/deras-form.js') }}?v=2"></script>
+    <script src="{{ asset('js/deras-form.js') }}?v=4"></script>
     <script src="{{ asset('js/deras-validation.js') }}?v=18"></script>
+    <script src="{{ asset('js/deras-pagination.js') }}?v=1"></script>
     <script>
         const Toast = Swal.mixin({
             toast: true,

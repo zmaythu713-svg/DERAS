@@ -32,7 +32,7 @@ class TextbookFromAllocationSync
                 continue;
             }
 
-            $issuedQty = $plan->townshipComputedValue($key, 'allocation');
+            $issuedQty = max(0, $plan->townshipComputedValue($key, 'allocation'));
 
             Textbook::updateOrCreate(
                 [

@@ -76,7 +76,7 @@ class ResourceLookupController extends Controller
             default => null,
         };
 
-        $issued = $key ? $plan->townshipComputedValue($key, 'allocation') : 0;
+        $issued = $key ? max(0, $plan->townshipComputedValue($key, 'allocation')) : 0;
 
         return response()->json([
             'found' => true,
@@ -106,9 +106,68 @@ class ResourceLookupController extends Controller
         if (!empty($data['township_id'])) {
             $row = (clone $query)->where('township_id', $data['township_id'])->first();
 
+            if ($row) {
+                return response()->json([
+                    'found' => true,
+                    'previous_balance' => (int) $row->balance,
+                ]);
+            }
+
+            // Fallback: existing stock row for same keys
+            $stock = Stock::query()
+                ->where('academic_year_id', $data['academic_year_id'])
+                ->where('township_id', $data['township_id'])
+                ->where('grade_id', $data['grade_id'])
+                ->where('book_name_id', $data['book_name_id'])
+                ->first();
+
+            if ($stock) {
+                return response()->json([
+                    'found' => true,
+                    'previous_balance' => (int) ($stock->previous_balance ?? 0),
+                ]);
+            }
+
+            // Fallback: prior academic year's stock leftover as carry-in
+            $year = \App\Models\AcademicYear::find($data['academic_year_id']);
+            $prevYear = $year
+                ? \App\Models\AcademicYear::query()
+                    ->where('start_year', ((int) $year->start_year) - 1)
+                    ->orderByDesc('id')
+                    ->first()
+                : null;
+
+            if ($prevYear) {
+                $prevStock = Stock::query()
+                    ->where('academic_year_id', $prevYear->id)
+                    ->where('township_id', $data['township_id'])
+                    ->where('grade_id', $data['grade_id'])
+                    ->where('book_name_id', $data['book_name_id'])
+                    ->first();
+
+                if ($prevStock) {
+                    // Carry remaining need as next previous balance when positive
+                    $carry = max(
+                        0,
+                        (int) ($prevStock->previous_balance ?? 0)
+                            + (int) ($prevStock->transferred ?? 0)
+                            - (int) ($prevStock->enrolled_need ?? 0)
+                    );
+                    // Prefer explicit previous_balance if leftover formula is 0 but balance existed
+                    $balance = $carry > 0
+                        ? $carry
+                        : (int) ($prevStock->required_qty ?? $prevStock->previous_balance ?? 0);
+
+                    return response()->json([
+                        'found' => true,
+                        'previous_balance' => $balance,
+                    ]);
+                }
+            }
+
             return response()->json([
-                'found' => (bool) $row,
-                'previous_balance' => $row?->balance ?? 0,
+                'found' => false,
+                'previous_balance' => 0,
             ]);
         }
 

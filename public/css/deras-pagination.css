@@ -1,0 +1,138 @@
+/* DERAS pagination — matches forest/emerald app UI */
+.deras-pagination {
+    width: 100%;
+}
+
+.deras-pager {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    padding: 0.85rem 1rem;
+    background: #ffffff;
+    border: 1px solid #d1e7dd;
+    border-radius: 14px;
+    box-shadow: 0 1px 2px rgba(7, 42, 30, 0.04);
+}
+
+.deras-pager__meta {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #475569;
+    letter-spacing: 0.01em;
+}
+
+.deras-pager__meta strong {
+    color: #105c3a;
+    font-weight: 800;
+}
+
+.deras-pager__list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.deras-pager__item {
+    margin: 0;
+}
+
+.deras-pager__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    padding: 0 0.65rem;
+    border: 1px solid #cfe5d8;
+    border-radius: 10px;
+    background: #f8fbf9;
+    color: #105c3a;
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none !important;
+    cursor: pointer;
+    user-select: none;
+    transition:
+        background-color 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease,
+        transform 0.12s ease,
+        box-shadow 0.18s ease;
+}
+
+a.deras-pager__btn:hover {
+    background: #ecfdf5;
+    border-color: #34d399;
+    color: #065f46;
+    text-decoration: none !important;
+    box-shadow: 0 2px 8px rgba(16, 92, 58, 0.12);
+    transform: translateY(-1px);
+}
+
+a.deras-pager__btn:focus-visible {
+    outline: 2px solid #34d399;
+    outline-offset: 2px;
+}
+
+a.deras-pager__btn:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.deras-pager__item.is-active .deras-pager__btn {
+    background: linear-gradient(135deg, #0d3d2e 0%, #072a1e 100%);
+    border-color: #d4af37;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(7, 42, 30, 0.25);
+    cursor: default;
+}
+
+.deras-pager__item.is-disabled .deras-pager__btn {
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+    color: #94a3b8;
+    cursor: not-allowed;
+    opacity: 0.85;
+}
+
+.deras-pager__item.is-ellipsis .deras-pager__btn {
+    background: transparent;
+    border-color: transparent;
+    color: #64748b;
+    min-width: 1.75rem;
+    cursor: default;
+}
+
+.deras-pager.is-loading {
+    pointer-events: none;
+    opacity: 0.72;
+}
+
+@media (max-width: 640px) {
+    .deras-pager {
+        justify-content: center;
+        text-align: center;
+    }
+
+    .deras-pager__meta {
+        width: 100%;
+        text-align: center;
+        font-size: 0.8125rem;
+    }
+
+    .deras-pager__btn {
+        min-width: 2rem;
+        height: 2rem;
+        padding: 0 0.5rem;
+        font-size: 0.8125rem;
+        border-radius: 8px;
+    }
+}

@@ -20,7 +20,8 @@ class AcademicYearController extends Controller
         $years = $query
             ->orderByDesc('start_year')
             ->orderByDesc('id')
-            ->get();
+            ->paginate(config('deras.pagination_per_page'))
+            ->withQueryString();
 
         return view('academic-years.index', compact('years'));
     }

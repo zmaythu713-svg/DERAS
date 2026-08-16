@@ -19,7 +19,8 @@ class TownshipController extends Controller
         $townships = $query
             ->orderByRaw("FIELD(name, 'မြန်အောင်', 'ကြံခင်း', 'အင်္ဂပူ')")
             ->orderBy('name')
-            ->get();
+            ->paginate(config('deras.pagination_per_page'))
+            ->withQueryString();
 
         return view('townships.index', compact('townships'));
     }

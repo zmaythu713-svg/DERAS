@@ -65,7 +65,7 @@
                 <tbody>
                     @forelse ($data as $key => $row)
                         <tr>
-                            <td class="font-mono text-slate-500">{{ $key + 1 }}</td>
+                            <td class="font-mono text-slate-500">{{ ($data->firstItem() ?? 1) + $key }}</td>
                             <td class="font-semibold text-slate-800 text-left px-4">{{ $row->company_name }}</td>
                             <td class="font-mono text-slate-600">{{ $row->lot }}</td>
                             <td class="font-medium text-slate-800">{{ $row->responsible_name }}</td>
@@ -114,6 +114,8 @@
                 </tbody>
             </table>
         </div>
+
+        @include('partials.pagination', ['items' => $data])
 
     </div>
 @endsection

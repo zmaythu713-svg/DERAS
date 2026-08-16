@@ -1,52 +1,53 @@
-@startuml DERAS_UseCase
+@startuml DERAS_UseCase_Admin_Super
 !theme plain
 skinparam actorStyle awesome
 skinparam packageStyle rectangle
-title DERAS — Use Case Diagram\n(District Education Resource Allocation System)
+skinparam shadowing false
+title DERAS — Use Case Diagram\n(Admin and Super Admin)
 
 left to right direction
 
 actor "Admin" as Admin
 actor "Super Admin" as Super
 
+' Super Admin inherits all Admin associations
+Super --|> Admin
+
 rectangle "DERAS System" {
-  usecase "Login / Logout" as UC_Auth
+  usecase "Login" as UC_Login
+  usecase "Logout" as UC_Logout
+  usecase "Manage Profile" as UC_Profile
   usecase "View Dashboard" as UC_Dash
-  usecase "Manage Profile / Password" as UC_Profile
 
-  package "Master Data" {
-    usecase "Manage Academic Years" as UC_Year
-    usecase "Rollover Academic Year" as UC_Rollover
-    usecase "Manage Townships" as UC_Town
-    usecase "Manage Grades & Subjects" as UC_Grade
-    usecase "Manage Book Names" as UC_Book
-    usecase "Manage Company Contacts" as UC_Company
-    usecase "Manage Admin Users" as UC_Users
-  }
+  usecase "Manage Academic Years" as UC_Year
+  usecase "Rollover Academic Year" as UC_Rollover
+  usecase "Manage Townships" as UC_Town
+  usecase "Manage Grades / Subjects" as UC_Grade
+  usecase "Manage Book Names" as UC_Book
+  usecase "Manage Company Contacts" as UC_Company
+  usecase "Manage Admin Users" as UC_Users
 
-  package "Textbook Allocation" {
-    usecase "Manage Student Quota" as UC_Quota
-    usecase "Create Allocation Plan" as UC_Alloc
-    usecase "Manage Textbook Issues" as UC_TB
-    usecase "Manage Stock Balance" as UC_Stock
-  }
+  usecase "Manage Student Quota" as UC_Quota
+  usecase "Manage Allocation Plans" as UC_Alloc
+  usecase "Calculate Township Allocation" as UC_Calc
+  usecase "Manage Textbooks" as UC_TB
+  usecase "Sync Textbook from Plan" as UC_Sync
+  usecase "Manage Stocks" as UC_Stock
 
-  package "School Supplies" {
-    usecase "Manage School Supply Allocations" as UC_SS
-    usecase "Manage Supply Details" as UC_SD
-  }
+  usecase "Manage School Supplies" as UC_SS
+  usecase "Manage Supply Details" as UC_SD
 
-  package "Teacher Guides" {
-    usecase "Record Guide Receipt Quota" as UC_TG_Recv
-    usecase "Distribute Guide Quota to Townships" as UC_TG_Dist
-    usecase "Issue Guides to Townships" as UC_TG_Issue
-    usecase "Teacher Guide Summary" as UC_TG_Sum
-  }
+  usecase "Manage Teacher Guide Receipt" as UC_TG_Recv
+  usecase "Manage Teacher Guide Distribution" as UC_TG_Dist
+  usecase "Manage Teacher Guide Issues" as UC_TG_Issue
+  usecase "Manage Teacher Guide Summaries" as UC_TG_Sum
 }
 
-Admin --> UC_Auth
-Admin --> UC_Dash
+' —— Admin (day-to-day) ——
+Admin --> UC_Login
+Admin --> UC_Logout
 Admin --> UC_Profile
+Admin --> UC_Dash
 Admin --> UC_Year
 Admin --> UC_Town
 Admin --> UC_Grade
@@ -63,40 +64,26 @@ Admin --> UC_TG_Dist
 Admin --> UC_TG_Issue
 Admin --> UC_TG_Sum
 
-Super --> UC_Auth
-Super --> UC_Dash
+' —— Super Admin only (in addition to inherited Admin use cases) ——
 Super --> UC_Users
 Super --> UC_Rollover
-Super --> UC_Year
-Super --> UC_Town
-Super --> UC_Grade
-Super --> UC_Book
-Super --> UC_Company
-Super --> UC_Quota
-Super --> UC_Alloc
-Super --> UC_TB
-Super --> UC_Stock
-Super --> UC_SS
-Super --> UC_SD
-Super --> UC_TG_Recv
-Super --> UC_TG_Dist
-Super --> UC_TG_Issue
-Super --> UC_TG_Sum
+Super --> UC_Calc
+Super --> UC_Sync
 
-UC_Rollover ..> UC_Year : «include»
-UC_Alloc ..> UC_Quota : «include»
-UC_TB ..> UC_Alloc : «include»
+' —— «include» ——
+UC_Year ..> UC_Rollover : «include»
+UC_Alloc ..> UC_Calc : «include»
+UC_TB ..> UC_Sync : «include»
 UC_TG_Dist ..> UC_TG_Recv : «include»
 UC_TG_Issue ..> UC_TG_Dist : «include»
-UC_TG_Sum ..> UC_TG_Recv : «include»
-UC_TG_Sum ..> UC_TG_Dist : «include»
-UC_Users ..> UC_Auth : «extend»
 
 note right of Super
-  Super-only:
-  - Admin user CRUD
-  - Academic year rollover
-  - Destroy sensitive master data
+  Super Admin inherits Admin,
+  and additionally:
+  - Manage Admin Users
+  - Rollover Academic Year
+  - Calculate Township Allocation
+  - Sync Textbook from Plan
 end note
 
 @enduml

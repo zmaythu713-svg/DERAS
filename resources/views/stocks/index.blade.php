@@ -153,7 +153,7 @@
                     <tbody>
                         @foreach ($stocks as $key => $stock)
                             <tr>
-                                <td class="font-mono text-slate-500">{{ $key + 1 }}</td>
+                                <td class="font-mono text-slate-500">{{ ($stocks->firstItem() ?? 1) + $key }}</td>
                                 <td class="whitespace-nowrap font-medium text-slate-800">{{ $stock->academicYear?->name }}</td>
                                 <td class="whitespace-nowrap font-medium text-slate-800">{{ $stock->township?->name }}</td>
                                 <td class="whitespace-nowrap font-medium text-slate-800">{{ $stock->grade?->name }}</td>
@@ -185,6 +185,7 @@
                     </tbody>
                 </table>
             </div>
+            @include('partials.pagination', ['items' => $stocks])
         @endif
 
     </div>
@@ -264,7 +265,7 @@
 
             @foreach ($stocks as $key => $stock)
                 sheet.addRow([
-                    {{ $key + 1 }},
+                    {{ ($stocks->firstItem() ?? 1) + $key }},
                     {!! json_encode($stock->academicYear?->name) !!},
                     {!! json_encode($stock->township?->name) !!},
                     {!! json_encode($stock->grade?->name) !!},

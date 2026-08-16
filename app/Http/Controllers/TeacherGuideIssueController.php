@@ -75,10 +75,14 @@ class TeacherGuideIssueController extends Controller
         }
 
         if ($selectedYear?->isFuture()) {
-            $issues = collect();
-        } else {
-            $issues = $query->orderBy('group_no')->orderBy('sequence_no')->get();
+            $query->whereRaw('0 = 1');
         }
+
+        $issues = $query
+            ->orderBy('group_no')
+            ->orderBy('sequence_no')
+            ->paginate(config('deras.pagination_per_page'))
+            ->withQueryString();
 
         $emptyMessage = 'အချက်အလက်မရှိပါ';
         if ($selectedYear?->isFuture()) {
@@ -255,7 +259,13 @@ class TeacherGuideIssueController extends Controller
             ->orderByDesc('id')
             ->first();
 
-        $validated['teacher_guide_id'] = $quota?->id;
+        if (!$quota) {
+            throw ValidationException::withMessages([
+                'book_name_id' => 'ဤဘာသာအတွက် ဆရာလမ်းညွှန် လက်ခံရရှိမှု မှတ်တမ်း မရှိသေးပါ။',
+            ]);
+        }
+
+        $validated['teacher_guide_id'] = $quota->id;
         $validated['district_unit'] = $quota
             ? (int) ($quota->remaining_total ?? 0)
             : (int) ($validated['district_unit'] ?? 0);

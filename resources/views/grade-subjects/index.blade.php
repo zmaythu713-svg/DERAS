@@ -14,7 +14,7 @@
             <div class="modern-card-header" style="background: #072a1e !important; background-image: none !important; color: #ffffff !important; border-bottom: 1px solid rgba(255, 255, 255, 0.15);">
                 <h5 class="modern-card-header-title text-white text-lg font-bold">
                     <i class="fas fa-link text-amber-400"></i>
-                    အတန်း–ဘာသာရပ် တွဲချိတ်မှု စာရင်း
+                    အတန်း–ဘာသာရပ် စာရင်း
                 </h5>
             </div>
 
@@ -73,7 +73,7 @@
                             $grouped = $grade->bookNames->groupBy(fn ($s) => (int) $s->pivot->category_id);
                         @endphp
                         <tr>
-                            <td class="font-mono text-slate-500">{{ $key + 1 }}</td>
+                            <td class="font-mono text-slate-500">{{ ($grades->firstItem() ?? 1) + $key }}</td>
                             <td class="font-semibold text-slate-800 text-center">{{ $grade->name }}</td>
 
                             @foreach ($orderedCategories as $category)
@@ -140,6 +140,8 @@
                 </tbody>
             </table>
         </div>
+
+        @include('partials.pagination', ['items' => $grades])
 
     </div>
 @endsection

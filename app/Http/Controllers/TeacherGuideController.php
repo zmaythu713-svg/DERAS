@@ -48,13 +48,14 @@ class TeacherGuideController extends Controller
         }
 
         if ($selectedYear?->isFuture()) {
-            $teacherGuides = collect();
-        } else {
-            $teacherGuides = $query
-                ->orderBy('group_no')
-                ->orderBy('sequence_no')
-                ->get();
+            $query->whereRaw('0 = 1');
         }
+
+        $teacherGuides = $query
+            ->orderBy('group_no')
+            ->orderBy('sequence_no')
+            ->paginate(config('deras.pagination_per_page'))
+            ->withQueryString();
 
         $emptyMessage = 'အချက်အလက်မရှိပါ';
         if ($selectedYear?->isFuture()) {

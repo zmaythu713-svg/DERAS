@@ -22,7 +22,7 @@ class GradeSubjectController extends Controller
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        $grades = $query->ordered()->get();
+        $grades = $query->ordered()->paginate(3)->withQueryString();
 
         $categories = Category::where('is_active', true)
             ->orderByRaw("FIELD(slug, 'textbook', 'teacher_handbook', 'teacher_guide')")

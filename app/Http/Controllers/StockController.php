@@ -62,10 +62,10 @@ class StockController extends Controller
         }
 
         if ($selectedYear?->isFuture()) {
-            $stocks = collect();
-        } else {
-            $stocks = $query->latest('id')->get();
+            $query->whereRaw('0 = 1');
         }
+
+        $stocks = $query->latest('id')->paginate(config('deras.pagination_per_page'))->withQueryString();
 
         $emptyMessage = 'အချက်အလက်မရှိပါ';
         if ($selectedYear?->isFuture()) {
@@ -186,7 +186,7 @@ class StockController extends Controller
 
     private function validatedData(Request $request, ?Stock $stock = null): array
     {
-        return $request->validate(
+        $data = $request->validate(
             [
                 'academic_year_id' => 'required|exists:academic_years,id',
                 'township_id' => 'required|exists:townships,id',
@@ -212,5 +212,17 @@ class StockController extends Controller
                 'book_name_id.unique' => 'ဤမြို့နယ်အတွက် ရွေးထားသော အတန်းနှင့် ဘာသာရပ် ပေါင်းစည်းမှု ရှိပြီးသားဖြစ်ပါသည်။',
             ]
         );
+
+        $previous = (int) ($data['previous_balance'] ?? 0);
+        $transferred = (int) ($data['transferred'] ?? 0);
+        $enrolled = (int) ($data['enrolled_need'] ?? 0);
+
+        // လိုအပ်မှု = အပ်နှံပြီးလိုအပ်မှု - (ယခင်နှစ်လက်ကျန် + လက်ဆင့်ကမ်း)
+        $data['previous_balance'] = $previous;
+        $data['transferred'] = $transferred;
+        $data['enrolled_need'] = $enrolled;
+        $data['required_qty'] = max(0, $enrolled - ($previous + $transferred));
+
+        return $data;
     }
 }

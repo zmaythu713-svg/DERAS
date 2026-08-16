@@ -113,7 +113,7 @@
                 <tbody>
                     @forelse($users as $key => $user)
                         <tr>
-                            <td class="font-mono text-slate-500">{{ $key + 1 }}</td>
+                            <td class="font-mono text-slate-500">{{ ($users->firstItem() ?? 1) + $key }}</td>
                             <td class="font-semibold text-slate-800 text-left px-6">
                                 <div class="flex items-center gap-2">
                                     <div class="w-8 h-8 rounded-full {{ $user->role === 'super' ? 'bg-purple-100 border-purple-300 text-purple-700' : 'bg-sky-100 border-sky-300 text-sky-700' }} border flex items-center justify-center font-bold text-xs">
@@ -174,6 +174,8 @@
                 </tbody>
             </table>
         </div>
+
+        @include('partials.pagination', ['items' => $users])
 
     </div>
 @endsection

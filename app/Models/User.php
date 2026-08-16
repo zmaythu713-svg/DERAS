@@ -14,6 +14,7 @@ class User extends Authenticatable
         'name',
         'email',
         'role',
+        'role_id',
         'password',
     ];
 
@@ -30,9 +31,27 @@ class User extends Authenticatable
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::saving(function (User $user) {
+            // Keep role slug ↔ role_id synchronized (normalized FK + legacy column).
+            if ($user->isDirty('role_id') && $user->role_id) {
+                $slug = Role::where('id', $user->role_id)->value('slug');
+                if ($slug) {
+                    $user->role = $slug;
+                }
+            } elseif ($user->isDirty('role') && $user->role) {
+                $roleId = Role::where('slug', $user->role)->value('id');
+                if ($roleId) {
+                    $user->role_id = $roleId;
+                }
+            }
+        });
+    }
+
     public function roleModel()
     {
-        return $this->belongsTo(Role::class, 'role', 'slug');
+        return $this->belongsTo(Role::class, 'role_id');
     }
 
     public function isSuper(): bool
@@ -50,6 +69,10 @@ class User extends Authenticatable
         $role = $this->relationLoaded('roleModel')
             ? $this->roleModel
             : $this->roleModel()->with('permissions')->first();
+
+        if (!$role && $this->role) {
+            $role = Role::where('slug', $this->role)->with('permissions')->first();
+        }
 
         if (!$role) {
             // Fallback to legacy enum behavior if roles table empty

@@ -15,7 +15,7 @@ class GradeController extends Controller
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        $grades = $query->ordered()->get();
+        $grades = $query->ordered()->paginate(config('deras.pagination_per_page'))->withQueryString();
 
         return view('grades.index', compact('grades'));
     }

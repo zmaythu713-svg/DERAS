@@ -63,13 +63,14 @@ class TeacherGuideSummaryController extends Controller
         }
 
         if ($selectedYear?->isFuture()) {
-            $summaries = collect();
-        } else {
-            $summaries = $query
-                ->orderBy('group_no')
-                ->orderBy('sequence_no')
-                ->get();
+            $query->whereRaw('0 = 1');
         }
+
+        $summaries = $query
+            ->orderBy('group_no')
+            ->orderBy('sequence_no')
+            ->paginate(config('deras.pagination_per_page'))
+            ->withQueryString();
 
         $emptyMessage = 'အချက်အလက်မရှိပါ';
         if ($selectedYear?->isFuture()) {
@@ -221,21 +222,23 @@ class TeacherGuideSummaryController extends Controller
             ->orderByDesc('id')
             ->first();
 
+        if (!$quota) {
+            throw ValidationException::withMessages([
+                'book_name_id' => 'ဤဘာသာအတွက် ဆရာလမ်းညွှန် လက်ခံရရှိမှု မှတ်တမ်း မရှိသေးပါ။',
+            ]);
+        }
+
         // ဘဏ္ဍာရေးနှစ်ခွဲတမ်း ← လက်ခံရရှိမှု ခရိုင်ရရှိခွဲတမ်း (total_quota)
-        $data['fiscal_year_quota'] = $quota
-            ? (int) ($quota->total_quota ?? 0)
-            : (int) ($data['fiscal_year_quota'] ?? 0);
+        $data['fiscal_year_quota'] = (int) ($quota->total_quota ?? $data['fiscal_year_quota'] ?? 0);
 
         // ဖြန့်ဝေပြီးအုပ်ရေ ← ဖြန့်ဝေရန်ခွဲတမ်း distributed_total
-        $data['distributed_books'] = $quota
-            ? (int) ($quota->distributed_total ?? 0)
-            : (int) ($data['distributed_books'] ?? 0);
+        $data['distributed_books'] = (int) ($quota->distributed_total ?? $data['distributed_books'] ?? 0);
 
         $gradeName = Grade::where('id', $data['grade_id'])->value('name');
-        $data['group_title'] = $quota?->group_title
+        $data['group_title'] = $quota->group_title
             ?? ($gradeName . "\n(" . $data['guide_type'] . ')');
 
-        $data['teacher_guide_id'] = $quota?->id;
+        $data['teacher_guide_id'] = $quota->id;
 
         if ($quota) {
             $data['group_no'] = $quota->group_no;

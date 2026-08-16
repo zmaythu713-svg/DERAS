@@ -1,0 +1,89 @@
+@startuml DERAS_UseCase_SuperAdmin
+!theme plain
+skinparam shadowing false
+skinparam handwritten false
+skinparam monochrome true
+skinparam packageStyle rectangle
+title Figure 2a: Use Case Diagram — Super Admin
+
+actor "Super Admin" as Super
+
+rectangle "DERAS System" {
+  usecase "Login" as UC_Login
+  usecase "View Dashboard" as UC_Dash
+  usecase "Manage Student Quota" as UC_Quota
+  usecase "Manage Allocation Plans" as UC_Alloc
+  usecase "Manage Textbooks" as UC_TB
+  usecase "Manage Stocks" as UC_Stock
+  usecase "Manage School Supplies" as UC_SS
+  usecase "Manage Supply Details" as UC_SD
+  usecase "Manage Teacher Guide Receipt" as UC_TG_R
+  usecase "Manage Teacher Guide Distribution" as UC_TG_D
+  usecase "Manage Teacher Guide Issues" as UC_TG_I
+  usecase "Manage Teacher Guide Summaries" as UC_TG_S
+  usecase "Manage Academic Years" as UC_Year
+  usecase "Manage Townships" as UC_Town
+  usecase "Manage Grades / Subjects" as UC_Grade
+  usecase "Manage Book Names" as UC_Book
+  usecase "Manage Company Contacts" as UC_Company
+  usecase "Manage Admin Users" as UC_Users
+  usecase "Delete Records" as UC_Delete
+  usecase "Manage Profile" as UC_Profile
+  usecase "Logout" as UC_Logout
+
+  usecase "Export Excel" as UC_Export
+  usecase "Rollover Academic Year" as UC_Rollover
+  usecase "Calculate Township Allocation" as UC_Calc
+  usecase "Sync Textbook from Plan" as UC_Sync
+}
+
+Super --> UC_Login
+Super --> UC_Dash
+Super --> UC_Quota
+Super --> UC_Alloc
+Super --> UC_TB
+Super --> UC_Stock
+Super --> UC_SS
+Super --> UC_SD
+Super --> UC_TG_R
+Super --> UC_TG_D
+Super --> UC_TG_I
+Super --> UC_TG_S
+Super --> UC_Year
+Super --> UC_Town
+Super --> UC_Grade
+Super --> UC_Book
+Super --> UC_Company
+Super --> UC_Users
+Super --> UC_Delete
+Super --> UC_Profile
+Super --> UC_Logout
+
+UC_Export ..> UC_Quota : <<extends>>
+UC_Export ..> UC_Alloc : <<extends>>
+UC_Export ..> UC_TB : <<extends>>
+UC_Export ..> UC_Stock : <<extends>>
+UC_Export ..> UC_SS : <<extends>>
+UC_Export ..> UC_SD : <<extends>>
+UC_Export ..> UC_TG_R : <<extends>>
+UC_Export ..> UC_TG_D : <<extends>>
+UC_Export ..> UC_TG_I : <<extends>>
+UC_Export ..> UC_TG_S : <<extends>>
+
+usecase "Teacher Guide Receipt" as UC_TG_R_Inc
+usecase "Teacher Guide Distribution" as UC_TG_D_Inc
+usecase "Teacher Guide Issues" as UC_TG_I_Inc
+
+UC_Year ..> UC_Rollover : <<includes>>
+UC_Alloc ..> UC_Calc : <<includes>>
+UC_TB ..> UC_Sync : <<includes>>
+UC_TG_D ..> UC_TG_R_Inc : <<includes>>
+UC_TG_I ..> UC_TG_D_Inc : <<includes>>
+UC_TG_S ..> UC_TG_I_Inc : <<includes>>
+
+note bottom
+  Super Admin can perform all Admin use cases,
+  plus Users / Rollover / Calculate / Sync / Delete
+end note
+
+@enduml

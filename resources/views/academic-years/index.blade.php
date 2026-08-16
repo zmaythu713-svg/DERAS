@@ -63,7 +63,7 @@
                 <tbody>
                     @forelse($years as $key => $year)
                         <tr>
-                            <td class="font-mono text-slate-500">{{ $key + 1 }}</td>
+                            <td class="font-mono text-slate-500">{{ ($years->firstItem() ?? 1) + $key }}</td>
                             <td class="font-bold text-slate-800 text-center">
                                 {{ $year->name }}
                             </td>
@@ -126,6 +126,8 @@
                 </tbody>
             </table>
         </div>
+
+        @include('partials.pagination', ['items' => $years])
 
     </div>
 @endsection
