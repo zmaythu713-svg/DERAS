@@ -4,10 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\AllocationPlan;
 use App\Models\AllocationPlanTownship;
+use App\Models\Category;
+use App\Models\Grade;
 use App\Models\Quota;
 use App\Models\QuotaLine;
+use App\Models\SupplyDetail;
+use App\Models\TeacherGuideIssueTownship;
 use App\Models\Textbook;
 use App\Models\Township;
+use App\Support\GradeSubjectMap;
+use App\Support\TownshipKeys;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -143,87 +150,115 @@ class DashboardController extends Controller
 
     private function barChart()
     {
-        $labels = [];
-
-        $students = [];
-
-        $distributed = [];
-
-        $townships = [
-            'မြန်အောင်',
-            'ကြံခင်း',
-            'အင်္ဂပူ'
-        ];
-
-        // Grade duplicate မဖြစ်အောင် ID ယူ
-        $plans = AllocationPlan::with(['townships.township'])
-            ->whereIn('id', function ($query) {
-
-                $query->selectRaw('MIN(id)')
-                    ->from('allocation_plans')
-                    ->groupBy('grade_id');
-            })
+        $townships = Township::whereIn('name', TownshipKeys::names())
+            ->orderBy('id')
             ->get();
 
+        $textbookCounts = $this->subjectCountsByGrade(Category::TEXTBOOK);
+
+        $labels = [];
+        $textbooks = [];
+        $teacherGuides = [];
+        $supplies = [];
+
         foreach ($townships as $township) {
-            $labels[] = $township;
+            $townshipId = (int) $township->id;
 
-            if ($township == 'မြန်အောင်') {
-
-                $studentTotal = $plans->sum(function ($plan) {
-                    $detail = $plan->detailCompat();
-
-                    return $detail
-                        ? $detail->myanaung_total_students
-                        : 0;
-                });
-            } elseif ($township == 'ကြံခင်း') {
-                $studentTotal = $plans->sum(function ($plan) {
-                    $detail = $plan->detailCompat();
-
-                    return $detail
-                        ? $detail->kyankhin_total_students
-                        : 0;
-                });
-            } else {
-
-                $studentTotal = $plans->sum(function ($plan) {
-                    $detail = $plan->detailCompat();
-
-                    return $detail
-                        ? $detail->ingapu_total_students
-                        : 0;
-                });
-            }
-
-            $students[] = $studentTotal;
-
-            // Distributed
-            $townshipId = Township::where(
-                'name',
-                $township
-            )
-                ->value('id');
-
-            $distributedTotal = $this->sumIssuedTextbookQty($townshipId ? (int) $townshipId : null);
-
-            $distributed[] = $distributedTotal;
+            $labels[] = $township->name;
+            $textbooks[] = $this->sumIssuedTextbookSets($townshipId, $textbookCounts);
+            $teacherGuides[] = $this->sumIssuedTeacherGuideQty($townshipId);
+            $supplies[] = $this->sumIssuedSupplyQty($townshipId);
         }
-
-        // Total
-        $labels[] = 'ခရိုင်အားလုံးစုစုပေါင်း';
-
-        $students[] = array_sum($students);
-
-        $distributed[] = array_sum($distributed);
 
         return [
             'labels' => $labels,
-
-            'students' => $students,
-
-            'distributed' => $distributed,
+            'textbooks' => $textbooks,
+            'teacher_guides' => $teacherGuides,
+            'supplies' => $supplies,
         ];
+    }
+
+    /**
+     * Expected subjects per grade for one category (one complete set).
+     * Example: KG textbooks have 4 subjects → 4 books = 1 စုံ.
+     *
+     * @return array<int, int> grade_id => subject_count
+     */
+    private function subjectCountsByGrade(string $categorySlug): array
+    {
+        $counts = DB::table('grade_book_names')
+            ->join('categories', 'categories.id', '=', 'grade_book_names.category_id')
+            ->where('categories.slug', $categorySlug)
+            ->select('grade_book_names.grade_id', DB::raw('COUNT(*) as subject_count'))
+            ->groupBy('grade_book_names.grade_id')
+            ->pluck('subject_count', 'grade_id')
+            ->map(fn ($count) => (int) $count)
+            ->all();
+
+        foreach (Grade::query()->get(['id', 'name']) as $grade) {
+            if (($counts[$grade->id] ?? 0) > 0) {
+                continue;
+            }
+
+            $mapped = count(GradeSubjectMap::subjectsFor($grade->name, $categorySlug));
+            if ($mapped > 0) {
+                $counts[$grade->id] = $mapped;
+            }
+        }
+
+        return $counts;
+    }
+
+    /**
+     * Convert issued books into complete sets by grade subject count.
+     *
+     * @param  array<int, int>  $subjectCounts
+     */
+    private function sumIssuedTextbookSets(?int $townshipId, array $subjectCounts): int
+    {
+        $query = Textbook::query()
+            ->select('grade_id')
+            ->selectRaw('COALESCE(SUM(GREATEST(CAST(student_count AS SIGNED), 0)), 0) as total')
+            ->groupBy('grade_id');
+
+        if ($townshipId !== null) {
+            $query->where('township_id', $townshipId);
+        }
+
+        $sets = 0;
+
+        foreach ($query->get() as $row) {
+            $subjects = (int) ($subjectCounts[(int) $row->grade_id] ?? 0);
+            if ($subjects <= 0) {
+                continue;
+            }
+
+            $sets += intdiv((int) $row->total, $subjects);
+        }
+
+        return $sets;
+    }
+
+    private function sumIssuedTeacherGuideQty(?int $townshipId = null): int
+    {
+        $query = TeacherGuideIssueTownship::query();
+
+        if ($townshipId !== null) {
+            $query->where('township_id', $townshipId);
+        }
+
+        return max(0, (int) $query->sum('issued_quantity'));
+    }
+
+    private function sumIssuedSupplyQty(?int $townshipId = null): int
+    {
+        $query = SupplyDetail::query();
+
+        if ($townshipId !== null) {
+            $query->where('township_id', $townshipId);
+        }
+
+        return max(0, (int) $query->sum('issued_total'));
     }
 
     private function quotaDonutChart()

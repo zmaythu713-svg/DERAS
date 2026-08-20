@@ -163,12 +163,12 @@
                 </div>
             </div>
 
-            <!-- Bar Chart: မြို့နယ်အလိုက် ကျောင်းသားနှင့် ပြဌာန်းစာအုပ် ဖြန့်ဝေမှု -->
+            <!-- Bar Chart: မြို့နယ်အလိုက် ပြဌာန်း၊ ဆရာလမ်းညွှန်၊ သင်ထောက်ကူ ဖြန့်ဝေမှု -->
             <div class="modern-card">
                 <div class="modern-card-header">
                     <h6 class="modern-card-header-title text-base">
                         <i class="fas fa-chart-bar"></i>
-                        မြို့နယ်အလိုက် ကျောင်းသားနှင့် ပြဌာန်းစာအုပ် ဖြန့်ဝေမှု
+                        မြို့နယ်အလိုက် ပြဌာန်း၊ ဆရာလမ်းညွှန်နှင့် သင်ထောက်ကူ ဖြန့်ဝေမှု
                     </h6>
                 </div>
                 <div class="p-4 flex items-center justify-center" style="min-height: 340px;">
@@ -323,7 +323,7 @@
 
             /*
             |--------------------------------------------------------------------------
-            | 2. Bar Chart (မြို့နယ်အလိုက် ကျောင်းသားနှင့် ပြဌာန်းစာအုပ် ဖြန့်ဝေမှု)
+            | 2. Bar Chart (မြို့နယ်အလိုက် ပြဌာန်း၊ ဆရာလမ်းညွှန်၊ သင်ထောက်ကူ ဖြန့်ဝေမှု)
             | Flat sharp rectangle bars without top rounding & without datalabels
             |--------------------------------------------------------------------------
             */
@@ -335,18 +335,25 @@
                     data: {
                         labels: barData.labels,
                         datasets: [{
-                                label: 'ကျောင်းသား',
-                                data: barData.students,
-                                backgroundColor: '#059669', // Emerald (match donut)
+                                label: 'ပြဌာန်းဖြန့်ဝေမှု (စုံ)',
+                                data: barData.textbooks,
+                                backgroundColor: '#059669',
                                 borderRadius: 0,
-                                maxBarThickness: 32
+                                maxBarThickness: 28
                             },
                             {
-                                label: 'ပြဌာန်းစာအုပ်ဖြန့်ဝေ',
-                                data: barData.distributed,
-                                backgroundColor: '#0284c7', // Sky (match donut)
+                                label: 'ဆရာကိုင်/ဆရာလမ်းညွှန် ဖြန့်ဝေမှု',
+                                data: barData.teacher_guides,
+                                backgroundColor: '#0284c7',
                                 borderRadius: 0,
-                                maxBarThickness: 32
+                                maxBarThickness: 28
+                            },
+                            {
+                                label: 'သင်ထောက်ကူ ဖြန့်ဝေမှု',
+                                data: barData.supplies,
+                                backgroundColor: '#d97706',
+                                borderRadius: 0,
+                                maxBarThickness: 28
                             }
                         ]
                     },
@@ -355,10 +362,29 @@
                         maintainAspectRatio: false,
                         plugins: {
                             legend: {
-                                position: 'top'
+                                position: 'top',
+                                labels: {
+                                    font: {
+                                        family: 'Noto Sans Myanmar',
+                                        size: 11
+                                    },
+                                    boxWidth: 12,
+                                    padding: 12
+                                }
                             },
                             datalabels: {
                                 display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(ctx) {
+                                        const value = Number(ctx.parsed.y || 0).toLocaleString();
+                                        if (ctx.datasetIndex === 0) {
+                                            return ctx.dataset.label + ': ' + value + ' စုံ';
+                                        }
+                                        return ctx.dataset.label + ': ' + value;
+                                    }
+                                }
                             }
                         },
                         scales: {
@@ -379,7 +405,12 @@
                                 }
                             },
                             y: {
-                                beginAtZero: true
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(val) {
+                                        return val.toLocaleString();
+                                    }
+                                }
                             }
                         }
                     }

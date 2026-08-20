@@ -5,7 +5,7 @@
         <div class="card border-0 mx-auto" style="max-width: 700px; border-radius: 16px; box-shadow: 0 4px 28px rgba(16, 92, 58, 0.11); overflow: hidden;">
             <div class="card-header bg-success text-white py-3 px-4">
                 <h5 class="mb-0 fw-bold">
-                    <i class="fas fa-user-circle me-2"></i>ကိုယ်ရေးအချက်အလက် ပြင်ဆင်ရန်
+                    <i class="fas fa-user-circle me-2"></i>ကိုယ်ရေးအချက်အလက်
                 </h5>
             </div>
 

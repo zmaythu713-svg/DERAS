@@ -160,7 +160,7 @@
     </div>
 </div>
 
-{{-- ===== Row 2: ပစ္စည်းအမျိုးအမည် | လက်ခံရရှိမှု (Unit) | ထုတ်ပေးမှု (ဦးရေပေါင်း) ===== --}}
+{{-- ===== Row 2: ပစ္စည်းအမျိုးအမည် | လက်ခံရှိမှုအရေအတွက် | ထုတ်ပေးမှု (ဦးရေပေါင်း) ===== --}}
 <div class="row mb-4" style="row-gap: 0; column-gap: 0;">
     <div class="col-md-4 pe-md-3">
         <label class="form-label">
@@ -179,7 +179,7 @@
 
     <div class="col-md-4 px-md-2">
         <label class="form-label">
-            <i class="fas fa-boxes me-1"></i>လက်ခံရရှိမှု (Unit) <span class="text-danger">*</span>
+            <i class="fas fa-boxes me-1"></i>လက်ခံရှိမှုအရေအတွက် <span class="text-danger">*</span>
         </label>
         <input type="number" id="unit" name="unit" class="form-control @error('unit') is-invalid @enderror"
             value="{{ old('unit', $supplyDetail->unit ?? '') }}" placeholder="1" min="1" required>
