@@ -49,6 +49,10 @@
                                 <i class="fas fa-file-excel"></i>
                                 Excel ထုတ်ပါ
                             </button>
+                            <button type="button" class="btn-modern-pdf" onclick="exportAllocationPlan('pdf')">
+                                <i class="fas fa-file-pdf"></i>
+                                PDF ထုတ်ပါ
+                            </button>
                             @if ($canCreate ?? true)
                                 <a href="{{ route('allocation-plans.create', array_filter(['academic_year_id' => $yearId])) }}"
                                     class="btn-modern-primary">
@@ -782,7 +786,7 @@
         <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/file-saver/dist/FileSaver.min.js"></script>
         <script>
-            async function exportAllocationPlan() {
+            async function exportAllocationPlan(format) {
 
                 const plans = @json($plans->items());
 
@@ -1218,13 +1222,7 @@
 
                 });
 
-                const buffer =
-                    await workbook.xlsx.writeBuffer();
-
-                saveAs(
-                    new Blob([buffer]),
-                    'ခွဲတမ်းတွက်ချက်မှု.xlsx'
-                );
+                await DerasPdf.downloadWorkbook(workbook, sheet, 'ခွဲတမ်းတွက်ချက်မှု.xlsx', format);
             }
         </script>
     </div>

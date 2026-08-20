@@ -52,6 +52,10 @@
                                 <i class="fas fa-file-excel"></i>
                                 Excel ထုတ်ပါ
                             </button>
+                            <button type="button" class="btn-modern-pdf" onclick="exportExcel('pdf')">
+                                <i class="fas fa-file-pdf"></i>
+                                PDF ထုတ်ပါ
+                            </button>
                             @if ($canCreate ?? true)
                                 <a href="{{ route('stocks.create', array_filter([
                                         'academic_year_id' => $yearId,
@@ -193,7 +197,7 @@
     <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/file-saver/dist/FileSaver.min.js"></script>
     <script>
-        async function exportExcel() {
+        async function exportExcel(format) {
             const workbook = new ExcelJS.Workbook();
 
             const sheet = workbook.addWorksheet('Stocks');
@@ -304,14 +308,7 @@
                 wrapText: true
             };
 
-            const buffer = await workbook.xlsx.writeBuffer();
-
-            saveAs(
-                new Blob([buffer], {
-                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-                }),
-                'stocks.xlsx'
-            );
+            await DerasPdf.downloadWorkbook(workbook, sheet, 'stocks.xlsx', format);
         }
     </script>
 @endsection

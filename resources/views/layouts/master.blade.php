@@ -50,6 +50,28 @@
             line-height: 1.8 !important;
         }
 
+        .btn-modern-pdf {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1rem;
+            background-color: #dc2626;
+            color: #ffffff !important;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border: 0;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            text-decoration: none !important;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+        }
+        .btn-modern-pdf:hover {
+            background-color: #b91c1c;
+            color: #ffffff !important;
+            text-decoration: none !important;
+        }
+
         select.modern-select,
         select.form-control,
         select {
@@ -906,6 +928,9 @@
     <script src="{{ asset('js/deras-form.js') }}?v=4"></script>
     <script src="{{ asset('js/deras-validation.js') }}?v=18"></script>
     <script src="{{ asset('js/deras-pagination.js') }}?v=1"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="{{ asset('js/deras-pdf.js') }}?v=5"></script>
     <script>
         const Toast = Swal.mixin({
             toast: true,

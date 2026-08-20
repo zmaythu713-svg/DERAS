@@ -205,6 +205,53 @@
         color: #ffffff;
     }
 
+    .btn-modern-pdf {
+        @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow transition-all duration-200 border-0 cursor-pointer no-underline;
+        background-color: #dc2626;
+        text-decoration: none !important;
+    }
+    .btn-modern-pdf:hover {
+        background-color: #b91c1c;
+        text-decoration: none !important;
+        color: #ffffff;
+    }
+
+    .deras-pdf-wrap {
+        position: absolute;
+        left: 0;
+        top: 0;
+        z-index: 1;
+        pointer-events: none;
+        background: #ffffff;
+        color: #111827;
+        padding: 12px;
+        font-family: 'Noto Sans Myanmar', 'Pyidaungsu', 'Myanmar Text', sans-serif;
+    }
+    .deras-pdf-table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: auto;
+    }
+    .deras-pdf-table th,
+    .deras-pdf-table td {
+        border: 1px solid #334155;
+        padding: 4px 6px;
+        text-align: center;
+        vertical-align: middle;
+        word-break: break-word;
+    }
+    .deras-pdf-table th {
+        background: #d9ead3;
+        font-weight: 700;
+    }
+    .deras-pdf-title {
+        font-weight: 700;
+        font-size: 1.15em;
+        padding: 10px 6px !important;
+        border: 1px solid #334155;
+        background: #ffffff;
+    }
+
     .btn-modern-warning, .btn-action-edit {
         @apply inline-flex items-center justify-center w-8 h-8 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-semibold rounded-lg shadow-sm transition-all duration-200 border-0 cursor-pointer no-underline shrink-0;
         text-decoration: none !important;

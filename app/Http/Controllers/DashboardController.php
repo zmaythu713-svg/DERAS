@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AcademicYear;
 use App\Models\AllocationPlan;
 use App\Models\AllocationPlanTownship;
 use App\Models\Category;
@@ -14,6 +15,7 @@ use App\Models\Textbook;
 use App\Models\Township;
 use App\Support\GradeSubjectMap;
 use App\Support\TownshipKeys;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -70,9 +72,31 @@ class DashboardController extends Controller
         ));
     }
 
+    private function currentAcademicYearId(): ?int
+    {
+        $id = AcademicYear::current()->value('id');
+
+        return $id ? (int) $id : null;
+    }
+
+    private function quotaLinesForCurrentYear(): Builder
+    {
+        $query = QuotaLine::query();
+        $yearId = $this->currentAcademicYearId();
+
+        if ($yearId) {
+            $query->whereHas(
+                'quota',
+                fn (Builder $quota) => $quota->where('academic_year_id', $yearId)
+            );
+        }
+
+        return $query;
+    }
+
     private function calculateQuotaStudents()
     {
-        return (int) QuotaLine::query()->sum('quantity');
+        return (int) $this->quotaLinesForCurrentYear()->sum('quantity');
     }
 
     private function calculateTotalAllocationBooks($plans)
@@ -111,8 +135,8 @@ class DashboardController extends Controller
 
     private function calculateTotalStudents()
     {
-        // ကျောင်းသားကတ် = donut chart (မူလ/အလယ်/အထက်/စက်စိုက်မွေး) နဲ့ တူညီစေရန်
-        return (int) QuotaLine::query()->sum('quantity');
+        // လက်ရှိပညာသင်နှစ် — donut chart (မူလ/အလယ်/အထက်/စက်စိုက်မွေး) နဲ့ တူညီစေရန်
+        return (int) $this->quotaLinesForCurrentYear()->sum('quantity');
     }
 
     private function pieChart()
@@ -263,10 +287,12 @@ class DashboardController extends Controller
 
     private function quotaDonutChart()
     {
-        $primaryTotal = (int) QuotaLine::where('school_level', 'primary')->sum('quantity');
-        $middleTotal = (int) QuotaLine::where('school_level', 'middle')->sum('quantity');
-        $highTotal = (int) QuotaLine::where('school_level', 'high')->sum('quantity');
-        $agriTotal = (int) QuotaLine::where('school_level', 'agriculture')->sum('quantity');
+        $lines = $this->quotaLinesForCurrentYear();
+
+        $primaryTotal = (int) (clone $lines)->where('school_level', 'primary')->sum('quantity');
+        $middleTotal = (int) (clone $lines)->where('school_level', 'middle')->sum('quantity');
+        $highTotal = (int) (clone $lines)->where('school_level', 'high')->sum('quantity');
+        $agriTotal = (int) (clone $lines)->where('school_level', 'agriculture')->sum('quantity');
 
         return [
             'labels' => [
@@ -298,17 +324,27 @@ class DashboardController extends Controller
         $distributionTotal = [];
 
         // Grade duplicate မဖြစ်အောင် ID ယူ
+        $yearId = $this->currentAcademicYearId();
+
         $plans = AllocationPlan::with(['townships.township'])
-            ->whereIn('id', function ($query) {
+            ->when($yearId, fn ($q) => $q->where('academic_year_id', $yearId))
+            ->whereIn('id', function ($query) use ($yearId) {
                 $query->selectRaw('MIN(id)')
                     ->from('allocation_plans')
                     ->groupBy('grade_id');
+                if ($yearId) {
+                    $query->where('academic_year_id', $yearId);
+                }
             })
             ->get();
 
         foreach ($townships as $township) {
             $labels[] = $township->name;
-            $quota = Quota::with('lines')->where('township_id', $township->id)->first();
+            $quotaQuery = Quota::with('lines')->where('township_id', $township->id);
+            if ($yearId) {
+                $quotaQuery->where('academic_year_id', $yearId);
+            }
+            $quota = $quotaQuery->first();
             $val = $quota ? (int) $quota->distribution_total : 0;
 
             if ($val === 0) {

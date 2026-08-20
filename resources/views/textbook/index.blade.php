@@ -48,6 +48,10 @@
                                 <i class="fas fa-file-excel"></i>
                                 Excel ထုတ်ပါ
                             </button>
+                            <button type="button" class="btn-modern-pdf" onclick="exportTextbookTable('pdf')">
+                                <i class="fas fa-file-pdf"></i>
+                                PDF ထုတ်ပါ
+                            </button>
                             @if ($canCreate ?? true)
                                 <a href="{{ route('textbook.create', array_filter([
                                         'academic_year_id' => $yearId,
@@ -222,7 +226,7 @@
         <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/file-saver/dist/FileSaver.min.js"></script>
         <script>
-            async function exportTextbookTable() {
+            async function exportTextbookTable(format) {
                 const blocks  = @json($blocks);
                 const maxRows = @json($maxRows);
 
@@ -293,8 +297,7 @@
                     });
                 }
 
-                const buffer = await workbook.xlsx.writeBuffer();
-                saveAs(new Blob([buffer]), 'textbook_distribution.xlsx');
+                await DerasPdf.downloadWorkbook(workbook, sheet, 'textbook_distribution.xlsx', format);
             }
         </script>
     </div>

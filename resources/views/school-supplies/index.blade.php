@@ -81,6 +81,10 @@
                                 <i class="fas fa-file-excel"></i>
                                 Excel ထုတ်ပါ
                             </button>
+                            <button type="button" class="btn-modern-pdf" onclick="exportSchoolSupplies('pdf')">
+                                <i class="fas fa-file-pdf"></i>
+                                PDF ထုတ်ပါ
+                            </button>
                             @if ($canCreate ?? true)
                                 <a href="{{ route('school-supplies.create', array_filter([
                                         'academic_year_id' => $yearId,
@@ -212,7 +216,7 @@
     <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/file-saver/dist/FileSaver.min.js"></script>
     <script>
-        async function exportSchoolSupplies() {
+        async function exportSchoolSupplies(format) {
             const rows = @json($exportRows);
             const selectedYear = @json($selectedYear?->name ?? '');
 
@@ -256,8 +260,12 @@
             sheet.getRow(1).height = 35;
             sheet.getRow(3).height = 35;
 
-            const buffer = await workbook.xlsx.writeBuffer();
-            saveAs(new Blob([buffer]), `school_supplies_${selectedYear || 'all'}.xlsx`);
+            await DerasPdf.downloadWorkbook(
+                workbook,
+                sheet,
+                `school_supplies_${selectedYear || 'all'}.xlsx`,
+                format
+            );
         }
     </script>
 @endsection

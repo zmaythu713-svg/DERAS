@@ -46,6 +46,10 @@
                                 <i class="fas fa-file-excel"></i>
                                 Excel ထုတ်ပါ
                             </button>
+                            <button type="button" class="btn-modern-pdf" onclick="exportQuotaTable('pdf')">
+                                <i class="fas fa-file-pdf"></i>
+                                PDF ထုတ်ပါ
+                            </button>
                             @if ($canCreate ?? true)
                                 <a href="{{ route('quota.create', array_filter(['academic_year_id' => $academicYearId])) }}"
                                     class="btn-modern-primary">
@@ -375,7 +379,7 @@
         <script src="https://cdn.jsdelivr.net/npm/file-saver/dist/FileSaver.min.js"></script>
 
         <script>
-            async function exportQuotaTable() {
+            async function exportQuotaTable(format) {
                 const rows = @json($calculatedRows);
                 const totals = @json($calculatedTotals);
                 const academicYear = @json($academicYear ?? '2025-2026');
@@ -606,12 +610,7 @@
                     });
                 });
 
-                const buffer = await workbook.xlsx.writeBuffer();
-
-                saveAs(
-                    new Blob([buffer]),
-                    `quota_${academicYear}.xlsx`
-                );
+                await DerasPdf.downloadWorkbook(workbook, sheet, `quota_${academicYear}.xlsx`, format);
             }
         </script>
 

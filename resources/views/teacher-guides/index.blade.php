@@ -79,6 +79,10 @@
                                 <i class="fas fa-file-excel"></i>
                                 Excel ထုတ်ပါ
                             </button>
+                            <button type="button" class="btn-modern-pdf" onclick="exportTeacherGuideExcel('pdf')">
+                                <i class="fas fa-file-pdf"></i>
+                                PDF ထုတ်ပါ
+                            </button>
                             @if ($canCreate ?? true)
                                 <a href="{{ route('teacher-guides.create', array_filter([
                                         'academic_year_id' => $yearId,
@@ -181,7 +185,7 @@
     <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/file-saver/dist/FileSaver.min.js"></script>
     <script>
-        async function exportTeacherGuideExcel() {
+        async function exportTeacherGuideExcel(format) {
             const workbook = new ExcelJS.Workbook();
             const sheet = workbook.addWorksheet('Teacher Guides');
 
@@ -228,8 +232,7 @@
             sheet.getRow(1).height = 35;
             sheet.getRow(3).height = 35;
 
-            const buffer = await workbook.xlsx.writeBuffer();
-            saveAs(new Blob([buffer]), 'Teacher_Guides.xlsx');
+            await DerasPdf.downloadWorkbook(workbook, sheet, 'Teacher_Guides.xlsx', format);
         }
     </script>
 @endsection
