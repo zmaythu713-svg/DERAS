@@ -229,72 +229,122 @@
             async function exportTextbookTable(format) {
                 const blocks  = @json($blocks);
                 const maxRows = @json($maxRows);
+                const headerFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9EAD3' } };
 
                 const workbook = new ExcelJS.Workbook();
                 const sheet    = workbook.addWorksheet('Textbook');
 
-                sheet.columns = [
-                    { width: 6  }, { width: 12 }, { width: 30 },
-                    { width: 14 }, { width: 15 }, { width: 12 },
-                    { width: 12 }, { width: 20 },
-                ];
+                if (format === 'pdf') {
+                    sheet.columns = [
+                        { width: 8 }, { width: 16 }, { width: 16 }, { width: 14 },
+                        { width: 32 }, { width: 16 }, { width: 18 }, { width: 12 }, { width: 12 }, { width: 18 },
+                    ];
 
-                let columnCount = blocks.length * 8;
-                sheet.mergeCells(1, 1, 1, columnCount);
-                sheet.getCell(1, 1).value     = 'ကျောင်းသုံးပြဌာန်းစာအုပ်များ ဖြန့်ဝေထုတ်ပေးသည့်စာရင်း';
-                sheet.getCell(1, 1).font      = { bold: true, size: 14 };
-                sheet.getCell(1, 1).alignment = { horizontal: 'center', vertical: 'middle' };
+                    sheet.mergeCells('A1:J1');
+                    sheet.getCell('A1').value = 'ကျောင်းသုံးပြဌာန်းစာအုပ်များ ဖြန့်ဝေထုတ်ပေးသည့်စာရင်း';
+                    sheet.getCell('A1').font = { bold: true, size: 14 };
+                    sheet.getCell('A1').alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
 
-                let col = 1;
-                blocks.forEach(block => {
-                    sheet.mergeCells(2, col, 2, col + 7);
-                    sheet.getCell(2, col).value = block.academic_year + ' ပညာသင်နှစ်အတွက်';
-                    sheet.mergeCells(3, col, 3, col + 7);
-                    sheet.getCell(3, col).value = block.township ?? '............... မြို့နယ်';
-                    col += 8;
-                });
+                    sheet.getRow(2).values = [
+                        'စဉ်', 'ပညာသင်နှစ်', 'မြို့နယ်', 'အတန်း', 'အမျိုးအမည်',
+                        'တစ်အိတ်ပါယူနစ်', 'ထုတ်ပေးသည့်အုပ်ရေ', 'အိတ်ပြည့်', 'အပြေ', 'မှတ်ချက်',
+                    ];
 
-                col = 1;
-                blocks.forEach(block => {
-                    const headers = ['စဉ်','အတန်း','အမျိုးအမည်','တစ်အိတ်ပါယူနစ်','ထုတ်ပေးသည့်အုပ်ရေ','အိတ်ပြည့်','အပြေ','မှတ်ချက်'];
-                    headers.forEach((h, i) => { sheet.getCell(4, col + i).value = h; });
-                    col += 8;
-                });
-
-                for (let i = 0; i < maxRows; i++) {
-                    let rowData = [];
                     blocks.forEach(block => {
-                        let row = block.rows[i];
-                        if (row) {
-                            let pkg   = row.books_per_set > 0 ? Math.floor(row.student_count / row.books_per_set) : 0;
-                            let loose = row.books_per_set > 0 ? row.student_count % row.books_per_set : 0;
-                            rowData.push(i + 1, row.grade, row.book_name, row.books_per_set, row.student_count, pkg, loose, row.remark ?? '');
-                        } else {
-                            rowData.push('', '', '', '', '', '', '', '');
-                        }
+                        (block.rows || []).forEach((row, index) => {
+                            const pkg = row.books_per_set > 0 ? Math.floor(row.student_count / row.books_per_set) : 0;
+                            const loose = row.books_per_set > 0 ? row.student_count % row.books_per_set : 0;
+                            sheet.addRow([
+                                index + 1,
+                                block.academic_year,
+                                block.township ?? '',
+                                row.grade,
+                                row.book_name,
+                                row.books_per_set,
+                                row.student_count,
+                                pkg,
+                                loose,
+                                row.remark ?? '',
+                            ]);
+                        });
                     });
-                    sheet.addRow(rowData);
-                }
 
-                sheet.eachRow(row => {
-                    row.eachCell(cell => {
-                        cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
-                        cell.border    = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+                    sheet.eachRow((row, rowNumber) => {
+                        row.eachCell((cell) => {
+                            cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+                            cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+                            if (rowNumber === 2) {
+                                cell.font = { bold: true };
+                                cell.fill = headerFill;
+                            }
+                        });
                     });
-                });
+                    sheet.getRow(1).height = 35;
+                    sheet.getRow(2).height = 35;
+                } else {
+                    sheet.columns = [
+                        { width: 6  }, { width: 12 }, { width: 30 },
+                        { width: 14 }, { width: 15 }, { width: 12 },
+                        { width: 12 }, { width: 20 },
+                    ];
 
-                sheet.addRow([]);
-                sheet.addRow(['', 'ပစ္စည်းထုတ်ပေးသူလက်မှတ် ............................', '', '', 'ပစ္စည်းလက်ခံသူလက်မှတ် ............................']);
-                sheet.addRow(['', 'အမည် ............................', '', '', 'အမည် ............................']);
-                sheet.addRow(['', 'မြို့နယ် ............................', '', '', 'မြို့နယ် ............................']);
-                sheet.addRow(['', 'ရာထူး ............................', '', '', 'ရာထူး ............................']);
+                    let columnCount = Math.max(8, blocks.length * 8);
+                    sheet.mergeCells(1, 1, 1, columnCount);
+                    sheet.getCell(1, 1).value     = 'ကျောင်းသုံးပြဌာန်းစာအုပ်များ ဖြန့်ဝေထုတ်ပေးသည့်စာရင်း';
+                    sheet.getCell(1, 1).font      = { bold: true, size: 14 };
+                    sheet.getCell(1, 1).alignment = { horizontal: 'center', vertical: 'middle' };
 
-                let lastRows = sheet.lastRow.number - 3;
-                for (let i = lastRows; i <= sheet.lastRow.number; i++) {
-                    sheet.getRow(i).eachCell(cell => {
-                        cell.alignment = { horizontal: 'left', vertical: 'middle' };
-                        cell.font      = { size: 12 };
+                    let col = 1;
+                    blocks.forEach(block => {
+                        sheet.mergeCells(2, col, 2, col + 7);
+                        sheet.getCell(2, col).value = block.academic_year + ' ပညာသင်နှစ်အတွက်';
+                        sheet.mergeCells(3, col, 3, col + 7);
+                        sheet.getCell(3, col).value = block.township ?? '............... မြို့နယ်';
+                        col += 8;
                     });
+
+                    col = 1;
+                    blocks.forEach(block => {
+                        const headers = ['စဉ်','အတန်း','အမျိုးအမည်','တစ်အိတ်ပါယူနစ်','ထုတ်ပေးသည့်အုပ်ရေ','အိတ်ပြည့်','အပြေ','မှတ်ချက်'];
+                        headers.forEach((h, i) => { sheet.getCell(4, col + i).value = h; });
+                        col += 8;
+                    });
+
+                    for (let i = 0; i < maxRows; i++) {
+                        let rowData = [];
+                        blocks.forEach(block => {
+                            let row = block.rows[i];
+                            if (row) {
+                                let pkg   = row.books_per_set > 0 ? Math.floor(row.student_count / row.books_per_set) : 0;
+                                let loose = row.books_per_set > 0 ? row.student_count % row.books_per_set : 0;
+                                rowData.push(i + 1, row.grade, row.book_name, row.books_per_set, row.student_count, pkg, loose, row.remark ?? '');
+                            } else {
+                                rowData.push('', '', '', '', '', '', '', '');
+                            }
+                        });
+                        sheet.addRow(rowData);
+                    }
+
+                    sheet.eachRow(row => {
+                        row.eachCell(cell => {
+                            cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+                            cell.border    = { top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'} };
+                        });
+                    });
+
+                    sheet.addRow([]);
+                    sheet.addRow(['', 'ပစ္စည်းထုတ်ပေးသူလက်မှတ် ............................', '', '', 'ပစ္စည်းလက်ခံသူလက်မှတ် ............................']);
+                    sheet.addRow(['', 'အမည် ............................', '', '', 'အမည် ............................']);
+                    sheet.addRow(['', 'မြို့နယ် ............................', '', '', 'မြို့နယ် ............................']);
+                    sheet.addRow(['', 'ရာထူး ............................', '', '', 'ရာထူး ............................']);
+
+                    let lastRows = sheet.lastRow.number - 3;
+                    for (let i = lastRows; i <= sheet.lastRow.number; i++) {
+                        sheet.getRow(i).eachCell(cell => {
+                            cell.alignment = { horizontal: 'left', vertical: 'middle' };
+                            cell.font      = { size: 12 };
+                        });
+                    }
                 }
 
                 await DerasPdf.downloadWorkbook(workbook, sheet, 'textbook_distribution.xlsx', format);

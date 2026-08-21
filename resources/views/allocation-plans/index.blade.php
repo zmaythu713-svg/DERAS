@@ -783,173 +783,112 @@
             </div>
             @include('partials.pagination', ['items' => $plans])
         @endif
+        @php
+            $allocationFirstItem = $plans->firstItem() ?? 1;
+            $allocationExportRows = collect($plans->items())->values()->map(function ($plan, $index) use ($allocationFirstItem) {
+                $detail = $plan->detailCompat() ?? (object) [];
+                $unit = max(0, (int) ($plan->books_per_package ?? 0));
+
+                $eligibleM = (int) ($detail->myanaung_total_students ?? 0)
+                    - ((int) ($detail->myanaung_previous ?? 0) + (int) ($detail->myanaung_transferable ?? 0));
+                $eligibleK = (int) ($detail->kyankhin_total_students ?? 0)
+                    - ((int) ($detail->kyankhin_previous ?? 0) + (int) ($detail->kyankhin_transferable ?? 0));
+                $eligibleI = (int) ($detail->ingapu_total_students ?? 0)
+                    - ((int) ($detail->ingapu_previous ?? 0) + (int) ($detail->ingapu_transferable ?? 0));
+                $eligibleTotal = $eligibleM + $eligibleK + $eligibleI;
+
+                $ratio = $eligibleTotal > 0 ? ((float) ($plan->received_books ?? 0) / $eligibleTotal) : 0;
+                $allocM = (int) round($ratio * $eligibleM);
+                $allocK = (int) round($ratio * $eligibleK);
+                $allocI = (int) round($ratio * $eligibleI);
+
+                $prevM = (int) ($detail->myanaung_previous ?? 0);
+                $prevK = (int) ($detail->kyankhin_previous ?? 0);
+                $prevI = (int) ($detail->ingapu_previous ?? 0);
+                $studentsM = (int) ($detail->myanaung_total_students ?? 0);
+                $studentsK = (int) ($detail->kyankhin_total_students ?? 0);
+                $studentsI = (int) ($detail->ingapu_total_students ?? 0);
+                $transferM = (int) ($detail->myanaung_transferable ?? 0);
+                $transferK = (int) ($detail->kyankhin_transferable ?? 0);
+                $transferI = (int) ($detail->ingapu_transferable ?? 0);
+
+                $finalM = $prevM + $allocM + $transferM;
+                $finalK = $prevK + $allocK + $transferK;
+                $finalI = $prevI + $allocI + $transferI;
+
+                $diffM = $finalM - $studentsM;
+                $diffK = $finalK - $studentsK;
+                $diffI = $finalI - $studentsI;
+
+                return [
+                    $allocationFirstItem + $index,
+                    $plan->grade?->name ?? '',
+                    $plan->bookName?->name ?? '',
+                    (int) ($plan->received_books ?? 0),
+                    $unit,
+                    number_format($ratio, 2, '.', ''),
+                    $eligibleM,
+                    $eligibleK,
+                    $eligibleI,
+                    $eligibleTotal,
+                    $allocM,
+                    $allocK,
+                    $allocI,
+                    $allocM + $allocK + $allocI,
+                    $unit > 0 ? intdiv($allocM, $unit) : 0,
+                    $unit > 0 ? intdiv($allocK, $unit) : 0,
+                    $unit > 0 ? intdiv($allocI, $unit) : 0,
+                    $unit > 0 ? ($allocM % $unit) : 0,
+                    $unit > 0 ? ($allocK % $unit) : 0,
+                    $unit > 0 ? ($allocI % $unit) : 0,
+                    $prevM,
+                    $prevK,
+                    $prevI,
+                    $studentsM,
+                    $studentsK,
+                    $studentsI,
+                    $studentsM + $studentsK + $studentsI,
+                    $transferM,
+                    $transferK,
+                    $transferI,
+                    $transferM + $transferK + $transferI,
+                    $finalM,
+                    $finalK,
+                    $finalI,
+                    $finalM + $finalK + $finalI,
+                    $diffM,
+                    $diffK,
+                    $diffI,
+                    $diffM + $diffK + $diffI,
+                ];
+            })->all();
+        @endphp
         <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/file-saver/dist/FileSaver.min.js"></script>
         <script>
             async function exportAllocationPlan(format) {
-
-                const plans = @json($plans->items());
-
+                const rows = @json($allocationExportRows);
                 const workbook = new ExcelJS.Workbook();
+                const sheet = workbook.addWorksheet('Allocation Plan');
+                const colCount = 39;
+                const headerFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9EAD3' } };
 
-                const sheet = workbook.addWorksheet(
-                    'Allocation Plan'
-                );
+                sheet.columns = Array.from({ length: colCount }, (_, i) => ({
+                    width: i === 0 ? 5 : (i === 1 ? 14 : (i === 2 ? 24 : 11)),
+                }));
 
-                sheet.columns = [{
-                        width: 5
-                    },
-                    {
-                        width: 15
-                    },
-                    {
-                        width: 25
-                    },
-                    {
-                        width: 12
-                    },
-                    {
-                        width: 12
-                    },
-                    {
-                        width: 12
-                    },
+                sheet.mergeCells(1, 1, 1, colCount);
+                sheet.getCell(1, 1).value = 'ခရိုင်ခွဲတမ်းတွက်ချက်မှုစာရင်း';
+                sheet.getCell(1, 1).font = { bold: true, size: 14 };
+                sheet.getCell(1, 1).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+                sheet.getRow(1).height = 28;
 
-                    {
-                        width: 12
-                    },
-                    {
-                        width: 12
-                    },
-                    {
-                        width: 12
-                    },
-                    {
-                        width: 12
-                    },
-
-                    {
-                        width: 12
-                    },
-                    {
-                        width: 12
-                    },
-                    {
-                        width: 12
-                    },
-                    {
-                        width: 12
-                    },
-
-                    {
-                        width: 12
-                    },
-                    {
-                        width: 12
-                    },
-                    {
-                        width: 12
-                    },
-
-                    {
-                        width: 12
-                    },
-                    {
-                        width: 12
-                    },
-                    {
-                        width: 12
-                    },
-
-                    {
-                        width: 12
-                    },
-                    {
-                        width: 12
-                    },
-                    {
-                        width: 12
-                    },
-
-                    {
-                        width: 12
-                    },
-                    {
-                        width: 12
-                    },
-                    {
-                        width: 12
-                    },
-                    {
-                        width: 12
-                    },
-
-                    {
-                        width: 12
-                    },
-                    {
-                        width: 12
-                    },
-                    {
-                        width: 12
-                    },
-                    {
-                        width: 12
-                    },
-
-                    {
-                        width: 12
-                    },
-                    {
-                        width: 12
-                    },
-                    {
-                        width: 12
-                    },
-                    {
-                        width: 12
-                    },
-
-                    {
-                        width: 12
-                    },
-                    {
-                        width: 12
-                    },
-                    {
-                        width: 12
-                    },
-                    {
-                        width: 12
-                    },
-                ];
-
-                // Title
-                sheet.mergeCells(
-                    'A1:AN1'
-                );
-
-                sheet.getCell('A1').value =
-                    'ခရိုင်ခွဲတမ်းတွက်ချက်မှုစာရင်း';
-
-
-                sheet.getCell('A1').font = {
-                    bold: true,
-                    size: 14
-                };
-
-                sheet.getCell('A1').alignment = {
-                    horizontal: 'center'
-                };
-
-                // Header Row 1
                 sheet.mergeCells('A3:A4');
                 sheet.mergeCells('B3:B4');
                 sheet.mergeCells('C3:C4');
                 sheet.mergeCells('D3:D4');
                 sheet.mergeCells('E3:E4');
                 sheet.mergeCells('F3:F4');
-
                 sheet.mergeCells('G3:J3');
                 sheet.mergeCells('K3:N3');
                 sheet.mergeCells('O3:Q3');
@@ -958,269 +897,70 @@
                 sheet.mergeCells('X3:AA3');
                 sheet.mergeCells('AB3:AE3');
                 sheet.mergeCells('AF3:AI3');
+                sheet.mergeCells('AJ3:AM3');
 
-                sheet.getRow(3).values = [
-
-                    'စဉ်',
-                    'အတန်း',
-                    'ဘာသာ',
-                    'ရရှိအုပ်ရေ',
-                    'တစ်အိတ်ပါ Unit',
-                    'အချိုး',
-
-                    'ယခင်နှစ်လက်ကျန်စာအုပ်ဖယ်ပြီးကျောင်းသားဦးရေ',
-                    '',
-                    '',
-                    '',
-
-                    'ခွဲတမ်းပေးရန်အုပ်အရေအတွက်',
-                    '',
-                    '',
-                    '',
-
-                    'ခွဲတမ်းပေးရန်အိတ်',
-                    '',
-                    '',
-
-                    'ခွဲတမ်းပေးရန်အပြေအုပ်အရေအတွက်',
-                    '',
-                    '',
-
-                    'ယခင်နှစ်လက်ကျန်စာအုပ်',
-                    '',
-                    '',
-
-                    'ကျောင်းသားဦးရေ',
-                    '',
-                    '',
-                    '',
-
-                    'လက်ဆင့်ကမ်း(အသုံးပြုနိုင်)',
-                    '',
-                    '',
-                    '',
-
-                    'ယခင်နှစ်လက်ကျန် + ထုတ်ပေး + လက်ဆင့်ကမ်း',
-                    '',
-                    '',
-                    '',
-
-                    'ကျောင်းသားအရအပိုအလို',
-                    '',
-                    '',
-                    '',
+                const topHeaders = [
+                    [1, 'စဉ်'],
+                    [2, 'အတန်း'],
+                    [3, 'ဘာသာ'],
+                    [4, 'ရရှိအုပ်ရေ'],
+                    [5, 'တစ်အိတ်ပါ Unit'],
+                    [6, 'အချိုး'],
+                    [7, 'ယခင်နှစ်လက်ကျန်စာအုပ်ဖယ်ပြီးကျောင်းသားဦးရေ'],
+                    [11, 'ခွဲတမ်းပေးရန်အုပ်အရေအတွက်'],
+                    [15, 'ခွဲတမ်းပေးရန်အိတ်'],
+                    [18, 'ခွဲတမ်းပေးရန်အပြေအုပ်အရေအတွက်'],
+                    [21, 'ယခင်နှစ်လက်ကျန်စာအုပ်'],
+                    [24, 'ကျောင်းသားဦးရေ'],
+                    [28, 'လက်ဆင့်ကမ်း(အသုံးပြုနိုင်)'],
+                    [32, 'ယခင်နှစ်လက်ကျန် + ထုတ်ပေး + လက်ဆင့်ကမ်း'],
+                    [36, 'ကျောင်းသားအရအပိုအလို'],
                 ];
-
-                sheet.getRow(4).values = [
-
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-
-                    'မြန်အောင်',
-                    'ကြံခင်း',
-                    'အင်္ဂပူ',
-                    'စုစုပေါင်း',
-
-                    'မြန်အောင်',
-                    'ကြံခင်း',
-                    'အင်္ဂပူ',
-                    'စုစုပေါင်း',
-
-                    'မြန်အောင်',
-                    'ကြံခင်း',
-                    'အင်္ဂပူ',
-
-                    'မြန်အောင်',
-                    'ကြံခင်း',
-                    'အင်္ဂပူ',
-
-                    'မြန်အောင်',
-                    'ကြံခင်း',
-                    'အင်္ဂပူ',
-
-                    'မြန်အောင်',
-                    'ကြံခင်း',
-                    'အင်္ဂပူ',
-                    'စုစုပေါင်း',
-
-                    'မြန်အောင်',
-                    'ကြံခင်း',
-                    'အင်္ဂပူ',
-                    'စုစုပေါင်း',
-
-                    'မြန်အောင်',
-                    'ကြံခင်း',
-                    'အင်္ဂပူ',
-                    'စုစုပေါင်း',
-
-                    'မြန်အောင်',
-                    'ကြံခင်း',
-                    'အင်္ဂပူ',
-                    'စုစုပေါင်း',
-                ];
-
-                let row = 5;
-
-                plans.forEach((plan, index) => {
-
-                    let d = plan.detail ?? {};
-
-                    let eligibleM =
-                        (d.myanaung_total_students ?? 0) -
-                        ((d.myanaung_previous ?? 0) +
-                            (d.myanaung_transferable ?? 0));
-
-                    let eligibleK =
-                        (d.kyankhin_total_students ?? 0) -
-                        ((d.kyankhin_previous ?? 0) +
-                            (d.kyankhin_transferable ?? 0));
-
-                    let eligibleI =
-                        (d.ingapu_total_students ?? 0) -
-                        ((d.ingapu_previous ?? 0) +
-                            (d.ingapu_transferable ?? 0));
-
-                    let total =
-                        eligibleM + eligibleK + eligibleI;
-
-                    let ratio =
-                        total > 0 ?
-                        plan.received_books / total :
-                        0;
-
-                    let allocM =
-                        Math.round(ratio * eligibleM);
-
-                    let allocK =
-                        Math.round(ratio * eligibleK);
-
-                    let allocI =
-                        Math.round(ratio * eligibleI);
-
-                    let unit =
-                        plan.books_per_package ?? 0;
-
-                    let finalM =
-                        (d.myanaung_previous ?? 0) +
-                        allocM +
-                        (d.myanaung_transferable ?? 0);
-
-                    let finalK =
-                        (d.kyankhin_previous ?? 0) +
-                        allocK +
-                        (d.kyankhin_transferable ?? 0);
-
-                    let finalI =
-                        (d.ingapu_previous ?? 0) +
-                        allocI +
-                        (d.ingapu_transferable ?? 0);
-
-                    sheet.getRow(row).values = [
-
-                        index + 1,
-
-                        plan.grade?.name ?? '',
-
-                        plan.book_name?.name ?? '',
-
-                        plan.received_books ?? 0,
-
-                        plan.books_per_package ?? 0,
-
-                        ratio.toFixed(2),
-
-                        eligibleM,
-                        eligibleK,
-                        eligibleI,
-                        total,
-
-                        allocM,
-                        allocK,
-                        allocI,
-                        allocM + allocK + allocI,
-
-                        Math.floor(allocM / unit),
-                        Math.floor(allocK / unit),
-                        Math.floor(allocI / unit),
-
-                        allocM % unit,
-                        allocK % unit,
-                        allocI % unit,
-
-                        d.myanaung_previous ?? 0,
-                        d.kyankhin_previous ?? 0,
-                        d.ingapu_previous ?? 0,
-
-                        d.myanaung_total_students ?? 0,
-                        d.kyankhin_total_students ?? 0,
-                        d.ingapu_total_students ?? 0,
-
-                        (d.myanaung_total_students ?? 0) +
-                        (d.kyankhin_total_students ?? 0) +
-                        (d.ingapu_total_students ?? 0),
-
-                        d.myanaung_transferable ?? 0,
-                        d.kyankhin_transferable ?? 0,
-                        d.ingapu_transferable ?? 0,
-
-                        (d.myanaung_transferable ?? 0) +
-                        (d.kyankhin_transferable ?? 0) +
-                        (d.ingapu_transferable ?? 0),
-
-                        finalM,
-                        finalK,
-                        finalI,
-
-                        finalM + finalK + finalI,
-
-                        finalM - (d.myanaung_total_students ?? 0),
-                        finalK - (d.kyankhin_total_students ?? 0),
-                        finalI - (d.ingapu_total_students ?? 0),
-                        (
-                            finalM - (d.myanaung_total_students ?? 0) +
-                            finalK - (d.kyankhin_total_students ?? 0) +
-                            finalI - (d.ingapu_total_students ?? 0)
-                        )
-
-                    ];
-
-                    row++;
-
+                topHeaders.forEach(([col, text]) => {
+                    sheet.getCell(3, col).value = text;
                 });
 
-                sheet.eachRow(row => {
+                const subLabels = ['မြန်အောင်', 'ကြံခင်း', 'အင်္ဂပူ', 'စုစုပေါင်း'];
+                const subGroups = [
+                    [7, 4],
+                    [11, 4],
+                    [15, 3],
+                    [18, 3],
+                    [21, 3],
+                    [24, 4],
+                    [28, 4],
+                    [32, 4],
+                    [36, 4],
+                ];
+                subGroups.forEach(([start, count]) => {
+                    for (let i = 0; i < count; i++) {
+                        sheet.getCell(4, start + i).value = subLabels[i];
+                    }
+                });
 
-                    row.eachCell(cell => {
+                rows.forEach((rowValues) => {
+                    sheet.addRow(rowValues);
+                });
 
-                        cell.alignment = {
-                            horizontal: 'center',
-                            vertical: 'middle',
-                            wrapText: true
-                        };
-
-
+                sheet.eachRow((row, rowNumber) => {
+                    for (let c = 1; c <= colCount; c++) {
+                        const cell = row.getCell(c);
+                        cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
                         cell.border = {
-                            top: {
-                                style: 'thin'
-                            },
-                            left: {
-                                style: 'thin'
-                            },
-                            bottom: {
-                                style: 'thin'
-                            },
-                            right: {
-                                style: 'thin'
-                            }
+                            top: { style: 'thin' },
+                            left: { style: 'thin' },
+                            bottom: { style: 'thin' },
+                            right: { style: 'thin' },
                         };
-
-                    });
-
+                        if (rowNumber === 3 || rowNumber === 4) {
+                            cell.font = { bold: true };
+                            cell.fill = headerFill;
+                        }
+                    }
                 });
+
+                sheet.getRow(3).height = 34;
+                sheet.getRow(4).height = 24;
 
                 await DerasPdf.downloadWorkbook(workbook, sheet, 'ခွဲတမ်းတွက်ချက်မှု.xlsx', format);
             }

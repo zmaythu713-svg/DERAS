@@ -930,7 +930,7 @@
     <script src="{{ asset('js/deras-pagination.js') }}?v=1"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="{{ asset('js/deras-pdf.js') }}?v=5"></script>
+    <script src="{{ asset('js/deras-pdf.js') }}?v=10"></script>
     <script>
         const Toast = Swal.mixin({
             toast: true,

@@ -6,6 +6,7 @@ use App\Models\AcademicYear;
 use App\Models\Quota;
 use App\Models\Township;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class QuotaController extends Controller
@@ -141,7 +142,7 @@ class QuotaController extends Controller
         $this->assertYearAllowsDataEntry($request->input('academic_year_id'));
 
         $quota = Quota::findOrFail($id);
-        $data = $this->validatedData($request);
+        $data = $this->validatedData($request, $quota);
         $header = [
             'academic_year_id' => $data['academic_year_id'],
             'township_id' => $data['township_id'],
@@ -196,26 +197,37 @@ class QuotaController extends Controller
         }
     }
 
-    private function validatedData(Request $request): array
+    private function validatedData(Request $request, ?Quota $quota = null): array
     {
-        $data = $request->validate([
-            'academic_year_id' => 'required|exists:academic_years,id',
-            'township_id' => 'required|exists:townships,id',
+        $data = $request->validate(
+            [
+                'academic_year_id' => 'required|exists:academic_years,id',
+                'township_id' => [
+                    'required',
+                    'exists:townships,id',
+                    Rule::unique('quotas', 'township_id')
+                        ->ignore($quota?->id)
+                        ->where(fn ($q) => $q->where('academic_year_id', $request->academic_year_id)),
+                ],
 
-            'primary_public' => 'nullable|integer|min:0',
-            'primary_monk' => 'nullable|integer|min:0',
-            'primary_private' => 'nullable|integer|min:0',
+                'primary_public' => 'nullable|integer|min:0',
+                'primary_monk' => 'nullable|integer|min:0',
+                'primary_private' => 'nullable|integer|min:0',
 
-            'middle_public' => 'nullable|integer|min:0',
-            'middle_monk' => 'nullable|integer|min:0',
-            'middle_private' => 'nullable|integer|min:0',
+                'middle_public' => 'nullable|integer|min:0',
+                'middle_monk' => 'nullable|integer|min:0',
+                'middle_private' => 'nullable|integer|min:0',
 
-            'high_public' => 'nullable|integer|min:0',
-            'high_monk' => 'nullable|integer|min:0',
-            'high_private' => 'nullable|integer|min:0',
+                'high_public' => 'nullable|integer|min:0',
+                'high_monk' => 'nullable|integer|min:0',
+                'high_private' => 'nullable|integer|min:0',
 
-            'agriculture' => 'nullable|integer|min:0',
-        ]);
+                'agriculture' => 'nullable|integer|min:0',
+            ],
+            [
+                'township_id.unique' => 'ဤပညာသင်နှစ်အတွက် ရွေးထားသော မြို့နယ်၏ ကျောင်းသားဦးရေတွက်ချက်မှု ရှိပြီးသားဖြစ်ပါသည်။',
+            ]
+        );
 
         foreach ([
             'primary_public', 'primary_monk', 'primary_private',

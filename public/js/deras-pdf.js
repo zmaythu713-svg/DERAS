@@ -1,5 +1,6 @@
 /**
  * Export an ExcelJS worksheet as PDF with the same cell values as Excel.
+ * Tables are laid out to the PDF page width so columns are not clipped.
  */
 window.DerasPdf = (function () {
     function cellText(value) {
@@ -9,9 +10,6 @@ window.DerasPdf = (function () {
         if (typeof value === 'number') {
             if (!Number.isFinite(value)) {
                 return '';
-            }
-            if (Number.isInteger(value)) {
-                return String(value);
             }
             return String(value);
         }
@@ -178,13 +176,141 @@ window.DerasPdf = (function () {
         };
     }
 
+    function cellFillArgb(cell) {
+        var fill = cell && cell.fill;
+        if (!fill || fill.fgColor == null) {
+            return '';
+        }
+        var argb = fill.fgColor.argb || fill.fgColor.theme;
+        return argb ? String(argb).toUpperCase() : '';
+    }
+
+    function isFilledHeader(cell) {
+        var argb = cellFillArgb(cell);
+        if (!argb || argb === 'FFFFFFFF' || argb === 'FF000000' || argb === '00000000') {
+            return false;
+        }
+        return true;
+    }
+
+    function isBoldCell(row, cell) {
+        return !!(
+            (cell && cell.font && cell.font.bold) ||
+            (row && row.font && row.font.bold)
+        );
+    }
+
+    function columnPercents(sheet, maxCol) {
+        var widths = [];
+        var total = 0;
+
+        for (var c = 1; c <= maxCol; c++) {
+            var col = sheet.getColumn(c);
+            var width = col && col.width ? Number(col.width) : 12;
+            if (!Number.isFinite(width) || width <= 0) {
+                width = 12;
+            }
+            widths.push(width);
+            total += width;
+        }
+
+        if (total <= 0) {
+            return widths.map(function () {
+                return (100 / maxCol);
+            });
+        }
+
+        return widths.map(function (width) {
+            return (width / total) * 100;
+        });
+    }
+
+    function colgroupHtml(percents) {
+        return '<colgroup>' + percents.map(function (pct) {
+            return '<col style="width:' + pct.toFixed(3) + '%">';
+        }).join('') + '</colgroup>';
+    }
+
+    function pageSpec(maxCol) {
+        if (maxCol > 16) {
+            return {
+                format: 'a3',
+                contentPx: 1520,
+                fontSize: 8,
+                headerFontSize: 8,
+                rowsPerPage: 10
+            };
+        }
+        if (maxCol > 12) {
+            return {
+                format: 'a3',
+                contentPx: 1520,
+                fontSize: 9,
+                headerFontSize: 9,
+                rowsPerPage: 12
+            };
+        }
+        return {
+            format: 'a4',
+            contentPx: 1060,
+            fontSize: 10,
+            headerFontSize: 10,
+            rowsPerPage: 16
+        };
+    }
+
+    function rowIsEmpty(row, maxCol, merges, r) {
+        for (var c = 1; c <= maxCol; c++) {
+            if (merges.skip[r + ',' + c]) {
+                continue;
+            }
+            if (String(displayCell(row.getCell(c))).trim() !== '') {
+                return false;
+            }
+        }
+        return true;
+    }
+
     function buildTableHtml(sheet) {
         var range = usedRange(sheet);
         var merges = mergeLookup(sheet);
-        var html = '<table>';
+        var percents = columnPercents(sheet, range.maxCol);
+        var titles = [];
+        var html = '<table>' + colgroupHtml(percents);
+        var inTable = false;
 
         for (var r = 1; r <= range.maxRow; r++) {
             var row = sheet.getRow(r);
+            var empty = rowIsEmpty(row, range.maxCol, merges, r);
+            var titleText = '';
+            var isTitleRow = false;
+
+            for (var c = 1; c <= range.maxCol; c++) {
+                var key = r + ',' + c;
+                if (merges.skip[key]) {
+                    continue;
+                }
+                var span = merges.starts[key] || { rowspan: 1, colspan: 1 };
+                var text = String(displayCell(row.getCell(c))).trim();
+                if (span.colspan >= range.maxCol && r <= 5 && text) {
+                    isTitleRow = true;
+                    titleText = text;
+                }
+                break;
+            }
+
+            if (!inTable && (empty || isTitleRow)) {
+                if (isTitleRow && titleText) {
+                    titles.push(titleText);
+                }
+                continue;
+            }
+
+            inTable = true;
+            if (empty) {
+                continue;
+            }
+
             html += '<tr>';
 
             for (var c = 1; c <= range.maxCol; c++) {
@@ -193,26 +319,18 @@ window.DerasPdf = (function () {
                     continue;
                 }
 
+                var cell = row.getCell(c);
                 var span = merges.starts[key] || { rowspan: 1, colspan: 1 };
-                var text = displayCell(row.getCell(c));
-                var isTitle = span.colspan >= range.maxCol && r <= 3;
-                var tag = (row.font && row.font.bold) || (row.getCell(c).font && row.getCell(c).font.bold) || r <= 5
-                    ? 'th'
-                    : 'td';
-
-                if (isTitle) {
-                    tag = 'td';
-                }
-
+                var text = displayCell(cell);
+                var isHeader = isBoldCell(row, cell) || isFilledHeader(cell);
+                var tag = isHeader ? 'th' : 'td';
                 var attrs = '';
+
                 if (span.rowspan > 1) {
                     attrs += ' rowspan="' + span.rowspan + '"';
                 }
                 if (span.colspan > 1) {
                     attrs += ' colspan="' + span.colspan + '"';
-                }
-                if (isTitle) {
-                    attrs += ' class="title"';
                 }
 
                 html += '<' + tag + attrs + '>' + escapeHtml(text) + '</' + tag + '>';
@@ -222,7 +340,7 @@ window.DerasPdf = (function () {
         }
 
         html += '</table>';
-        return { html: html, maxCol: range.maxCol, maxRow: range.maxRow };
+        return { html: html, titles: titles, maxCol: range.maxCol, maxRow: range.maxRow };
     }
 
     function wait(ms) {
@@ -231,24 +349,29 @@ window.DerasPdf = (function () {
         });
     }
 
-    function tableStyles() {
-        return 'html,body{margin:0;padding:0;background:#fff;}'
-            + 'body{padding:10px;font-family:"Noto Sans Myanmar","Pyidaungsu","Myanmar Text",sans-serif;'
-            + 'color:#111;font-size:11px;line-height:1.4;}'
-            + 'table{border-collapse:collapse;width:auto;max-width:none;table-layout:auto;}'
-            + 'th,td{border:1px solid #334155;padding:5px 7px;text-align:center;vertical-align:middle;'
-            + 'white-space:nowrap;word-break:keep-all;background:#fff;color:#111;font-weight:400;}'
+    function tableStyles(spec) {
+        var size = spec.fontSize;
+        return '*{box-sizing:border-box;}'
+            + 'html,body{margin:0;padding:0;background:#fff;overflow:visible !important;height:auto !important;}'
+            + 'body{padding:8px 10px;width:' + spec.contentPx + 'px;font-family:"Noto Sans Myanmar","Pyidaungsu","Myanmar Text",sans-serif;'
+            + 'color:#111;font-size:' + size + 'px;line-height:1.45;}'
+            + '.title{font-family:"Noto Sans Myanmar","Pyidaungsu","Myanmar Text",sans-serif;font-weight:700;'
+            + 'font-size:' + size + 'px;text-align:center;padding:6px 8px 10px;line-height:1.45;color:#111;}'
+            + 'table{border-collapse:collapse;width:100%;max-width:100%;table-layout:fixed;}'
+            + 'th,td{border:1px solid #334155;padding:6px 5px;text-align:center;vertical-align:middle;'
+            + 'white-space:normal;word-break:break-word;overflow-wrap:anywhere;color:#111;'
+            + 'font-family:"Noto Sans Myanmar","Pyidaungsu","Myanmar Text",sans-serif;'
+            + 'font-size:' + size + 'px !important;line-height:1.45;}'
             + 'th{background:#d9ead3;font-weight:700;}'
-            + 'td.title{font-weight:700;font-size:14px;padding:10px 8px;white-space:normal;}';
+            + 'td{background:#fff;font-weight:400;}'
+            + '.pdf-page{width:' + spec.contentPx + 'px;max-width:' + spec.contentPx + 'px;background:#fff;overflow:visible;}';
     }
 
     function addImageFitPage(pdf, imgData, imgWidth, imgHeight, margin) {
         var pageWidth = pdf.internal.pageSize.getWidth() - margin * 2;
         var pageHeight = pdf.internal.pageSize.getHeight() - margin * 2;
         var ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
-        var renderWidth = imgWidth * ratio;
-        var renderHeight = imgHeight * ratio;
-        pdf.addImage(imgData, 'JPEG', margin, margin, renderWidth, renderHeight);
+        pdf.addImage(imgData, 'JPEG', margin, margin, imgWidth * ratio, imgHeight * ratio);
     }
 
     function headerBodySplit(table) {
@@ -260,6 +383,19 @@ window.DerasPdf = (function () {
             var title = tr.querySelector('td.title');
             var th = tr.querySelector('th');
             var td = tr.querySelector('td:not(.title)');
+            var cells = tr.querySelectorAll('th,td');
+            var empty = true;
+            for (var n = 0; n < cells.length; n++) {
+                if ((cells[n].textContent || '').trim() !== '') {
+                    empty = false;
+                    break;
+                }
+            }
+
+            if (empty) {
+                continue;
+            }
+
             if (title || (th && !td)) {
                 headerCount += 1;
                 continue;
@@ -277,8 +413,39 @@ window.DerasPdf = (function () {
         };
     }
 
-    function buildChunkTable(headers, bodyRows) {
-        var table = document.createElement('table');
+    function packRowChunks(rows, heights, maxBodyPx) {
+        var chunks = [];
+        var current = [];
+        var used = 0;
+        var limit = Math.max(120, maxBodyPx);
+
+        if (!rows.length) {
+            return [[]];
+        }
+
+        for (var i = 0; i < rows.length; i++) {
+            var h = heights[i] || 28;
+            if (current.length && used + h > limit) {
+                chunks.push(current);
+                current = [];
+                used = 0;
+            }
+            current.push(rows[i]);
+            used += h;
+        }
+
+        if (current.length) {
+            chunks.push(current);
+        }
+
+        return chunks;
+    }
+
+    function buildChunkTable(ownerDoc, headers, bodyRows, colgroup) {
+        var table = ownerDoc.createElement('table');
+        if (colgroup) {
+            table.appendChild(colgroup.cloneNode(true));
+        }
         headers.forEach(function (row) {
             table.appendChild(row.cloneNode(true));
         });
@@ -286,25 +453,6 @@ window.DerasPdf = (function () {
             table.appendChild(row.cloneNode(true));
         });
         return table;
-    }
-
-    async function captureElement(html2canvasFn, element) {
-        var width = Math.max(element.scrollWidth, element.offsetWidth, 400);
-        var height = Math.max(element.scrollHeight, element.offsetHeight, 80);
-
-        return html2canvasFn(element, {
-            scale: 1.8,
-            useCORS: true,
-            allowTaint: true,
-            backgroundColor: '#ffffff',
-            logging: false,
-            windowWidth: width,
-            windowHeight: height,
-            width: width,
-            height: height,
-            scrollX: 0,
-            scrollY: 0
-        });
     }
 
     async function fromWorksheet(sheet, filename) {
@@ -317,20 +465,26 @@ window.DerasPdf = (function () {
         }
 
         var built = buildTableHtml(sheet);
-        var wide = built.maxCol > 8;
-        var veryWide = built.maxCol > 16;
-        var rowsPerPage = veryWide ? 8 : (wide ? 12 : 22);
+        var spec = pageSpec(built.maxCol);
+        var hostWidth = spec.contentPx + 24;
+        var pageLimitPx = spec.format === 'a3' ? 980 : 680;
+
+        var titleHtml = (built.titles || []).map(function (text) {
+            return '<div class="title">' + escapeHtml(text) + '</div>';
+        }).join('');
 
         var iframe = document.createElement('iframe');
+        iframe.setAttribute('data-deras-pdf-host', '1');
         iframe.style.cssText = [
-            'position:absolute',
+            'position:fixed',
             'left:0',
             'top:0',
-            'width:1400px',
-            'height:900px',
+            'width:' + hostWidth + 'px',
+            'height:8000px',
             'border:0',
             'background:#fff',
-            'z-index:2147483646'
+            'z-index:2147483645',
+            'pointer-events:none'
         ].join(';');
         document.body.appendChild(iframe);
 
@@ -339,12 +493,12 @@ window.DerasPdf = (function () {
         doc.write(
             '<!DOCTYPE html><html><head><meta charset="utf-8">'
             + '<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;700&display=swap" rel="stylesheet">'
-            + '<style>' + tableStyles() + '</style></head><body>'
-            + built.html + '</body></html>'
+            + '<style>' + tableStyles(spec) + '</style></head>'
+            + '<body><div class="pdf-page">' + titleHtml + built.html + '</div></body></html>'
         );
         doc.close();
 
-        await wait(350);
+        await wait(400);
         if (doc.fonts && doc.fonts.ready) {
             try {
                 await doc.fonts.ready;
@@ -352,6 +506,7 @@ window.DerasPdf = (function () {
                 // ignore
             }
         }
+        await wait(150);
 
         var sourceTable = doc.querySelector('table');
         if (!sourceTable) {
@@ -360,22 +515,30 @@ window.DerasPdf = (function () {
             return;
         }
 
+        var titleNodes = Array.prototype.slice.call(doc.querySelectorAll('.pdf-page > .title'));
+        var titleHeight = 0;
+        titleNodes.forEach(function (node) {
+            titleHeight += node.offsetHeight || 28;
+        });
+        var titleClones = titleNodes.map(function (node) {
+            return node.cloneNode(true);
+        });
+        var colgroup = sourceTable.querySelector('colgroup');
         var split = headerBodySplit(sourceTable);
+        var headerHeight = 0;
+        split.headers.forEach(function (row) {
+            headerHeight += row.offsetHeight || 32;
+        });
+        var rowHeights = split.body.map(function (row) {
+            return row.offsetHeight || 28;
+        });
         var headerClones = split.headers.map(function (row) {
             return row.cloneNode(true);
         });
         var bodyClones = split.body.map(function (row) {
             return row.cloneNode(true);
         });
-
-        var chunks = [];
-        if (bodyClones.length === 0) {
-            chunks.push([]);
-        } else {
-            for (var i = 0; i < bodyClones.length; i += rowsPerPage) {
-                chunks.push(bodyClones.slice(i, i + rowsPerPage));
-            }
-        }
+        var chunks = packRowChunks(bodyClones, rowHeights, pageLimitPx - headerHeight - titleHeight - 20);
 
         var pdfName = String(filename || 'export.pdf');
         if (!/\.pdf$/i.test(pdfName)) {
@@ -385,22 +548,30 @@ window.DerasPdf = (function () {
         var pdf = new JsPDF({
             orientation: 'landscape',
             unit: 'mm',
-            format: veryWide ? 'a3' : 'a4'
+            format: spec.format
         });
 
         try {
             for (var pageIndex = 0; pageIndex < chunks.length; pageIndex++) {
-                var pageTable = buildChunkTable(headerClones, chunks[pageIndex]);
+                var pageTable = buildChunkTable(doc, headerClones, chunks[pageIndex], colgroup);
+                var pageWrap = doc.createElement('div');
+                pageWrap.className = 'pdf-page';
+                titleClones.forEach(function (node) {
+                    pageWrap.appendChild(node.cloneNode(true));
+                });
+                pageWrap.appendChild(pageTable);
                 doc.body.innerHTML = '';
-                doc.body.appendChild(pageTable);
+                doc.body.appendChild(pageWrap);
+                iframe.style.height = Math.max(pageWrap.scrollHeight, pageWrap.offsetHeight, pageLimitPx) + 60 + 'px';
+                await wait(50);
 
-                var captureWidth = Math.max(pageTable.scrollWidth, pageTable.offsetWidth, 600);
-                var captureHeight = Math.max(pageTable.scrollHeight, pageTable.offsetHeight, 120);
-                iframe.style.width = (captureWidth + 40) + 'px';
-                iframe.style.height = (captureHeight + 40) + 'px';
-                await wait(80);
-
-                var canvas = await captureElement(html2canvasFn, doc.body);
+                var canvas = await html2canvasFn(pageWrap, {
+                    scale: 1.6,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff',
+                    logging: false
+                });
                 if (!canvas || canvas.width < 10 || canvas.height < 10) {
                     throw new Error('blank-canvas');
                 }
@@ -410,7 +581,7 @@ window.DerasPdf = (function () {
                 }
                 addImageFitPage(
                     pdf,
-                    canvas.toDataURL('image/jpeg', 0.95),
+                    canvas.toDataURL('image/jpeg', 0.92),
                     canvas.width,
                     canvas.height,
                     8

@@ -1,5 +1,10 @@
 @csrf
-@php $quota = $quota ?? new \App\Models\Quota(); @endphp
+@php
+    $isEdit = isset($quota) && $quota->exists;
+    $quota = $quota ?? new \App\Models\Quota();
+    // col-md-4 = 3 columns (create), col-md-3 = 4 columns (edit with total)
+    $colClass = $isEdit ? 'col-md-3' : 'col-md-4';
+@endphp
 
 <style>
     /* ===== Green Focus ===== */
@@ -95,11 +100,6 @@
     }
 </style>
 
-@php
-    // col-md-4 = 3 columns (create), col-md-3 = 4 columns (edit with total)
-    $colClass = isset($quota) ? 'col-md-3' : 'col-md-4';
-@endphp
-
 {{-- ===== BASIC INFO SECTION ===== --}}
 <div class="card border-0 shadow-sm mb-4 rounded-3 overflow-hidden">
     <div class="card-header py-3 px-4 d-flex align-items-center gap-2"
@@ -178,14 +178,14 @@
                 <input type="number" name="primary_private" class="form-control"
                     value="{{ \App\Support\FormValue::number(old('primary_private', $quota->primary_private)) }}" placeholder="0" min="0">
             </div>
-            @isset($quota)
+            @if ($isEdit)
                 <div class="col-md-3">
                     <label class="form-label"><i class="fas fa-calculator me-1"></i>ပေါင်း</label>
                     <input type="number" class="form-control fw-bold"
                         style="background-color: #f0faf4; color: #105c3a; border-color: #aad6bc;"
                         value="{{ $quota->primary_public + $quota->primary_monk + $quota->primary_private }}" disabled>
                 </div>
-            @endisset
+            @endif
         </div>
     </div>
 </div>
@@ -214,14 +214,14 @@
                 <input type="number" name="middle_private" class="form-control"
                     value="{{ \App\Support\FormValue::number(old('middle_private', $quota->middle_private)) }}" placeholder="0" min="0">
             </div>
-            @isset($quota)
+            @if ($isEdit)
                 <div class="col-md-3">
                     <label class="form-label"><i class="fas fa-calculator me-1"></i>ပေါင်း</label>
                     <input type="number" class="form-control fw-bold"
                         style="background-color: #f0faf4; color: #105c3a; border-color: #aad6bc;"
                         value="{{ $quota->middle_public + $quota->middle_monk + $quota->middle_private }}" disabled>
                 </div>
-            @endisset
+            @endif
         </div>
     </div>
 </div>
@@ -251,7 +251,7 @@
                     value="{{ \App\Support\FormValue::number(old('high_private', $quota->high_private)) }}" placeholder="0" min="0">
             </div>
 
-            @isset($quota)
+            @if ($isEdit)
                 @php
                     $primaryTotal = $quota->primary_public + $quota->primary_monk + $quota->primary_private;
                     $middleTotal  = $quota->middle_public + $quota->middle_monk + $quota->middle_private;
@@ -269,13 +269,13 @@
                         style="background-color: #f0faf4; color: #105c3a; border-color: #aad6bc;"
                         value="{{ $highTotal }}" disabled>
                 </div>
-            @endisset
+            @endif
         </div>
     </div>
 </div>
 
 {{-- ===== စုစုပေါင်း (edit only) ===== --}}
-@isset($quota)
+@if ($isEdit)
     <div class="card border-0 shadow-sm mb-4 rounded-3 overflow-hidden">
         <div class="card-header py-3 px-4 d-flex align-items-center gap-2" style="background-color: #105c3a;">
             <i class="fas fa-calculator text-white"></i>
@@ -299,7 +299,7 @@
             </div>
         </div>
     </div>
-@endisset
+@endif
 
 {{-- ===== အခြားအချက်အလက် ===== --}}
 <div class="card border-0 shadow-sm mb-4 rounded-3 overflow-hidden">
@@ -310,12 +310,12 @@
     </div>
     <div class="card-body p-4">
         <div class="row g-3">
-            <div class="col-md-4">
+            <div class="{{ $isEdit ? 'col-md-4' : 'col-md-6' }}">
                 <label class="form-label"><i class="fas fa-tractor me-1"></i>စက်၊စိုက်၊မွေး</label>
                 <input type="number" name="agriculture" class="form-control"
                     value="{{ \App\Support\FormValue::number(old('agriculture', $quota->agriculture)) }}" placeholder="0" min="0">
             </div>
-            @isset($quota)
+            @if ($isEdit)
                 <div class="col-md-4">
                     <label class="form-label"><i class="fas fa-plus-circle me-1"></i>စုစုပေါင်း စက်၊စိုက်၊မွေးအပါ</label>
                     <input type="number" class="form-control fw-bold"
@@ -328,7 +328,7 @@
                         style="background-color: #f0faf4; color: #105c3a; border-color: #aad6bc;"
                         value="{{ $distributionTotal }}" disabled>
                 </div>
-            @endisset
+            @endif
         </div>
     </div>
 </div>
@@ -339,8 +339,8 @@
         <i class="fas fa-arrow-left"></i> နောက်သို့
     </a>
     <button type="submit" class="btn-save">
-        <i class="fas {{ isset($quota) ? 'fa-pen' : 'fa-save' }}"></i>
-        {{ isset($quota) ? 'ပြင်ဆင်ရန်' : 'သိမ်းဆည်းရန်' }}
+        <i class="fas {{ $isEdit ? 'fa-pen' : 'fa-save' }}"></i>
+        {{ $isEdit ? 'ပြင်ဆင်ရန်' : 'သိမ်းဆည်းရန်' }}
     </button>
 </div>
 

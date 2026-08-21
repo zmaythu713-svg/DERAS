@@ -252,9 +252,11 @@
 
             sheet.getRow(1).height = 40;
 
-            sheet.addRow([]);
+            if (format !== 'pdf') {
+                sheet.addRow([]);
+            }
 
-            sheet.addRow([
+            const headerRow = sheet.addRow([
                 'စဉ်',
                 'ပညာသင်နှစ်',
                 'မြို့နယ်',
@@ -266,6 +268,7 @@
                 'လိုအပ်မှု',
                 'မှတ်ချက်'
             ]);
+            const headerRowNumber = headerRow.number;
 
             @foreach ($stocks as $key => $stock)
                 sheet.addRow([
@@ -295,11 +298,11 @@
                         bottom: { style: 'thin' },
                         right: { style: 'thin' }
                     };
+                    if (rowNumber === headerRowNumber) {
+                        cell.font = { bold: true };
+                        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9EAD3' } };
+                    }
                 });
-
-                if (rowNumber == 3) {
-                    row.font = { bold: true };
-                }
             });
 
             sheet.getColumn(5).alignment = {
