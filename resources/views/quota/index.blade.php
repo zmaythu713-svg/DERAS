@@ -8,7 +8,7 @@
             <div class="modern-card-header" style="background: #072a1e !important; background-image: none !important; color: #ffffff !important; border-bottom: 1px solid rgba(255, 255, 255, 0.15);">
                 <h5 class="modern-card-header-title text-white text-lg font-bold">
                     <i class="fas fa-calculator text-amber-400"></i>
-                    ခဲတံ၊ ဘောပင်၊ ဗလာစာအုပ် ဝတ်စုံအတွက် ကျောင်းသားဦးရေတွက်ချက်မှု
+                    ခဲတံ၊ ဘောပင်၊ ဗလာစာအုပ်၊ ဝတ်စုံအတွက် ကျောင်းသားဦးရေတွက်ချက်မှု
                 </h5>
                 <span class="text-xs bg-emerald-950/50 text-amber-300 px-3 py-1 rounded-full font-semibold">
                     {{ $academicYear }} ပညာသင်နှစ်
