@@ -200,7 +200,7 @@
                 <div class="modern-card-header">
                     <h6 class="modern-card-header-title text-base">
                         <i class="fas fa-chart-bar"></i>
-                        မြို့နယ်အလိုက် ခဲတံ၊ ဘောပင်၊ ဝတ်စုံ ဖြန့်ဝေရန် ကျောင်းသားဦးရေ
+                        မြို့နယ်အလိုက် ခဲတံ၊ ဘောပင်၊ ဗလာစာအုပ် ဝတ်စုံ ဖြန့်ဝေရန် ကျောင်းသားဦးရေ
                     </h6>
                 </div>
                 <div class="p-4 flex items-center justify-center" style="min-height: 340px;">

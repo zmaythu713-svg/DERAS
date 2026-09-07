@@ -135,13 +135,13 @@ entity "teacher_guide" as tg {
   g1_to_g5_quota
 }
 
-entity "tg_township_allocation" as tgta {
+entity "teacher_guide_township_allocation" as tgta {
   * id
   --
   teacher_guide_id
   township_id
-  kg_g12_qty
-  g1_g5_qty
+  kg_to_g12_quantity
+  g1_to_g5_quantity
 }
 
 entity "teacher_guide_issue" as tgi {
@@ -152,7 +152,7 @@ entity "teacher_guide_issue" as tgi {
   package_unit
 }
 
-entity "tg_issue_township" as tgit {
+entity "teacher_guide_issue_township" as tgit {
   * id
   --
   teacher_guide_issue_id
@@ -261,20 +261,36 @@ book ||--o{ plan : Has
 plan ||--|{ apt : Has
 town ||--o{ apt : Has
 
-plan ||--o{ tb : Syncs
 year ||--o{ tb : Has
+town ||--o{ tb : Has
+grade ||--o{ tb : Has
+book ||--o{ tb : Has
+
 year ||--o{ stock : Has
+town ||--o{ stock : Has
+grade ||--o{ stock : Has
+book ||--o{ stock : Has
+
 year ||--o{ pyb : Has
+town ||--o{ pyb : Has
+grade ||--o{ pyb : Has
+book ||--o{ pyb : Has
 
 year ||--o{ tg : Has
 grade ||--o{ tg : Has
 book ||--o{ tg : Has
-tg ||--|{ tgta : Distributes
+tg ||--|{ tgta : Has
 town ||--o{ tgta : Has
 tg ||--o{ tgi : Has
-tgi ||--|{ tgit : Issues
+year ||--o{ tgi : Has
+grade ||--o{ tgi : Has
+book ||--o{ tgi : Has
+tgi ||--|{ tgit : Has
 town ||--o{ tgit : Has
 tg ||--o{ tgs : Has
+year ||--o{ tgs : Has
+grade ||--o{ tgs : Has
+book ||--o{ tgs : Has
 
 grade ||--o{ gbn : Has
 book ||--o{ gbn : Has
@@ -282,9 +298,17 @@ cat ||--o{ gbn : Has
 
 ssi ||--o{ ssa : Has
 year ||--o{ ssa : Has
+grade ||--o{ ssa : Has
+town ||--o{ ssa : Has
+
 si ||--o{ sd : Has
 year ||--o{ sd : Has
+town ||--o{ sd : Has
+grade ||--o{ sd : Has
+
 year ||--o{ sc : Has
+grade ||--o{ sc : Has
+town ||--o{ sc : Has
 
 role ||--o{ rp : Has
 perm ||--o{ rp : Has

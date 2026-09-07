@@ -116,12 +116,10 @@ function build({ actorLabel, cases, exportHosts = [], sideIncludes = [] }) {
   const ys = cases.map((c) => placed[c].cy);
   const act = actor(actorX, (Math.min(...ys) + Math.max(...ys)) / 2, actorLabel);
   body += act.p;
-  const busX = 140;
-  body += `<line x1="${act.x + 18}" y1="${act.y}" x2="${busX}" y2="${act.y}" stroke="#000" stroke-width="1.1"/>`;
-  body += `<line x1="${busX}" y1="${Math.min(...ys)}" x2="${busX}" y2="${Math.max(...ys)}" stroke="#000" stroke-width="1.1"/>`;
+  // Draw a separate association line from the actor to every permitted use case.
   cases.forEach((label) => {
     const o = placed[label];
-    body += `<line x1="${busX}" y1="${o.cy}" x2="${o.left}" y2="${o.cy}" stroke="#000" stroke-width="1"/>`;
+    body += `<line x1="${act.x + 18}" y1="${act.y}" x2="${o.left}" y2="${o.cy}" stroke="#000" stroke-width="1"/>`;
   });
 
   return `<?xml version="1.0" encoding="UTF-8"?>

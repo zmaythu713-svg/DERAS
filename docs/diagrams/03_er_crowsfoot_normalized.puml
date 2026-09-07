@@ -1,0 +1,323 @@
+@startuml Figure3_ER_CrowFoot_Normalized
+!theme plain
+skinparam linetype ortho
+skinparam shadowing false
+skinparam monochrome true
+skinparam class {
+  BackgroundColor white
+  BorderColor black
+  ArrowColor black
+  FontName Arial
+  FontSize 12
+}
+hide circle
+hide methods
+hide empty members
+
+title Figure 3.5 Entity Relation Diagram of DERAS (Normalized)
+
+' ===== Master data =====
+entity "academic_years" as AY {
+  * id : PK
+  --
+  name
+  start_year
+  end_year
+  is_current
+  is_active
+}
+
+entity "townships" as TW {
+  * id : PK
+  --
+  name
+  is_active
+}
+
+entity "grades" as GR {
+  * id : PK
+  --
+  name
+  is_active
+}
+
+entity "book_names" as BN {
+  * id : PK
+  --
+  name
+  is_active
+}
+
+entity "categories" as CAT {
+  * id : PK
+  --
+  name_mm
+  slug
+}
+
+entity "grade_book_names" as GBN {
+  * id : PK
+  --
+  * grade_id : FK
+  * book_name_id : FK
+  * category_id : FK
+}
+
+' ===== Quota (header-detail) =====
+entity "quotas" as Q {
+  * id : PK
+  --
+  * academic_year_id : FK
+  * township_id : FK
+}
+
+entity "quota_lines" as QL {
+  * id : PK
+  --
+  * quota_id : FK
+  school_level
+  ownership
+  quantity
+}
+
+' ===== Allocation plan (header-detail) =====
+entity "allocation_plans" as AP {
+  * id : PK
+  --
+  * academic_year_id : FK
+  * grade_id : FK
+  * book_name_id : FK
+  sequence_no
+  received_books
+  books_per_package
+}
+
+entity "allocation_plan_townships" as APT {
+  * id : PK
+  --
+  * allocation_plan_id : FK
+  * township_id : FK
+  previous
+  total_students
+  transferable
+}
+
+' ===== Distribution =====
+entity "textbooks" as TB {
+  * id : PK
+  --
+  * academic_year_id : FK
+  * township_id : FK
+  * grade_id : FK
+  * book_name_id : FK
+  books_per_set
+  student_count
+}
+
+entity "stocks" as ST {
+  * id : PK
+  --
+  * academic_year_id : FK
+  * township_id : FK
+  * grade_id : FK
+  * book_name_id : FK
+  previous_balance
+  transferred
+  required_qty
+}
+
+entity "previous_year_balances" as PYB {
+  * id : PK
+  --
+  * academic_year_id : FK
+  * township_id : FK
+  * grade_id : FK
+  * book_name_id : FK
+  balance
+}
+
+' ===== Teacher guide family =====
+entity "teacher_guides" as TG {
+  * id : PK
+  --
+  * academic_year_id : FK
+  * grade_id : FK
+  * book_name_id : FK
+  guide_type
+  kg_to_g12_quota
+  g1_to_g5_quota
+}
+
+entity "teacher_guide_township_allocations" as TGTA {
+  * id : PK
+  --
+  * teacher_guide_id : FK
+  * township_id : FK
+  kg_g12_qty
+  g1_g5_qty
+}
+
+entity "teacher_guide_issues" as TGI {
+  * id : PK
+  --
+  * teacher_guide_id : FK
+  * academic_year_id : FK
+  * grade_id : FK
+  * book_name_id : FK
+}
+
+entity "teacher_guide_issue_townships" as TGIT {
+  * id : PK
+  --
+  * teacher_guide_issue_id : FK
+  * township_id : FK
+  issued_quantity
+}
+
+entity "teacher_guide_summaries" as TGS {
+  * id : PK
+  --
+  * teacher_guide_id : FK
+  * academic_year_id : FK
+  * grade_id : FK
+  * book_name_id : FK
+  previous_balance
+  fiscal_year_quota
+  distributed_books
+}
+
+' ===== School supplies =====
+entity "school_supply_items" as SSI {
+  * id : PK
+  --
+  name
+  rate
+}
+
+entity "school_supply_allocations" as SSA {
+  * id : PK
+  --
+  * academic_year_id : FK
+  * grade_id : FK
+  township_id : FK
+  * school_supply_item_id : FK
+  school_count
+  quantity
+}
+
+entity "supply_items" as SI {
+  * id : PK
+  --
+  name
+}
+
+entity "supply_details" as SD {
+  * id : PK
+  --
+  * academic_year_id : FK
+  * township_id : FK
+  * grade_id : FK
+  * supply_item_id : FK
+  unit
+  issued_total
+}
+
+entity "school_counts" as SC {
+  * id : PK
+  --
+  * academic_year_id : FK
+  * grade_id : FK
+  township_id : FK
+  school_count
+}
+
+' ===== Auth =====
+entity "roles" as ROLE {
+  * id : PK
+  --
+  name
+  slug
+}
+
+entity "permissions" as PERM {
+  * id : PK
+  --
+  name
+  slug
+}
+
+entity "role_permission" as RP {
+  * id : PK
+  --
+  * role_id : FK
+  * permission_id : FK
+}
+
+entity "users" as USR {
+  * id : PK
+  --
+  name
+  email
+  role_id : FK
+  password
+}
+
+' ===== Relationships (clear FK routes) =====
+GR ||--o{ GBN : grade_id
+BN ||--o{ GBN : book_name_id
+CAT ||--o{ GBN : category_id
+
+AY ||--o{ Q : academic_year_id
+TW ||--o{ Q : township_id
+Q ||--|{ QL : quota_id
+
+AY ||--o{ AP : academic_year_id
+GR ||--o{ AP : grade_id
+BN ||--o{ AP : book_name_id
+AP ||--|{ APT : allocation_plan_id
+TW ||--o{ APT : township_id
+
+AY ||--o{ TB : academic_year_id
+TW ||--o{ TB : township_id
+GR ||--o{ TB : grade_id
+BN ||--o{ TB : book_name_id
+
+AY ||--o{ ST : academic_year_id
+TW ||--o{ ST : township_id
+GR ||--o{ ST : grade_id
+BN ||--o{ ST : book_name_id
+
+AY ||--o{ PYB : academic_year_id
+TW ||--o{ PYB : township_id
+GR ||--o{ PYB : grade_id
+BN ||--o{ PYB : book_name_id
+
+AY ||--o{ TG : academic_year_id
+GR ||--o{ TG : grade_id
+BN ||--o{ TG : book_name_id
+TG ||--|{ TGTA : teacher_guide_id
+TW ||--o{ TGTA : township_id
+TG ||--o{ TGI : teacher_guide_id
+TG ||--o{ TGS : teacher_guide_id
+TGI ||--|{ TGIT : teacher_guide_issue_id
+TW ||--o{ TGIT : township_id
+
+SSI ||--o{ SSA : school_supply_item_id
+AY ||--o{ SSA : academic_year_id
+GR ||--o{ SSA : grade_id
+TW ||--o{ SSA : township_id
+
+SI ||--o{ SD : supply_item_id
+AY ||--o{ SD : academic_year_id
+TW ||--o{ SD : township_id
+GR ||--o{ SD : grade_id
+
+AY ||--o{ SC : academic_year_id
+GR ||--o{ SC : grade_id
+TW ||--o{ SC : township_id
+
+ROLE ||--o{ USR : role_id
+ROLE ||--o{ RP : role_id
+PERM ||--o{ RP : permission_id
+
+@enduml
